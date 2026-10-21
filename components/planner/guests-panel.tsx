@@ -1,0 +1,285 @@
+"use client";
+
+import { useId, useState, type SubmitEvent } from "react";
+import { toCsv } from "@/lib/export/csv";
+import { fileName } from "@/lib/export/links";
+import { guestRows } from "@/lib/export/sheets";
+import { downloadText } from "@/lib/client/files";
+import { format, formatNumber } from "@/lib/i18n/format";
+import {
+  DIETS,
+  GUEST_GROUPS,
+  LIMITS,
+  RSVP_STATUSES,
+  type Diet,
+  type GuestGroup,
+  type RsvpStatus,
+} from "@/lib/plan/constants";
+import { newId, removeGuest, updateBrief, upsertGuest } from "@/lib/plan/record";
+import type { Guest } from "@/lib/plan/schema";
+import { cleanText } from "@/lib/plan/text";
+import { useLocale } from "../locale-provider";
+import { SelectField, TextField } from "../ui/field";
+import type { PlanView, Update } from "./types";
+
+function AddGuest({ update, full }: { update: Update; full: boolean }) {
+  const { dict } = useLocale();
+  const g = dict.guests;
+  const baseId = useId();
+  const [name, setName] = useState("");
+  const [group, setGroup] = useState<GuestGroup>("family");
+  const [party, setParty] = useState("1");
+  const [diet, setDiet] = useState<Diet>("veg");
+  const [error, setError] = useState<string | undefined>();
+
+  function submit(event: SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const clean = cleanText(name);
+    if (clean.length < 1 || clean.length > LIMITS.guestNameMax) {
+      setError(g.nameError);
+      return;
+    }
+    setError(undefined);
+    const size = Math.min(LIMITS.partyMax, Math.max(1, Number.parseInt(party, 10) || 1));
+    const guest: Guest = { id: newId(), name: clean, group, party: size, rsvp: "pending", diet };
+    update((r, now) => upsertGuest(r, guest, now));
+    setName("");
+    setParty("1");
+  }
+
+  if (full) return <p className="hint">{g.limit}</p>;
+  return (
+    <form className="add-guest" onSubmit={submit} noValidate aria-labelledby={`${baseId}-h`}>
+      <h3 id={`${baseId}-h`}>{g.addHeading}</h3>
+      <div className="form-row">
+        <TextField
+          id={`${baseId}-name`}
+          label={g.name}
+          value={name}
+          maxLength={LIMITS.guestNameMax}
+          autoComplete="off"
+          error={error}
+          onChange={(e) => {
+            setName(e.target.value);
+          }}
+        />
+        <SelectField<GuestGroup>
+          id={`${baseId}-group`}
+          label={g.group}
+          value={group}
+          options={GUEST_GROUPS.map((v) => ({ value: v, label: g.groups[v] }))}
+          onChange={(e) => {
+            setGroup(e.target.value as GuestGroup);
+          }}
+        />
+        <TextField
+          id={`${baseId}-party`}
+          label={g.party}
+          type="number"
+          inputMode="numeric"
+          min={1}
+          max={LIMITS.partyMax}
+          value={party}
+          onChange={(e) => {
+            setParty(e.target.value);
+          }}
+        />
+        <SelectField<Diet>
+          id={`${baseId}-diet`}
+          label={g.diet}
+          value={diet}
+          options={DIETS.map((v) => ({ value: v, label: g.diets[v] }))}
+          onChange={(e) => {
+            setDiet(e.target.value as Diet);
+          }}
+        />
+        <button type="submit" className="btn">
+          {g.add}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function Tallies({ view, update }: { view: PlanView; update: Update }) {
+  const { dict, locale } = useLocale();
+  const g = dict.guests;
+  const { record, guests: tally } = view;
+  const n = (value: number) => formatNumber(value, locale);
+  const mismatch = tally.expected > 0 && tally.expected !== record.brief.guests;
+  return (
+    <>
+      <dl className="ledger ledger-compact">
+        <div>
+          <dt>{g.invited}</dt>
+          <dd>{n(tally.invited)}</dd>
+        </div>
+        {RSVP_STATUSES.map((s) => (
+          <div key={s}>
+            <dt>{g.rsvps[s]}</dt>
+            <dd>{n(tally.byRsvp[s])}</dd>
+          </div>
+        ))}
+        <div>
+          <dt>{g.expected}</dt>
+          <dd>{n(tally.expected)}</dd>
+        </div>
+      </dl>
+      {tally.expected > 0 ? (
+        <p className="hint">
+          {g.foodSplit}:{" "}
+          {DIETS.filter((d) => tally.diets[d] > 0)
+            .map((d) => `${g.diets[d]} ${n(tally.diets[d])}`)
+            .join(", ")}
+        </p>
+      ) : null}
+      {mismatch ? (
+        <div className="notice notice-info" role="status">
+          <p>{format(g.mismatch, { plan: n(record.brief.guests), list: n(tally.expected) })}</p>
+          <button
+            type="button"
+            className="btn btn-small"
+            onClick={() => {
+              update((r, now) =>
+                updateBrief(
+                  r,
+                  { ...r.brief, guests: Math.min(LIMITS.guestsMax, tally.expected) },
+                  now,
+                ),
+              );
+            }}
+          >
+            {format(g.useCount, { n: n(tally.expected) })}
+          </button>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+function GuestRow({ guest, update }: { guest: Guest; update: Update }) {
+  const { dict, locale } = useLocale();
+  const g = dict.guests;
+  return (
+    <tr>
+      <th scope="row">{guest.name}</th>
+      <td>{g.groups[guest.group]}</td>
+      <td className="num">{formatNumber(guest.party, locale)}</td>
+      <td>{g.diets[guest.diet]}</td>
+      <td>
+        <select
+          aria-label={format(g.rsvpLabel, { name: guest.name })}
+          value={guest.rsvp}
+          onChange={(e) => {
+            const rsvp = e.target.value as RsvpStatus;
+            update((r, now) => upsertGuest(r, { ...guest, rsvp }, now));
+          }}
+        >
+          {RSVP_STATUSES.map((s) => (
+            <option key={s} value={s}>
+              {g.rsvps[s]}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td>
+        <button
+          type="button"
+          className="btn btn-small btn-quiet"
+          aria-label={format(g.removeLabel, { name: guest.name })}
+          onClick={() => {
+            update(
+              (r, now) => removeGuest(r, guest.id, now),
+              format(g.removed, { name: guest.name }),
+            );
+          }}
+        >
+          {dict.common.remove}
+        </button>
+      </td>
+    </tr>
+  );
+}
+
+function GuestTable({ guests, update }: { guests: readonly Guest[]; update: Update }) {
+  const { dict } = useLocale();
+  const g = dict.guests;
+  const filterId = useId();
+  const [filter, setFilter] = useState<RsvpStatus | "all">("all");
+  const shown = filter === "all" ? guests : guests.filter((x) => x.rsvp === filter);
+  return (
+    <>
+      <SelectField<RsvpStatus | "all">
+        id={filterId}
+        label={g.filterLabel}
+        value={filter}
+        options={[
+          { value: "all", label: g.all },
+          ...RSVP_STATUSES.map((s) => ({ value: s, label: g.rsvps[s] })),
+        ]}
+        onChange={(e) => {
+          setFilter(e.target.value as RsvpStatus | "all");
+        }}
+      />
+      <div className="table-scroll">
+        <table className="ledger-table">
+          <caption className="visually-hidden">{g.tableCaption}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{g.name}</th>
+              <th scope="col">{g.group}</th>
+              <th scope="col" className="num">
+                {g.party}
+              </th>
+              <th scope="col">{g.diet}</th>
+              <th scope="col">{g.rsvp}</th>
+              <th scope="col">
+                <span className="visually-hidden">{dict.common.remove}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {shown.map((guest) => (
+              <GuestRow key={guest.id} guest={guest} update={update} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+export function GuestsPanel({ view, update }: { view: PlanView; update: Update }) {
+  const { dict } = useLocale();
+  const g = dict.guests;
+  const { record } = view;
+  return (
+    <div className="guests">
+      <div className="panel-head">
+        <h2>{g.heading}</h2>
+        <button
+          type="button"
+          className="btn btn-quiet"
+          disabled={record.guests.length === 0}
+          onClick={() => {
+            downloadText(
+              fileName(record.brief.title, "guests.csv"),
+              "text/csv;charset=utf-8",
+              toCsv(guestRows(record.guests, dict)),
+            );
+          }}
+        >
+          {g.csv}
+        </button>
+      </div>
+      <p className="hint">{g.privacy}</p>
+      <Tallies view={view} update={update} />
+      <AddGuest update={update} full={record.guests.length >= LIMITS.guestListMax} />
+      {record.guests.length === 0 ? (
+        <p>{g.empty}</p>
+      ) : (
+        <GuestTable guests={record.guests} update={update} />
+      )}
+    </div>
+  );
+}
