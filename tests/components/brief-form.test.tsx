@@ -73,7 +73,7 @@ describe("BriefForm", () => {
     await userEvent.paste("Garden");
     expect(screen.getByText(/6 of 500/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Make my plan" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Pick today or a later date.");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Pick an event date from today on.");
   });
 
   it("edits an existing brief, in Hindi, and can be cancelled", async () => {

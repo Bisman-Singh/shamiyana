@@ -21,6 +21,7 @@ import { draftFromBrief } from "@/lib/plan/draft";
 import { createRecord, newId, updateBrief } from "@/lib/plan/record";
 import type { Brief, PlanRecord } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
+import { useAnnounce } from "../ui/announcer";
 import { BriefForm } from "./brief-form";
 import {
   MessageNotice,
@@ -46,8 +47,9 @@ type Mode = "plan" | "new" | "edit";
  */
 function useActions(
   store: PlanStore,
-  setMode: (m: Mode) => void,
-  setMessage: (m: Message | null) => void,
+  go: (m: Mode) => void,
+  setMessage: (m: Message) => void,
+  stayPut: () => void,
 ) {
   const { dict } = useLocale();
   const latest = () => store.getSnapshot().data;
@@ -59,24 +61,28 @@ function useActions(
     findPlan: (id: string) => latest().plans.find((p) => p.id === id) ?? null,
     create: (brief: Brief) => {
       store.commit(putPlan(latest(), createRecord(brief, newId(), now())));
-      setMode("plan");
+      go("plan");
     },
     select: (id: string) => {
       store.commit(selectPlan(latest(), id));
-      setMode("plan");
+      go("plan");
     },
     remove: (record: PlanRecord) => {
-      const before = latest();
-      store.commit(removePlan(before, record.id));
+      store.commit(removePlan(latest(), record.id));
+      stayPut();
       setMessage({
         tone: "success",
         text: format(dict.plans.deleted, { title: record.brief.title }),
-        undo: before,
+        undo: record,
       });
+    },
+    restoreDeleted: (record: PlanRecord) => {
+      store.commit(putPlan(latest(), record));
+      go("plan");
     },
     addShared: (plan: SharedPlan) => {
       store.commit(putPlan(latest(), recordFromShare(plan, newId(), now())));
-      setMode("plan");
+      go("plan");
     },
     restore: async (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -92,8 +98,8 @@ function useActions(
         return;
       }
       store.commit(putPlan(latest(), result.record));
+      go("plan");
       setMessage({ tone: "success", text: dict.downloads.restored });
-      setMode("plan");
     },
   };
 }
@@ -107,7 +113,7 @@ function PlannerNotices({
   message,
   onAdd,
   onDismissShare,
-  onUndone,
+  onUndo,
 }: {
   store: PlanStore;
   notice: Notice | null;
@@ -116,7 +122,7 @@ function PlannerNotices({
   message: Message | null;
   onAdd: (plan: SharedPlan) => void;
   onDismissShare: () => void;
-  onUndone: () => void;
+  onUndo: (record: PlanRecord) => void;
 }) {
   return (
     <>
@@ -129,15 +135,7 @@ function PlannerNotices({
         />
       ) : null}
       <SharedImport incoming={incoming} full={full} onAdd={onAdd} onDismiss={onDismissShare} />
-      {message ? (
-        <MessageNotice
-          message={message}
-          onUndo={(before) => {
-            store.commit(before);
-            onUndone();
-          }}
-        />
-      ) : null}
+      {message ? <MessageNotice message={message} onUndo={onUndo} /> : null}
     </>
   );
 }
@@ -146,12 +144,14 @@ function PlannerNotices({
 function PlanForm({
   active,
   today,
+  focusOnOpen,
   onCreate,
   onSave,
   onCancel,
 }: {
   active: PlanRecord | null;
   today: string;
+  focusOnOpen: boolean;
   onCreate: (brief: Brief) => void;
   onSave: (record: PlanRecord) => void;
   onCancel: (() => void) | null;
@@ -161,6 +161,7 @@ function PlanForm({
       key={active ? active.id : "new"}
       today={today}
       editing={active !== null}
+      focusOnOpen={focusOnOpen}
       {...(active ? { initial: draftFromBrief(active.brief) } : {})}
       onSubmit={(brief) => {
         if (active) onSave(updateBrief(active, brief, new Date().toISOString()));
@@ -171,6 +172,32 @@ function PlanForm({
   );
 }
 
+/**
+ * Which view is open and the last action's message. Opening a view from an
+ * action moves focus to its heading, as a page change would; the first page
+ * load doesn't.
+ */
+function useView() {
+  const announce = useAnnounce();
+  const [view, setView] = useState<{ mode: Mode; focus: boolean }>({ mode: "plan", focus: false });
+  const [message, setMessage] = useState<Message | null>(null);
+  return {
+    view,
+    message,
+    go: (mode: Mode) => {
+      setView({ mode, focus: true });
+      setMessage(null);
+    },
+    stayPut: () => {
+      setView((v) => ({ ...v, focus: false }));
+    },
+    show: (next: Message) => {
+      setMessage(next);
+      announce(next.text);
+    },
+  };
+}
+
 export function Planner({ store }: { store?: PlanStore }) {
   const plans = store ?? sharedStore();
   const snapshot = useSyncExternalStore(
@@ -179,10 +206,10 @@ export function Planner({ store }: { store?: PlanStore }) {
     plans.getServerSnapshot,
   );
   const today = useToday();
-  const [mode, setMode] = useState<Mode>("plan");
   const [incoming, setIncoming] = useIncomingShare();
-  const [message, setMessage] = useState<Message | null>(null);
-  const actions = useActions(plans, setMode, setMessage);
+  const { view, go, stayPut, message, show } = useView();
+  const actions = useActions(plans, go, show, stayPut);
+  const { mode } = view;
 
   if (!snapshot.ready) return <PlannerSkeleton />;
   const { data } = snapshot;
@@ -205,9 +232,7 @@ export function Planner({ store }: { store?: PlanStore }) {
         onDismissShare={() => {
           setIncoming(null);
         }}
-        onUndone={() => {
-          setMessage(null);
-        }}
+        onUndo={actions.restoreDeleted}
       />
       <PlansBar
         plans={data.plans}
@@ -215,7 +240,7 @@ export function Planner({ store }: { store?: PlanStore }) {
         full={full}
         onSelect={actions.select}
         onNew={() => {
-          setMode("new");
+          go("new");
         }}
         onRestore={(e) => void actions.restore(e)}
         onDelete={
@@ -233,23 +258,25 @@ export function Planner({ store }: { store?: PlanStore }) {
           today={today}
           onSave={actions.save}
           findPlan={actions.findPlan}
+          focusOnOpen={view.focus}
           onEdit={() => {
-            setMode("edit");
+            go("edit");
           }}
         />
       ) : (
         <PlanForm
           active={editing ? active : null}
           today={today}
+          focusOnOpen={view.focus}
           onCreate={actions.create}
           onSave={(record) => {
             actions.save(record);
-            setMode("plan");
+            go("plan");
           }}
           onCancel={
             active
               ? () => {
-                  setMode("plan");
+                  go("plan");
                 }
               : null
           }

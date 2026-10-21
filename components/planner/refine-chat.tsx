@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, type SubmitEvent } from "react";
+import { useId, useState, useRef, type RefObject, type SubmitEvent } from "react";
 import { requestRefine } from "@/lib/client/api";
 import type { Dictionary } from "@/lib/i18n/en";
 import { format, formatDate, formatMoney, plural } from "@/lib/i18n/format";
@@ -10,6 +10,7 @@ import { applyChanges, newId } from "@/lib/plan/record";
 import { cleanText } from "@/lib/plan/text";
 import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
+import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 import type { PlanView, Update } from "./types";
 
@@ -49,7 +50,7 @@ function ChatLog({ turns }: { turns: readonly Turn[] }) {
   const { dict } = useLocale();
   if (turns.length === 0) return null;
   return (
-    <ol className="chat" aria-live="polite">
+    <ol className="chat">
       {turns.map((turn) => (
         <li key={turn.id} className={`chat-turn chat-${turn.role}`}>
           <span className="chat-who">
@@ -114,11 +115,13 @@ function ProposalForm({
 function ChatForm({
   message,
   pending,
+  inputRef,
   onChange,
   onSend,
 }: {
   message: string;
   pending: boolean;
+  inputRef: RefObject<HTMLInputElement | null>;
   onChange: (value: string) => void;
   onSend: (event: SubmitEvent<HTMLFormElement>) => void;
 }) {
@@ -130,6 +133,7 @@ function ChatForm({
       <label htmlFor={inputId}>{r.label}</label>
       <div className="form-row">
         <input
+          ref={inputRef}
           id={inputId}
           value={message}
           maxLength={LIMITS.chatMessageMax}
@@ -138,7 +142,11 @@ function ChatForm({
             onChange(e.target.value);
           }}
         />
-        <button type="submit" className="btn" disabled={pending || cleanText(message) === ""}>
+        <button
+          type="submit"
+          className="btn"
+          aria-disabled={pending || cleanText(message) === "" || undefined}
+        >
           {pending ? r.thinking : r.send}
         </button>
       </div>
@@ -155,7 +163,9 @@ export function RefineChat({ view, update }: { view: PlanView; update: Update })
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [proposal, setProposal] = useState<Proposal | null>(null);
-  const [applied, setApplied] = useState<string | null>(null);
+  const [quiet, setQuiet] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const announce = useAnnounce();
 
   async function send(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -163,7 +173,7 @@ export function RefineChat({ view, update }: { view: PlanView; update: Update })
     if (text === "" || pending) return;
     setPending(true);
     setError(null);
-    setApplied(null);
+    setQuiet(false);
     const { record } = view;
     const history = turns.slice(-6).map(({ role, text: said }) => ({ role, text: said }));
     const body = {
@@ -194,13 +204,14 @@ export function RefineChat({ view, update }: { view: PlanView; update: Update })
     );
     const items = result.data.changes.map((change) => ({ key: newId(), change, picked: false }));
     setProposal(items.length > 0 ? { items } : null);
+    setQuiet(items.length === 0);
+    announce(items.length > 0 ? result.data.reply : `${result.data.reply} ${r.noChanges}`);
   }
 
   function apply(current: Proposal) {
     const chosen = current.items.filter((i) => i.picked).map((i) => i.change);
     const note = plural(locale, r.applied, chosen.length);
     update((rec, now) => applyChanges(rec, chosen, newId, now), note);
-    setApplied(note);
     setProposal(null);
   }
 
@@ -218,14 +229,16 @@ export function RefineChat({ view, update }: { view: PlanView; update: Update })
           }}
           onDiscard={() => {
             setProposal(null);
+            inputRef.current?.focus();
           }}
         />
       ) : null}
-      {applied ? <Notice tone="success">{applied}</Notice> : null}
+      {quiet ? <p className="hint">{r.noChanges}</p> : null}
       {error ? <Notice tone="error">{error}</Notice> : null}
       <ChatForm
         message={message}
         pending={pending}
+        inputRef={inputRef}
         onChange={setMessage}
         onSend={(e) => void send(e)}
       />

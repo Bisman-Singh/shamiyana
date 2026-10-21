@@ -17,6 +17,7 @@
   --good: #2e5d34;
   --focus: #101528;
   --control: #4a4f66;
+  --tab-mark: #101528;
   --radius: 6px;
   --serif:
     "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia,
@@ -39,6 +40,7 @@
     --good: #8fd19e;
     --focus: #f39b2d;
     --control: #8c91a8;
+    --tab-mark: #f39b2d;
     color-scheme: dark;
   }
 }
@@ -64,6 +66,10 @@ body {
 :lang(hi) body,
 body:lang(hi) {
   line-height: 1.7;
+}
+
+:lang(hi) :is(h1, h2, h3, .brand-text) {
+  line-height: 1.45;
 }
 
 h1,
@@ -127,11 +133,15 @@ main:focus {
 
 .visually-hidden {
   position: absolute !important;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  width: 1px !important;
+  height: 1px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
 }
 
 .skip-link {
@@ -275,7 +285,8 @@ main:focus {
   font-size: 0.9rem;
 }
 
-.btn:disabled {
+.btn:disabled,
+.btn[aria-disabled="true"] {
   opacity: 0.55;
   cursor: not-allowed;
 }
@@ -319,6 +330,7 @@ main:focus {
 
 .field-inline {
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   margin: 0;
@@ -592,7 +604,8 @@ input[type="radio"] {
 
 .plans-bar select {
   width: auto;
-  max-width: 260px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .skeleton {
@@ -648,7 +661,7 @@ input[type="radio"] {
 }
 
 .plan-facts span + span::before {
-  content: "·";
+  content: "·" / "";
   margin-inline: 8px;
 }
 
@@ -691,7 +704,11 @@ input[type="radio"] {
 
 .tab[aria-selected="true"] {
   color: var(--ink);
-  border-bottom-color: var(--accent);
+  border-bottom-color: var(--tab-mark);
+}
+
+.tab:focus-visible {
+  outline-offset: -3px;
 }
 
 .panel {
@@ -938,6 +955,7 @@ section + section {
 }
 
 .vendor summary {
+  list-style: none;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -952,6 +970,25 @@ section + section {
   font-weight: 600;
   margin: 0;
   min-width: 12ch;
+}
+
+.vendor summary::-webkit-details-marker {
+  display: none;
+}
+
+.vendor summary::before {
+  content: "▸" / "";
+  color: var(--muted);
+}
+
+.vendor details[open] > summary::before {
+  content: "▾" / "";
+}
+
+.subhead {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  margin: 1.2em 0 0.4em;
 }
 
 .vendor-body {

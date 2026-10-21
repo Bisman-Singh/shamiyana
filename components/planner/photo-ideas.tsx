@@ -7,6 +7,7 @@ import { ACCEPTED_IMAGES, prepareImage } from "@/lib/client/files";
 import { newId, saveIdea } from "@/lib/plan/record";
 import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
+import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 import type { PlanView, Update } from "./types";
 
@@ -33,7 +34,7 @@ function VisionResultView({
   const { dict } = useLocale();
   const p = dict.photo;
   return (
-    <div className="photo-result" role="status">
+    <div className="photo-result">
       <p>
         <span className="tag">{p.kinds[result.kind]}</span> {result.mood}
       </p>
@@ -67,12 +68,14 @@ function VisionResultView({
             <button
               type="button"
               className="btn btn-small"
-              disabled={saved.has(idea.title)}
+              aria-disabled={saved.has(idea.title) || undefined}
               onClick={() => {
+                if (saved.has(idea.title)) return;
                 update((r, now) => saveIdea(r, { id: newId(), ...idea }, now));
               }}
             >
-              {saved.has(idea.title) ? dict.common.saved : dict.ideas.save}
+              {saved.has(idea.title) ? dict.common.saved : dict.ideas.save}{" "}
+              <span className="visually-hidden">{idea.title}</span>
             </button>
           </li>
         ))}
@@ -94,6 +97,7 @@ function VisionResultView({
 export function PhotoIdeas({ view, update }: { view: PlanView; update: Update }) {
   const { dict, locale } = useLocale();
   const p = dict.photo;
+  const announce = useAnnounce();
   const headingId = useId();
   const [state, setState] = useState<State>({ phase: "empty" });
   const photo = "photo" in state ? state.photo : undefined;
@@ -128,6 +132,7 @@ export function PhotoIdeas({ view, update }: { view: PlanView; update: Update })
       JSON.stringify({ facts: factsOf(view.record.brief), locale, today: view.today }),
     );
     const result = await requestVision(form);
+    if (result.ok) announce(p.ready);
     setState(
       result.ok
         ? { phase: "done", photo: current, result: result.data }
@@ -153,8 +158,10 @@ export function PhotoIdeas({ view, update }: { view: PlanView; update: Update })
           <button
             type="button"
             className="btn btn-primary"
-            disabled={state.phase === "working"}
-            onClick={() => void analyse(photo)}
+            aria-disabled={state.phase === "working" || undefined}
+            onClick={() => {
+              if (state.phase !== "working") void analyse(photo);
+            }}
           >
             {state.phase === "working" ? p.working : p.analyse}
           </button>

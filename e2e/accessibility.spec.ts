@@ -51,27 +51,33 @@ test("Hindi pages pass WCAG 2.2 AA and declare their language", async ({ page, c
 test("the whole flow works from the keyboard alone", async ({ page }) => {
   await mockAi(page);
   await page.goto("/");
+  const tabTo = async (name: string | RegExp, role: "button" | "tab" = "button") => {
+    const target = page.getByRole(role, { name });
+    for (
+      let i = 0;
+      i < 80 && !(await target.evaluate((el) => el === document.activeElement));
+      i += 1
+    ) {
+      await page.keyboard.press("Tab");
+    }
+    await expect(target).toBeFocused();
+  };
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.locator("main")).toBeFocused();
-  const sample = page.getByRole("button", { name: /80th birthday/ });
-  for (
-    let i = 0;
-    i < 12 && !(await sample.evaluate((el) => el === document.activeElement));
-    i += 1
-  ) {
-    await page.keyboard.press("Tab");
-  }
-  await expect(sample).toBeFocused();
+  await tabTo(/80th birthday/);
   await page.keyboard.press("Enter");
-  await page.getByRole("button", { name: "Make my plan" }).focus();
+  await tabTo("Make my plan");
   await page.keyboard.press("Enter");
-  const overview = page.getByRole("tab", { name: "Overview" });
-  await overview.focus();
+  await expect(page.getByRole("heading", { level: 1, name: "Dadi turns 80" })).toBeFocused();
+  await tabTo("Overview", "tab");
   await page.keyboard.press("ArrowRight");
   await expect(page.getByRole("tab", { name: "Budget" })).toBeFocused();
   await expect(page.getByRole("tab", { name: "Budget" })).toHaveAttribute("aria-selected", "true");
+  await tabTo("Edit details");
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { level: 1, name: "Edit event details" })).toBeFocused();
 });
 
 test("motion stops for people who ask for less", async ({ page }) => {

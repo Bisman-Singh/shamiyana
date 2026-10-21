@@ -106,9 +106,12 @@ describe("budget", () => {
     expect(saved.current.factors).toEqual({ decor: 1.1 });
     await userEvent.click(decor.getByRole("button", { name: /Reset/ }));
     expect(saved.current.factors).toEqual({});
-    await userEvent.click(panel().getByRole("button", { name: "Apply" }));
+    await userEvent.click(panel().getByRole("button", { name: /^Apply/ }));
     expect(saved.current.factors).toEqual({ decor: 1.2 });
-    expect(panel().getByRole("button", { name: "Applied" })).toBeDisabled();
+    expect(panel().getByRole("button", { name: /^Applied/ })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
     await userEvent.click(panel().getByRole("button", { name: "Budget (CSV)" }));
     expect(downloads[0]?.name).toBe("winter-wedding-in-jaipur.budget.csv");
   });
@@ -130,12 +133,12 @@ describe("budget", () => {
     const p = panel();
     expect(
       within(p.getByRole("group", { name: "Adjust Venue" })).getByRole("button", { name: "More" }),
-    ).toBeDisabled();
+    ).toHaveAttribute("aria-disabled", "true");
     expect(
       within(p.getByRole("group", { name: "Adjust Cake and desserts" })).getByRole("button", {
         name: "Less",
       }),
-    ).toBeDisabled();
+    ).toHaveAttribute("aria-disabled", "true");
     expect(p.getByText(/Bookings are ₹50,000 over your total budget/)).toBeInTheDocument();
     expect(p.getByText(/over plan/)).toBeInTheDocument();
   });
@@ -312,11 +315,11 @@ describe("ideas", () => {
     await openTab("Ideas");
     await expectAccessible(container);
     const p = panel();
-    await userEvent.click(p.getAllByRole("button", { name: "Save idea" })[0] ?? document.body);
+    await userEvent.click(p.getAllByRole("button", { name: /^Save idea/ })[0] ?? document.body);
     expect(saved.current.ideas[0]).toMatchObject({ title: "Marigold canopy", area: "decor" });
-    expect(p.getAllByRole("button", { name: "Saved" }).length).toBeGreaterThan(0);
+    expect(p.getAllByRole("button", { name: /^Saved/ }).length).toBeGreaterThan(0);
     expect(p.getByText("Dal baati churma, Gatte ki sabzi")).toBeInTheDocument();
-    await userEvent.click(p.getByRole("button", { name: "Remove" }));
+    await userEvent.click(p.getByRole("button", { name: /^Remove/ }));
     expect(saved.current.ideas).toEqual([]);
   });
 

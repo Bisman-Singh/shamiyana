@@ -19,6 +19,7 @@ import { newId, removeGuest, updateBrief, upsertGuest } from "@/lib/plan/record"
 import type { Guest } from "@/lib/plan/schema";
 import { cleanText } from "@/lib/plan/text";
 import { useLocale } from "../locale-provider";
+import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
 import type { PlanView, Update } from "./types";
 
@@ -31,20 +32,24 @@ function AddGuest({ update, full }: { update: Update; full: boolean }) {
   const [party, setParty] = useState("1");
   const [diet, setDiet] = useState<Diet>("veg");
   const [error, setError] = useState<string | undefined>();
+  const announce = useAnnounce();
 
   function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const clean = cleanText(name);
     if (clean.length < 1 || clean.length > LIMITS.guestNameMax) {
       setError(g.nameError);
+      document.getElementById(`${baseId}-name`)?.focus();
       return;
     }
     setError(undefined);
     const size = Math.min(LIMITS.partyMax, Math.max(1, Number.parseInt(party, 10) || 1));
     const guest: Guest = { id: newId(), name: clean, group, party: size, rsvp: "pending", diet };
     update((r, now) => upsertGuest(r, guest, now));
+    announce(format(g.added, { name: clean }));
     setName("");
     setParty("1");
+    document.getElementById(`${baseId}-name`)?.focus();
   }
 
   if (full) return <p className="hint">{g.limit}</p>;

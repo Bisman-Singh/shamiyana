@@ -56,7 +56,9 @@ describe("AI ideas stream", () => {
     });
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     await openTab("Ideas");
-    expect(await panel().findByText("Marigold canopy")).toBeInTheDocument();
+    expect(
+      await panel().findByText("Marigold canopy", { selector: ".idea-title" }),
+    ).toBeInTheDocument();
   });
 
   it("asks for fresh ideas, skipping the cache, on request", async () => {
@@ -134,7 +136,7 @@ describe("refine chat", () => {
     await userEvent.click(p.getByRole("button", { name: "Apply selected" }));
     expect(saved.current.brief.budget).toBe(15_00_000);
     expect(saved.current.ideas).toEqual([]);
-    expect(p.getByText("Applied 1 change.")).toBeInTheDocument();
+    expect(screen.getByText("Applied 1 change.")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Undo" }));
     expect(saved.current.brief.budget).toBe(18_00_000);
   });
@@ -252,8 +254,10 @@ describe("photo ideas", () => {
       facts: { city: "Jaipur" },
     });
     await expectAccessible(container);
-    const card = p.getByText("Lantern path").closest("li");
-    await userEvent.click(within(card ?? document.body).getByRole("button", { name: "Save idea" }));
+    const card = p.getByText("Lantern path", { selector: ".idea-title" }).closest("li");
+    await userEvent.click(
+      within(card ?? document.body).getByRole("button", { name: /^Save idea/ }),
+    );
     expect(saved.current.ideas[0]).toMatchObject({ title: "Lantern path" });
   });
 

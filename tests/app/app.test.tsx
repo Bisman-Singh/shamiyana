@@ -69,6 +69,11 @@ describe("pages", () => {
     expect(document.body.textContent).toBeTruthy();
   });
 
+  it("gives the 404 page its own title", async () => {
+    const { generateMetadata: notFoundMeta } = await import("@/app/not-found");
+    expect((await notFoundMeta()).title).toBe("Page not found");
+  });
+
   it("renders a real 404 with a way back", async () => {
     renderIn(await NotFound());
     expect(screen.getByRole("heading", { name: "Page not found" })).toBeInTheDocument();

@@ -42,6 +42,7 @@ export function Tabs<T extends string>({
   const tabsRef = useRef(new Map<T, HTMLButtonElement>());
 
   function onKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
     const target = nextTabIndex(event.key, index, tabs.length);
     const next = target === null ? undefined : tabs[target];
     if (!next) return;
@@ -85,6 +86,7 @@ export function Tabs<T extends string>({
           id={`${baseId}-panel-${tab.id}`}
           aria-labelledby={`${baseId}-tab-${tab.id}`}
           hidden={tab.id !== selected}
+          tabIndex={-1}
           className="panel"
         >
           {tab.panel}

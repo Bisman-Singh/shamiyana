@@ -11,6 +11,7 @@ import { addTask, newId, removeTask, restoreHiddenTasks, toggleTask } from "@/li
 import { cleanText } from "@/lib/plan/text";
 import { PHASES, type TimelineItem } from "@/lib/plan/timeline";
 import { useLocale } from "../locale-provider";
+import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
 import { areaName, taskTitle } from "./task-title";
 import type { PlanView, Update } from "./types";
@@ -25,6 +26,7 @@ function AddTask({ view, update }: { view: PlanView; update: Update }) {
   const [date, setDate] = useState("");
   const [area, setArea] = useState<TaskArea>("planning");
   const [errors, setErrors] = useState<{ title?: string; date?: string }>({});
+  const announce = useAnnounce();
   const { brief } = view.record;
 
   function submit(event: SubmitEvent<HTMLFormElement>) {
@@ -36,10 +38,15 @@ function AddTask({ view, update }: { view: PlanView; update: Update }) {
       date: lead < 0 || daysBetween(view.today, date) < 0 ? t.addDateError : undefined,
     };
     setErrors(next);
-    if (next.title ?? next.date) return;
+    if (next.title ?? next.date) {
+      document.getElementById(next.title ? `${baseId}-title` : `${baseId}-date`)?.focus();
+      return;
+    }
     update((r, now) => addTask(r, { title: clean, area, leadDays: lead }, newId(), now));
+    announce(format(t.added, { title: clean }));
     setTitle("");
     setDate("");
+    document.getElementById(`${baseId}-title`)?.focus();
   }
 
   if (view.record.tasks.length >= LIMITS.customTasksMax)
@@ -127,7 +134,10 @@ function TaskRow({ item, view, update }: { item: TimelineItem; view: PlanView; u
           target="_blank"
           rel="noopener noreferrer"
         >
-          {t.calendar} <span className="visually-hidden">{dict.common.opensNewTab}</span>
+          {t.calendar}{" "}
+          <span className="visually-hidden">
+            {title} {dict.common.opensNewTab}
+          </span>
         </a>
         <button
           type="button"

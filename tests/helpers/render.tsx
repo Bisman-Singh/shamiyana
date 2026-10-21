@@ -2,13 +2,14 @@ import { render, type RenderResult } from "@testing-library/react";
 import axe from "axe-core";
 import type { ReactElement } from "react";
 import { LocaleProvider } from "@/components/locale-provider";
+import { AnnouncerProvider } from "@/components/ui/announcer";
 import { getDictionary } from "@/lib/i18n";
 import type { Locale } from "@/lib/plan/constants";
 
 export function renderIn(ui: ReactElement, locale: Locale = "en"): RenderResult {
   return render(
     <LocaleProvider locale={locale} dict={getDictionary(locale)}>
-      {ui}
+      <AnnouncerProvider>{ui}</AnnouncerProvider>
     </LocaleProvider>,
   );
 }

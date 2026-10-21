@@ -35,8 +35,9 @@ function Stepper({ row, factor, shift }: { row: Row; factor: number; shift: Shif
       <button
         type="button"
         className="btn btn-small"
-        disabled={factor <= MIN}
+        aria-disabled={factor <= MIN || undefined}
         onClick={() => {
+          if (factor <= MIN) return;
           shift(row.category, nudge(factor, -1));
         }}
       >
@@ -45,8 +46,9 @@ function Stepper({ row, factor, shift }: { row: Row; factor: number; shift: Shif
       <button
         type="button"
         className="btn btn-small"
-        disabled={factor >= MAX}
+        aria-disabled={factor >= MAX || undefined}
         onClick={() => {
+          if (factor >= MAX) return;
           shift(row.category, nudge(factor, 1));
         }}
       >
@@ -139,12 +141,14 @@ function Suggestions({
               <button
                 type="button"
                 className="btn btn-small"
-                disabled={applied}
+                aria-disabled={applied || undefined}
                 onClick={() => {
+                  if (applied) return;
                   shift(s.category, s.factor);
                 }}
               >
-                {applied ? b.applied : b.apply}
+                {applied ? b.applied : b.apply}{" "}
+                <span className="visually-hidden">{dict.categories[s.category]}</span>
               </button>
             </li>
           );

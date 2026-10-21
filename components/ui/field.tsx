@@ -159,7 +159,11 @@ export function RadioGroup<T extends string>({
   );
 }
 
-/** A checkbox group: any number of choices. */
+/**
+ * A checkbox group: any number of choices. The first box carries the group's
+ * id, so an error summary link lands on something focusable, and every box
+ * is tied to the error text.
+ */
 export function CheckGroup<T extends string>({
   id,
   legend,
@@ -171,16 +175,14 @@ export function CheckGroup<T extends string>({
   className,
 }: ChoiceProps<T> & { value: readonly T[]; onChange: (value: T[]) => void }) {
   return (
-    <fieldset
-      className={`choices ${className ?? ""}`}
-      id={id}
-      aria-invalid={error ? true : undefined}
-      aria-describedby={error ? `${id}-error` : undefined}
-    >
+    <fieldset className={`choices ${className ?? ""}`} id={`${id}-group`}>
       <legend>{legend}</legend>
-      {options.map((o) => (
+      {options.map((o, index) => (
         <label key={o.value} className="choice">
           <input
+            id={index === 0 ? id : undefined}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${id}-error` : undefined}
             type="checkbox"
             name={name}
             value={o.value}

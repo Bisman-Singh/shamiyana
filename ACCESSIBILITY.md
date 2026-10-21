@@ -26,9 +26,17 @@ The target is WCAG 2.2 level AA, in English and Hindi, on a phone and a desktop.
   with `aria-describedby`, and an invalid field gets `aria-invalid`. A failed
   submit shows an error summary that takes focus and links to each field, and
   everything typed is kept.
-- Errors use `role="alert"`; progress and results use `role="status"`. Nothing
-  is said only by a toast or only by colour; overdue tasks and overspends carry
-  words as well as red.
+- Focus follows every view change. Creating, opening, editing or cancelling
+  lands on the new page's heading; deleting a plan, a task or a guest lands on
+  its Undo; undoing returns to the plan or the open panel; a failed form lands
+  on the first field to fix.
+- One polite live region exists from the first paint and carries every
+  status message: ideas ready, a task or guest added, a change applied, a
+  reply with no changes. Errors use `role="alert"` where they appear. Nothing
+  is said only by a toast or only by colour; overdue tasks and overspends
+  carry words as well as red.
+- A control that becomes unavailable while focused, such as Save becoming
+  Saved, keeps focus and uses `aria-disabled` rather than `disabled`.
 - Icon-only controls don't exist. Links that open a new tab say so to screen
   readers.
 - Colours meet 4.5:1 for text in both themes. Focus is a 3 px outline that

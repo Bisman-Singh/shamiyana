@@ -111,11 +111,15 @@ describe("Planner", () => {
     await makeSamplePlan();
     await userEvent.click(screen.getByRole("button", { name: "New plan" }));
     await makeSamplePlan(/80th birthday/);
-    const picker = await screen.findByLabelText("Open a saved plan");
+    const picker = await screen.findByLabelText("Saved plans");
     await userEvent.selectOptions(picker, "Winter wedding in Jaipur");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Dadi turns 80");
+    await userEvent.click(screen.getByRole("button", { name: "Open" }));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Winter wedding in Jaipur");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveFocus();
     await userEvent.click(screen.getByRole("button", { name: "Delete this plan" }));
     expect(screen.getByText("Deleted “Winter wedding in Jaipur”.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Undo" })).toHaveFocus();
     expect(store.getSnapshot().data.plans).toHaveLength(1);
     await userEvent.click(screen.getByRole("button", { name: "Undo" }));
     expect(store.getSnapshot().data.plans).toHaveLength(2);
@@ -156,10 +160,10 @@ describe("Planner", () => {
       new File([JSON.stringify(backup)], "plan.json", { type: "application/json" }),
     );
     expect(
-      await screen.findByText(
+      await screen.findAllByText(
         `You can keep up to ${LIMITS.plansMax} plans. Delete one to start another.`,
       ),
-    ).toBeInTheDocument();
+    ).toHaveLength(2);
     expect(screen.getByRole("button", { name: "New plan" })).toBeDisabled();
   });
 
@@ -196,9 +200,7 @@ describe("Planner", () => {
   it("warns when the browser blocks storage, and the warning can be closed", async () => {
     setup(null);
     expect(screen.getByText(/blocking storage/)).toBeInTheDocument();
-    await userEvent.click(
-      within(screen.getByRole("status")).getByRole("button", { name: "Close" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
     expect(screen.queryByText(/blocking storage/)).toBeNull();
   });
 

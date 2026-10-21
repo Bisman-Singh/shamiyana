@@ -22,7 +22,7 @@ function Questions({ title, items }: { title: string; items: readonly string[] }
   if (items.length === 0) return null;
   return (
     <>
-      <h4>{title}</h4>
+      <h3 className="subhead">{title}</h3>
       <ul className="plain-list">
         {items.map((q) => (
           <li key={q}>{q}</li>
@@ -46,7 +46,7 @@ function Card({ card, city, update }: { card: VendorCard; city: string; update: 
     <li className="vendor">
       <details>
         <summary>
-          <h3 className="vendor-name">{name}</h3>
+          <span className="vendor-name">{name}</span>
           <span className="tag">{v.statuses[card.progress.status]}</span>
           <span className="hint">
             {format(v.planned, { amount: formatMoney(card.planned, locale) })}

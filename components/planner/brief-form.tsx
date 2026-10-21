@@ -14,6 +14,7 @@ import {
 } from "@/lib/plan/draft";
 import type { Brief } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
+import { useFocusOnMount } from "../ui/announcer";
 import {
   BasicFields,
   EventTypeField,
@@ -26,6 +27,8 @@ interface Props {
   initial?: Draft;
   today: string;
   editing: boolean;
+  /** Move focus to the heading when the form opens from an action, not on first page load. */
+  focusOnOpen?: boolean;
   onSubmit: (brief: Brief) => void;
   onCancel?: () => void;
 }
@@ -87,13 +90,21 @@ function Samples({ onPick }: { onPick: (type: EventType) => void }) {
   );
 }
 
-export function BriefForm({ initial, today, editing, onSubmit, onCancel }: Props) {
+export function BriefForm({
+  initial,
+  today,
+  editing,
+  focusOnOpen = false,
+  onSubmit,
+  onCancel,
+}: Props) {
   const { dict } = useLocale();
   const f = dict.form;
   const baseId = useId();
   const [draft, setDraft] = useState<Draft>(() => initial ?? emptyDraft());
   const [errors, setErrors] = useState<Errors>({});
   const summaryRef = useRef<HTMLDivElement>(null);
+  const headingRef = useFocusOnMount<HTMLHeadingElement>(focusOnOpen);
   const idOf = (name: string) => `${baseId}-${name}`;
 
   const fields: FieldsProps = {
@@ -122,7 +133,9 @@ export function BriefForm({ initial, today, editing, onSubmit, onCancel }: Props
 
   return (
     <form className="brief-form" onSubmit={submit} noValidate aria-labelledby={idOf("heading")}>
-      <h1 id={idOf("heading")}>{editing ? f.headingEdit : f.headingNew}</h1>
+      <h1 id={idOf("heading")} ref={headingRef} tabIndex={-1}>
+        {editing ? f.headingEdit : f.headingNew}
+      </h1>
       {editing ? null : <p className="lede">{f.intro}</p>}
       <ErrorSummary errors={errors} idOf={idOf} summaryRef={summaryRef} />
       {editing ? null : (

@@ -162,7 +162,7 @@ describe("workspace edges", () => {
     );
     renderWorkspace(record);
     await openTab("Ideas");
-    expect(panel().getByText("Dhol at the entry")).toBeInTheDocument();
+    expect(panel().getByText("Dhol at the entry", { selector: ".idea-title" })).toBeInTheDocument();
   });
 
   it("ignores an empty file pick and frees the preview when leaving", async () => {
@@ -298,7 +298,10 @@ describe("planner edges", () => {
     storage.setItem("shamiyana:v1", JSON.stringify({ version: 1, activeId: null, plans }));
     renderIn(<Planner store={new PlanStore(() => storage)} />);
     expect(await screen.findByRole("button", { name: "Add to my plans" })).toBeDisabled();
-    expect(screen.getByRole("option", { name: "Your plans" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New plan" })).toHaveAccessibleDescription(
+      /up to 20 plans/,
+    );
     window.history.replaceState(null, "", "/");
   });
 
@@ -336,5 +339,15 @@ describe("planner edges", () => {
     await waitFor(() => {
       expect(store.getSnapshot().data.plans).toEqual([]);
     });
+  });
+});
+
+describe("announcer without a provider", () => {
+  it("is a harmless no-op", async () => {
+    const { useAnnounce } = await import("@/components/ui/announcer");
+    const { result } = renderHook(() => useAnnounce());
+    expect(() => {
+      result.current("hello");
+    }).not.toThrow();
   });
 });

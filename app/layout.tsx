@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { LocaleProvider } from "@/components/locale-provider";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AnnouncerProvider } from "@/components/ui/announcer";
 import { requestLocale } from "@/lib/server/locale";
 import "./globals.css";
 
@@ -32,11 +33,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           {dict.nav.skip}
         </a>
         <LocaleProvider locale={locale} dict={dict}>
-          <SiteHeader dict={dict} />
-          <main id="main" tabIndex={-1} className="wrap">
-            {children}
-          </main>
-          <SiteFooter dict={dict} />
+          <AnnouncerProvider>
+            <SiteHeader dict={dict} />
+            <main id="main" tabIndex={-1} className="wrap">
+              {children}
+            </main>
+            <SiteFooter dict={dict} />
+          </AnnouncerProvider>
         </LocaleProvider>
       </body>
     </html>

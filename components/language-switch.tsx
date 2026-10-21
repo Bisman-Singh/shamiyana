@@ -27,7 +27,7 @@ export function LanguageSwitch() {
       onClick={choose}
       aria-label={dict.nav.switchLabel}
       lang={next}
-      disabled={pending}
+      aria-busy={pending || undefined}
     >
       {dict.nav.switchTo}
     </button>

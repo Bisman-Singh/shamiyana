@@ -41,7 +41,7 @@ test("guests, vendors and the refine chat update the plan", async ({ page }) => 
 
   await page.getByRole("tab", { name: "Vendors" }).click();
   const vendors = page.getByRole("tabpanel");
-  await vendors.getByRole("heading", { name: "Food and catering" }).click();
+  await vendors.locator("summary", { hasText: "Food and catering" }).click();
   await vendors.getByLabel("Status for Food and catering").selectOption("booked");
   await vendors.locator("#vendor-catering-quote").fill("600000");
   await page.getByRole("tab", { name: "Budget" }).click();

@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { encodeShare, shareUrl } from "@/lib/export/share";
 import type { PlanRecord } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
+import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 
 const MAX_LINK = 30_000;
@@ -15,14 +16,21 @@ export function ShareDialog({ record, onClose }: { record: PlanRecord; onClose: 
   const baseId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [link, setLink] = useState<string | null>(null);
+  const [broken, setBroken] = useState(false);
+  const announce = useAnnounce();
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   useEffect(() => {
     dialogRef.current?.showModal();
     let live = true;
-    void encodeShare(record).then((encoded) => {
-      if (live) setLink(shareUrl(window.location.origin, encoded));
-    });
+    encodeShare(record).then(
+      (encoded) => {
+        if (live) setLink(shareUrl(window.location.origin, encoded));
+      },
+      () => {
+        if (live) setBroken(true);
+      },
+    );
     return () => {
       live = false;
     };
@@ -32,6 +40,7 @@ export function ShareDialog({ record, onClose }: { record: PlanRecord; onClose: 
     try {
       await navigator.clipboard.writeText(text);
       setStatus("copied");
+      announce(s.copied);
     } catch {
       setStatus("failed");
     }
@@ -44,7 +53,8 @@ export function ShareDialog({ record, onClose }: { record: PlanRecord; onClose: 
     <dialog ref={dialogRef} className="dialog" aria-labelledby={`${baseId}-h`} onClose={onClose}>
       <h2 id={`${baseId}-h`}>{s.heading}</h2>
       <p>{s.intro}</p>
-      {link === null ? <p>{dict.common.loading}</p> : null}
+      {link === null && !broken ? <p>{dict.common.loading}</p> : null}
+      {broken ? <Notice tone="error">{s.failed}</Notice> : null}
       {tooLong ? <Notice tone="error">{s.tooLong}</Notice> : null}
       {link !== null && !tooLong ? (
         <>

@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { requestLocale } from "@/lib/server/locale";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { dict } = await requestLocale();
+  return { title: dict.notFound.heading };
+}
 
 export default async function NotFound() {
   const { dict } = await requestLocale();

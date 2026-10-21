@@ -6,8 +6,9 @@ import { decodeShare, readShareHash, type SharedPlan } from "@/lib/export/share"
 import { format } from "@/lib/i18n/format";
 import { LIMITS } from "@/lib/plan/constants";
 import { localToday } from "@/lib/plan/dates";
-import type { PlanRecord, Store } from "@/lib/plan/schema";
+import type { PlanRecord } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
+import { useFocusOnMount } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 
 /** Today's date on this device, rolling over at midnight while the page is open. */
@@ -104,7 +105,31 @@ export function SharedImport({
 export interface Message {
   tone: "success" | "error";
   text: string;
-  undo?: Store;
+  /** A deleted plan that Undo puts back. */
+  undo?: PlanRecord;
+}
+
+function UndoButton({
+  record,
+  onUndo,
+}: {
+  record: PlanRecord;
+  onUndo: (record: PlanRecord) => void;
+}) {
+  const { dict } = useLocale();
+  const ref = useFocusOnMount<HTMLButtonElement>(true);
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className="btn btn-small"
+      onClick={() => {
+        onUndo(record);
+      }}
+    >
+      {dict.common.undo}
+    </button>
+  );
 }
 
 export function MessageNotice({
@@ -112,29 +137,57 @@ export function MessageNotice({
   onUndo,
 }: {
   message: Message;
-  onUndo: (store: Store) => void;
+  onUndo: (record: PlanRecord) => void;
 }) {
-  const { dict } = useLocale();
-  const { undo } = message;
   return (
     <Notice
       tone={message.tone}
-      action={
-        undo ? (
-          <button
-            type="button"
-            className="btn btn-small"
-            onClick={() => {
-              onUndo(undo);
-            }}
-          >
-            {dict.common.undo}
-          </button>
-        ) : undefined
-      }
+      action={message.undo ? <UndoButton record={message.undo} onUndo={onUndo} /> : undefined}
     >
       {message.text}
     </Notice>
+  );
+}
+
+/** Choosing in the list changes nothing until Open is pressed, so the page never switches under the user. */
+function PlanPicker({
+  plans,
+  initial,
+  onSelect,
+}: {
+  plans: readonly PlanRecord[];
+  initial: PlanRecord;
+  onSelect: (id: string) => void;
+}) {
+  const { dict } = useLocale();
+  const selectId = useId();
+  const [choice, setChoice] = useState(initial.id);
+  return (
+    <div className="field field-inline">
+      <label htmlFor={selectId}>{dict.plans.switchLabel}</label>
+      <select
+        id={selectId}
+        value={choice}
+        onChange={(e) => {
+          setChoice(e.target.value);
+        }}
+      >
+        {plans.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.brief.title}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        className="btn"
+        onClick={() => {
+          onSelect(choice);
+        }}
+      >
+        {dict.plans.open}
+      </button>
+    </div>
   );
 }
 
@@ -156,31 +209,31 @@ export function PlansBar({
   onDelete: (() => void) | null;
 }) {
   const { dict } = useLocale();
-  const selectId = useId();
+  const limitId = useId();
   return (
     <nav className="plans-bar" aria-label={dict.plans.heading}>
-      {plans.length > 0 ? (
-        <div className="field field-inline">
-          <label htmlFor={selectId}>{dict.plans.switchLabel}</label>
-          <select
-            id={selectId}
-            value={active?.id ?? ""}
-            onChange={(e) => {
-              onSelect(e.target.value);
-            }}
-          >
-            {active ? null : <option value="">{dict.plans.heading}</option>}
-            {plans.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.brief.title}
-              </option>
-            ))}
-          </select>
-        </div>
+      {plans[0] ? (
+        <PlanPicker
+          key={active?.id ?? "none"}
+          plans={plans}
+          initial={active ?? plans[0]}
+          onSelect={onSelect}
+        />
       ) : null}
-      <button type="button" className="btn" disabled={full} onClick={onNew}>
+      <button
+        type="button"
+        className="btn"
+        disabled={full}
+        aria-describedby={full ? limitId : undefined}
+        onClick={onNew}
+      >
         {dict.plans.new}
       </button>
+      {full ? (
+        <p id={limitId} className="hint">
+          {format(dict.plans.limit, { n: LIMITS.plansMax })}
+        </p>
+      ) : null}
       <label className="btn btn-quiet file-button">
         {dict.downloads.restore}
         <input
