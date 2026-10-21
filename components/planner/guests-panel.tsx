@@ -201,12 +201,18 @@ function GuestRow({ guest, update }: { guest: Guest; update: Update }) {
   );
 }
 
+/** Rows rendered at a time; a long list grows on request instead of all at once. */
+const PAGE = 100;
+
 function GuestTable({ guests, update }: { guests: readonly Guest[]; update: Update }) {
   const { dict } = useLocale();
   const g = dict.guests;
   const filterId = useId();
   const [filter, setFilter] = useState<RsvpStatus | "all">("all");
-  const shown = filter === "all" ? guests : guests.filter((x) => x.rsvp === filter);
+  const [limit, setLimit] = useState(PAGE);
+  const matching = filter === "all" ? guests : guests.filter((x) => x.rsvp === filter);
+  const shown = matching.slice(0, limit);
+  const more = Math.min(PAGE, matching.length - shown.length);
   return (
     <>
       <SelectField<RsvpStatus | "all">
@@ -245,6 +251,17 @@ function GuestTable({ guests, update }: { guests: readonly Guest[]; update: Upda
           </tbody>
         </table>
       </div>
+      {more > 0 ? (
+        <button
+          type="button"
+          className="btn btn-quiet"
+          onClick={() => {
+            setLimit((n) => n + PAGE);
+          }}
+        >
+          {format(g.showMore, { n: more })}
+        </button>
+      ) : null}
     </>
   );
 }

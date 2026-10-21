@@ -434,6 +434,7 @@ export const en = {
     tableCaption: "Guest list",
     filterLabel: "Show",
     all: "All",
+    showMore: "Show {n} more",
   },
   ideas: {
     heading: "Ideas",

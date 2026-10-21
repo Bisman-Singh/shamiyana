@@ -4,7 +4,7 @@ import { AnswerCache } from "@/lib/ai/cache";
 import { shiftableCategories } from "@/lib/ai/prompts";
 import { isEmptyEnrichment, sanitizeEnrichment, type Enrichment } from "@/lib/plan/enrichment";
 import { localToday } from "@/lib/plan/dates";
-import type { Brief } from "@/lib/plan/schema";
+import type { EventFacts } from "@/lib/plan/schema";
 import { readEnv } from "@/lib/server/env";
 
 /**
@@ -23,11 +23,11 @@ const JAIN_EXTRA = /\b(onion|garlic|potato|potatoes|carrot|beetroot|ginger)\b/i;
 const CONTACT = /(https?:\/\/|www\.|\+91|\b\d{10}\b|@\w+\.\w+)/i;
 
 async function enrich(
-  brief: Brief,
+  facts: EventFacts,
   locale: "en" | "hi" = "en",
 ): Promise<{ raw: string; clean: Enrichment }> {
   if (!chain) throw new Error("no key");
-  const input: PlanInput = { brief, locale, today, fresh: true };
+  const input: PlanInput = { facts, locale, today, fresh: true };
   const cache = new AnswerCache();
   const { key } = await lookupPlan(cache, input);
   const result = await streamPlan(
@@ -39,7 +39,7 @@ async function enrich(
   if (!result) throw new Error("all models failed");
   let raw = "";
   for await (const chunk of result.stream) raw += chunk;
-  return { raw, clean: sanitizeEnrichment(JSON.parse(raw), shiftableCategories(brief)) };
+  return { raw, clean: sanitizeEnrichment(JSON.parse(raw), shiftableCategories(facts)) };
 }
 
 const allText = (e: Enrichment) => JSON.stringify(e);
@@ -58,7 +58,6 @@ describe.skipIf(chain === null)("plan prompt", () => {
     const { raw, clean } = await enrich({
       ...base,
       type: "wedding",
-      title: "Eval wedding",
       date: inDays(150),
       food: "veg",
       functions: ["mehndi", "sangeet", "wedding"],
@@ -75,7 +74,6 @@ describe.skipIf(chain === null)("plan prompt", () => {
     const { clean } = await enrich({
       ...base,
       type: "birthday",
-      title: "Eval birthday",
       date: inDays(40),
       guests: 50,
       budget: 1_20_000,
@@ -91,7 +89,6 @@ describe.skipIf(chain === null)("plan prompt", () => {
       {
         ...base,
         type: "community",
-        title: "Eval mela",
         date: inDays(25),
         food: "veg",
         kind: "festival",
@@ -106,7 +103,6 @@ describe.skipIf(chain === null)("plan prompt", () => {
     const { clean } = await enrich({
       ...base,
       type: "community",
-      title: "Eval cleanup",
       date: inDays(20),
       food: "veg",
       kind: "cleanup",
@@ -118,10 +114,9 @@ describe.skipIf(chain === null)("plan prompt", () => {
 });
 
 describe.skipIf(chain === null)("refine prompt", () => {
-  const brief: Brief = {
+  const facts: EventFacts = {
     ...base,
     type: "wedding",
-    title: "Eval",
     date: inDays(150),
     food: "mixed",
     functions: ["wedding"],
@@ -129,7 +124,7 @@ describe.skipIf(chain === null)("refine prompt", () => {
   const ask = (message: string) =>
     runRefine(
       { chain: chain ?? [], signal: AbortSignal.timeout(60_000) },
-      { brief, factors: {}, locale: "en", today, history: [], message },
+      { facts, factors: {}, locale: "en", today, history: [], message },
     );
 
   it("turns a clear request into the matching change", async () => {

@@ -5,6 +5,7 @@ import type { VisionResult } from "@/lib/ai/vision-result";
 import { requestVision } from "@/lib/client/api";
 import { ACCEPTED_IMAGES, prepareImage } from "@/lib/client/files";
 import { newId, saveIdea } from "@/lib/plan/record";
+import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { Notice } from "../ui/notice";
 import type { PlanView, Update } from "./types";
@@ -122,7 +123,10 @@ export function PhotoIdeas({ view, update }: { view: PlanView; update: Update })
     setState({ phase: "working", photo: current });
     const form = new FormData();
     form.set("image", new File([current.blob], "photo.jpg", { type: "image/jpeg" }));
-    form.set("fields", JSON.stringify({ brief: view.record.brief, locale, today: view.today }));
+    form.set(
+      "fields",
+      JSON.stringify({ facts: factsOf(view.record.brief), locale, today: view.today }),
+    );
     const result = await requestVision(form);
     setState(
       result.ok

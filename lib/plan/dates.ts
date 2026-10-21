@@ -31,7 +31,7 @@ export function fromDayNumber(day: number): string {
 
 function dayOf(iso: string): number {
   const day = toDayNumber(iso);
-  if (day === null) throw new RangeError(`Not an ISO date: ${iso}`);
+  if (day === null) throw new RangeError("Not an ISO date");
   return day;
 }
 

@@ -48,8 +48,9 @@ describe("Planner", () => {
     expect(fetch.bodies["/api/plan"]?.[0]).toMatchObject({
       locale: "en",
       fresh: false,
-      brief: { city: "Jaipur" },
+      facts: { city: "Jaipur" },
     });
+    expect(JSON.stringify(fetch.bodies["/api/plan"])).not.toContain("Winter wedding in Jaipur");
     const saved = store.getSnapshot().data.plans[0];
     expect(saved?.enrichment?.theme.name).toBe("Marigold courtyard");
     expect(saved?.tasks.map((t) => t.source)).toEqual(["ai"]);
@@ -98,7 +99,7 @@ describe("Planner", () => {
     await waitFor(() => {
       expect(fetch.bodies["/api/plan"]).toHaveLength(2);
     });
-    expect(fetch.bodies["/api/plan"]?.[1]).toMatchObject({ brief: { city: "Udaipur" } });
+    expect(fetch.bodies["/api/plan"]?.[1]).toMatchObject({ facts: { city: "Udaipur" } });
     await userEvent.click(screen.getByRole("button", { name: "Edit details" }));
     await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Winter wedding in Jaipur");

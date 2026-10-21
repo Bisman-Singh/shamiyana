@@ -19,7 +19,7 @@ import { REDACTED, redact } from "@/lib/ai/redact";
 import { runRefine, runVision } from "@/lib/ai/run";
 import { sanitizeVision, visionResultSchema } from "@/lib/ai/vision-result";
 import { planBudget } from "@/lib/plan/budget";
-import { TODAY, birthdayBrief, communityBrief, weddingBrief } from "../fixtures";
+import { TODAY, birthdayBrief, communityBrief, weddingBrief, weddingFacts } from "../fixtures";
 import { JPEG, brokenGenerateModel, generatingModel, spec } from "../helpers/ai";
 
 describe("redact", () => {
@@ -261,7 +261,7 @@ describe("runners", () => {
 
   it("refine treats an empty or non-object reply as a failure", async () => {
     const input = {
-      brief: weddingBrief,
+      facts: weddingFacts,
       factors: {},
       locale: "en" as const,
       today: TODAY,
@@ -283,7 +283,7 @@ describe("runners", () => {
       JSON.stringify({ kind: "venue", palette: [{ name: "Teal", hex: "#007777" }] }),
     );
     const result = await runVision(ctx([brokenGenerateModel(), good]), {
-      brief: weddingBrief,
+      facts: weddingFacts,
       locale: "en",
       today: TODAY,
       image: JPEG,
@@ -297,7 +297,7 @@ describe("runners", () => {
     const failing = { chain: [], signal: new AbortController().signal, onFail };
     expect(
       await runRefine(failing, {
-        brief: weddingBrief,
+        facts: weddingFacts,
         factors: {},
         locale: "en",
         today: TODAY,

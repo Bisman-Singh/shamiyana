@@ -1,5 +1,5 @@
 import type { CategoryId, EventType, TaskArea } from "./constants";
-import type { Brief } from "./schema";
+import type { EventFacts } from "./schema";
 
 /**
  * Planning knowledge as data: how each kind of event usually splits its
@@ -52,7 +52,7 @@ export const BASE_SHARES: Record<EventType, Shares> = {
 };
 
 /** How the event's details tilt the base split before it is renormalised. */
-export function variantFactors(brief: Brief): Shares {
+export function variantFactors(brief: EventFacts): Shares {
   switch (brief.type) {
     case "wedding": {
       const has = (f: (typeof brief.functions)[number]) => brief.functions.includes(f);
@@ -89,10 +89,10 @@ export interface TaskTemplate {
   area: TaskArea;
   /** Days before the event this is ideally done by. */
   leadDays: number;
-  when?: (brief: Brief) => boolean;
+  when?: (brief: EventFacts) => boolean;
 }
 
-const wedding = (brief: Brief, fn: string) =>
+const wedding = (brief: EventFacts, fn: string) =>
   brief.type === "wedding" && brief.functions.some((f) => f === fn);
 
 export const TASKS: Record<EventType, readonly TaskTemplate[]> = {

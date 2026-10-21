@@ -425,6 +425,7 @@ export const hi: Dictionary = {
     tableCaption: "मेहमानों की सूची",
     filterLabel: "दिखाएँ",
     all: "सभी",
+    showMore: "{n} और दिखाएँ",
   },
   ideas: {
     heading: "सुझाव",

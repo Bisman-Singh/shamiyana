@@ -144,7 +144,7 @@ export function Workspace({ record, today, onSave, findPlan, onEdit }: Props) {
   const ai = useEnrichment(record, categories, locale, today, (target, enrichment) => {
     const plan = findPlan(target.planId);
     if (!plan) return;
-    const madeFor = { brief: target.brief, locale: target.locale };
+    const madeFor = { facts: target.facts, locale: target.locale };
     onSave(withEnrichment(plan, enrichment, madeFor, new Date().toISOString()));
   });
   const ideas = ai.state.phase === "streaming" ? ai.state.partial : record.enrichment;

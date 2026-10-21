@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import nextConfig, { securityHeaders } from "@/next.config";
 import { buildCsp, config, proxy } from "@/proxy";
 import { SAME_ORIGIN } from "../helpers/ai";
-import { TODAY, weddingBrief } from "../fixtures";
+import { TODAY, weddingFacts } from "../fixtures";
 
 beforeEach(() => {
   vi.resetModules();
@@ -79,12 +79,12 @@ describe("route files", () => {
     const vision = await import("@/app/api/vision/route");
     const health = await import("@/app/api/health/route");
     const res = await plan.POST(
-      post({ brief: weddingBrief, locale: "en", today: new Date().toISOString().slice(0, 10) }),
+      post({ facts: weddingFacts, locale: "en", today: new Date().toISOString().slice(0, 10) }),
     );
     expect(res.status).toBe(503);
     const refined = await refine.POST(
       post({
-        brief: weddingBrief,
+        facts: weddingFacts,
         factors: {},
         locale: "en",
         today: new Date().toISOString().slice(0, 10),

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { factsOf } from "@/lib/plan/schema";
 import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useLocale } from "@/components/locale-provider";
@@ -137,7 +138,7 @@ describe("workspace edges", () => {
     withEnrichment(
       recordFor(weddingBrief),
       sampleEnrichment,
-      { brief: weddingBrief, locale: "en" },
+      { facts: factsOf(weddingBrief), locale: "en" },
       NOW,
     );
 
@@ -218,7 +219,7 @@ describe("budget and photo edges", () => {
     const record = withEnrichment(
       recordFor(weddingBrief),
       { ...sampleEnrichment, shifts },
-      { brief: weddingBrief, locale: "en" },
+      { facts: factsOf(weddingBrief), locale: "en" },
       NOW,
     );
     renderWorkspace(record);
@@ -270,7 +271,7 @@ describe("budget and photo edges", () => {
       withEnrichment(
         recordFor(weddingBrief),
         sampleEnrichment,
-        { brief: weddingBrief, locale: "en" },
+        { facts: factsOf(weddingBrief), locale: "en" },
         NOW,
       ),
     );

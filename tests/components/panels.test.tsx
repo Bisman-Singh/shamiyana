@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { factsOf } from "@/lib/plan/schema";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { nudge } from "@/components/planner/budget-panel";
@@ -18,7 +19,12 @@ import { openTab, panel, renderWorkspace } from "../helpers/workspace";
 
 /** A plan with AI ideas already in it, built the way the app builds it. */
 function ready(brief: Brief = weddingBrief, patch: Partial<PlanRecord> = {}): PlanRecord {
-  const base = withEnrichment(recordFor(brief), sampleEnrichment, { brief, locale: "en" }, NOW);
+  const base = withEnrichment(
+    recordFor(brief),
+    sampleEnrichment,
+    { facts: factsOf(brief), locale: "en" },
+    NOW,
+  );
   return { ...base, ...patch };
 }
 
@@ -84,7 +90,7 @@ describe("overview", () => {
     renderWorkspace({
       ...base,
       done: [...ids, ...rest],
-      enrichedFor: { brief: birthdayBrief, locale: "en" },
+      enrichedFor: { facts: factsOf(birthdayBrief), locale: "en" },
     });
     expect(panel().getByText("Every task is done. Enjoy the day.")).toBeInTheDocument();
   });
@@ -294,6 +300,9 @@ describe("guests", () => {
     renderWorkspace(ready(birthdayBrief, { guests }));
     await openTab("Guests");
     expect(panel().getByText("The guest list is full.")).toBeInTheDocument();
+    expect(panel().getAllByRole("row")).toHaveLength(101);
+    await userEvent.click(panel().getByRole("button", { name: "Show 100 more" }));
+    expect(panel().getAllByRole("row")).toHaveLength(201);
   });
 });
 
@@ -313,7 +322,7 @@ describe("ideas", () => {
 
   it("has an empty saved list and no AI sections without ideas", async () => {
     renderWorkspace(
-      recordFor(birthdayBrief, { enrichedFor: { brief: birthdayBrief, locale: "en" } }),
+      recordFor(birthdayBrief, { enrichedFor: { facts: factsOf(birthdayBrief), locale: "en" } }),
     );
     await openTab("Ideas");
     expect(panel().getByText(/Ideas you save from the AI/)).toBeInTheDocument();

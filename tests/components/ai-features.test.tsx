@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { factsOf } from "@/lib/plan/schema";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describeChange } from "@/components/planner/refine-chat";
@@ -11,7 +12,12 @@ import { expectAccessible } from "../helpers/render";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
 
 function ready(brief: Brief = weddingBrief): PlanRecord {
-  return withEnrichment(recordFor(brief), sampleEnrichment, { brief, locale: "en" }, NOW);
+  return withEnrichment(
+    recordFor(brief),
+    sampleEnrichment,
+    { facts: factsOf(brief), locale: "en" },
+    NOW,
+  );
 }
 
 const answer = JSON.stringify(sampleEnrichment);
@@ -241,7 +247,7 @@ describe("photo ideas", () => {
     expect((sent.get("image") as File).type).toBe("image/jpeg");
     expect(JSON.parse(sent.get("fields") as string)).toMatchObject({
       locale: "en",
-      brief: { city: "Jaipur" },
+      facts: { city: "Jaipur" },
     });
     await expectAccessible(container);
     const card = p.getByText("Lantern path").closest("li");

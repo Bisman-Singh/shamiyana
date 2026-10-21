@@ -17,7 +17,8 @@ export type ErrorCode =
   | "rate_limited"
   | "ai_unavailable"
   | "ai_failed"
-  | "daily_cap";
+  | "daily_cap"
+  | "internal";
 
 const STATUS: Record<ErrorCode, number> = {
   forbidden: 403,
@@ -29,6 +30,7 @@ const STATUS: Record<ErrorCode, number> = {
   ai_unavailable: 503,
   ai_failed: 502,
   daily_cap: 503,
+  internal: 500,
 };
 
 export function errorResponse(code: ErrorCode, headers: Record<string, string> = {}): Response {

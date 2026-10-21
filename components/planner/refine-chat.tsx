@@ -8,6 +8,7 @@ import type { Change } from "@/lib/plan/changes";
 import { LIMITS, type Locale } from "@/lib/plan/constants";
 import { applyChanges, newId } from "@/lib/plan/record";
 import { cleanText } from "@/lib/plan/text";
+import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { Notice } from "../ui/notice";
 import type { PlanView, Update } from "./types";
@@ -166,7 +167,7 @@ export function RefineChat({ view, update }: { view: PlanView; update: Update })
     const { record } = view;
     const history = turns.slice(-6).map(({ role, text: said }) => ({ role, text: said }));
     const body = {
-      brief: record.brief,
+      facts: factsOf(record.brief),
       factors: record.factors,
       locale,
       today: view.today,

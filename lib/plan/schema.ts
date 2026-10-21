@@ -24,11 +24,10 @@ const line = (min: number, max: number) =>
     .transform((v) => cleanText(v))
     .pipe(z.string().min(min).max(max));
 
-const isoDate = z.string().refine(isIsoDate, { message: "invalid_date" });
+const isoDate = z.string().max(10).refine(isIsoDate, { message: "invalid_date", abort: true });
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/);
 
-const briefBase = {
-  title: line(1, LIMITS.titleMax),
+const factsBase = {
   date: isoDate,
   city: line(2, LIMITS.cityMax),
   guests: z.int().min(LIMITS.guestsMin).max(LIMITS.guestsMax),
@@ -47,12 +46,33 @@ const functions = z
   .max(WEDDING_FUNCTIONS.length)
   .refine((list) => new Set(list).size === list.length, { message: "duplicate_function" });
 
+const title = line(1, LIMITS.titleMax);
+const variants = {
+  wedding: { type: z.literal("wedding"), ...factsBase, functions },
+  birthday: { type: z.literal("birthday"), ...factsBase, honoree: z.enum(HONOREES) },
+  community: { type: z.literal("community"), ...factsBase, kind: z.enum(COMMUNITY_KINDS) },
+};
+
+/** Everything about the event the planner and the AI need. No title: it often holds a person's name. */
+export const factsSchema = z.discriminatedUnion("type", [
+  z.strictObject(variants.wedding),
+  z.strictObject(variants.birthday),
+  z.strictObject(variants.community),
+]);
+export type EventFacts = z.infer<typeof factsSchema>;
+
+/** The facts plus the title the user sees. Only the facts ever leave the browser for the AI. */
 export const briefSchema = z.discriminatedUnion("type", [
-  z.strictObject({ type: z.literal("wedding"), ...briefBase, functions }),
-  z.strictObject({ type: z.literal("birthday"), ...briefBase, honoree: z.enum(HONOREES) }),
-  z.strictObject({ type: z.literal("community"), ...briefBase, kind: z.enum(COMMUNITY_KINDS) }),
+  z.strictObject({ ...variants.wedding, title }),
+  z.strictObject({ ...variants.birthday, title }),
+  z.strictObject({ ...variants.community, title }),
 ]);
 export type Brief = z.infer<typeof briefSchema>;
+
+export function factsOf(brief: Brief): EventFacts {
+  const { title, ...facts } = brief;
+  return facts;
+}
 
 export const guestSchema = z.strictObject({
   id,
@@ -97,8 +117,8 @@ export const planRecordSchema = z.strictObject({
   updatedAt: z.iso.datetime(),
   brief: briefSchema,
   enrichment: enrichmentSchema.nullable(),
-  /** The brief and language the stored ideas were written for; a different brief means they are stale. */
-  enrichedFor: z.strictObject({ brief: briefSchema, locale: z.enum(LOCALES) }).nullable(),
+  /** The event facts and language the stored ideas were written for; different facts mean they are stale. */
+  enrichedFor: z.strictObject({ facts: factsSchema, locale: z.enum(LOCALES) }).nullable(),
   factors: z.partialRecord(z.enum(CATEGORY_IDS), z.number().min(0.5).max(1.5)),
   tasks: z.array(customTaskSchema).max(LIMITS.customTasksMax),
   hidden: z.array(id).max(200),

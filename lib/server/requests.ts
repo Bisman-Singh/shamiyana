@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { CATEGORY_IDS, LIMITS, LOCALES } from "@/lib/plan/constants";
 import { daysBetween, isIsoDate } from "@/lib/plan/dates";
-import { briefSchema } from "@/lib/plan/schema";
+import { factsSchema } from "@/lib/plan/schema";
 import { cleanText } from "@/lib/plan/text";
 
 /**
@@ -20,17 +20,17 @@ function dated(serverNow: Date) {
     .refine((d) => Math.abs(daysBetween(utc, d)) <= 1, { message: "clock_skew" });
 }
 
-function withEventInRange(value: { today: string; brief: { date: string } }, ctx: z.RefinementCtx) {
-  const ahead = daysBetween(value.today, value.brief.date);
+function withEventInRange(value: { today: string; facts: { date: string } }, ctx: z.RefinementCtx) {
+  const ahead = daysBetween(value.today, value.facts.date);
   if (ahead < 0 || ahead > LIMITS.maxDaysAhead) {
-    ctx.addIssue({ code: "custom", path: ["brief", "date"], message: "date_out_of_range" });
+    ctx.addIssue({ code: "custom", path: ["facts", "date"], message: "date_out_of_range" });
   }
 }
 
 export function planRequestSchema(serverNow: Date) {
   return z
     .strictObject({
-      brief: briefSchema,
+      facts: factsSchema,
       locale: z.enum(LOCALES),
       today: dated(serverNow),
       fresh: z.boolean().default(false),
@@ -49,7 +49,7 @@ const turn = z.strictObject({
 export function refineRequestSchema(serverNow: Date) {
   return z
     .strictObject({
-      brief: briefSchema,
+      facts: factsSchema,
       factors: z.partialRecord(z.enum(CATEGORY_IDS), z.number().min(0.5).max(1.5)),
       locale: z.enum(LOCALES),
       today: dated(serverNow),
@@ -65,7 +65,7 @@ export function refineRequestSchema(serverNow: Date) {
 export function visionFieldsSchema(serverNow: Date) {
   return z
     .strictObject({
-      brief: briefSchema,
+      facts: factsSchema,
       locale: z.enum(LOCALES),
       today: dated(serverNow),
     })

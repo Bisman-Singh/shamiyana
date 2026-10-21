@@ -1,6 +1,6 @@
 import { EnvError, readEnv } from "@/lib/server/env";
 import { planRequestSchema, sniffImage } from "@/lib/server/requests";
-import { TODAY, weddingBrief } from "../fixtures";
+import { TODAY, weddingFacts } from "../fixtures";
 import { FIXED_NOW, JPEG, PNG, WEBP } from "../helpers/ai";
 
 describe("readEnv", () => {
@@ -55,9 +55,9 @@ describe("request schemas", () => {
   it("accepts a device date a day either side of the server", () => {
     const schema = planRequestSchema(FIXED_NOW);
     for (const today of ["2026-10-20", TODAY, "2026-10-22"]) {
-      expect(schema.safeParse({ brief: weddingBrief, locale: "en", today }).success).toBe(true);
+      expect(schema.safeParse({ facts: weddingFacts, locale: "en", today }).success).toBe(true);
     }
-    expect(schema.parse({ brief: weddingBrief, locale: "hi", today: TODAY }).fresh).toBe(false);
+    expect(schema.parse({ facts: weddingFacts, locale: "hi", today: TODAY }).fresh).toBe(false);
   });
 });
 

@@ -1,3 +1,4 @@
+import { factsOf } from "@/lib/plan/schema";
 import { LIMITS } from "@/lib/plan/constants";
 import {
   IDEAS_MAX,
@@ -20,7 +21,7 @@ import { planRecordSchema, type Guest } from "@/lib/plan/schema";
 import { NOW, birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
 
 const LATER = "2026-10-22T08:00:00.000Z";
-const FOR = { brief: weddingBrief, locale: "en" as const };
+const FOR = { facts: factsOf(weddingBrief), locale: "en" as const };
 const guest: Guest = {
   id: "g1",
   name: "Chachaji",

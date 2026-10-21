@@ -6,7 +6,7 @@ import { enrichmentOutputSchema } from "@/lib/ai/schemas";
 import { errorFromMessage, type ApiError } from "@/lib/client/api";
 import type { CategoryId, Locale } from "@/lib/plan/constants";
 import { isEmptyEnrichment, sanitizeEnrichment, type Enrichment } from "@/lib/plan/enrichment";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
+import { factsOf, type EventFacts, type PlanRecord } from "@/lib/plan/schema";
 
 export type EnrichmentState =
   | { phase: "idle" }
@@ -15,20 +15,21 @@ export type EnrichmentState =
 
 interface Target {
   planId: string;
-  brief: Brief;
+  facts: EventFacts;
   locale: Locale;
 }
 
 export type OnEnriched = (target: Target, enrichment: Enrichment) => void;
 
-function keyOf(brief: Brief, locale: Locale): string {
-  return JSON.stringify([brief, locale]);
+function keyOf(facts: EventFacts, locale: Locale): string {
+  return JSON.stringify([facts, locale]);
 }
 
 /**
- * Streams the AI ideas for a plan. A plan remembers which brief and language
- * its ideas were written for, so this asks again exactly when that differs:
- * a new plan, an edited brief, a language switch. The result goes to
+ * Streams the AI ideas for a plan. A plan remembers which event facts and
+ * language its ideas were written for, so this asks again exactly when that
+ * differs: a new plan, changed details, a language switch. Renaming the event
+ * alone asks nothing, since the title is never sent. The result goes to
  * `onDone` with the request it answers, so switching plans mid-stream can't
  * file one plan's ideas under another. An answer that stops early keeps
  * whatever arrived.
@@ -42,7 +43,8 @@ export function useEnrichment(
 ) {
   const [failure, setFailure] = useState<ApiError | "partial" | null>(null);
   const asked = useRef<string | null>(null);
-  const target = useRef<Target>({ planId: record.id, brief: record.brief, locale });
+  const facts = factsOf(record.brief);
+  const target = useRef<Target>({ planId: record.id, facts, locale });
   const latest = useRef<unknown>(undefined);
   const done = useRef(onDone);
   const cats = useRef(categories);
@@ -67,16 +69,16 @@ export function useEnrichment(
     latest.current = object;
   }, [object]);
 
-  const key = keyOf(record.brief, locale);
+  const key = keyOf(facts, locale);
   const madeFor = record.enrichedFor
-    ? keyOf(record.enrichedFor.brief, record.enrichedFor.locale)
+    ? keyOf(record.enrichedFor.facts, record.enrichedFor.locale)
     : null;
 
   function request(fresh: boolean) {
     asked.current = `${record.id}|${key}`;
-    target.current = { planId: record.id, brief: record.brief, locale };
+    target.current = { planId: record.id, facts, locale };
     setFailure(null);
-    submit({ brief: record.brief, locale, today, fresh });
+    submit({ facts, locale, today, fresh });
   }
 
   const requestRef = useRef(request);

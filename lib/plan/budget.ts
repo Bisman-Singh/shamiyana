@@ -1,7 +1,7 @@
 import { BASE_SHARES, variantFactors } from "./catalog";
 import type { CategoryId, VendorStatus } from "./constants";
 import { ENRICHMENT_LIMITS } from "./enrichment";
-import type { Brief, PlanRecord } from "./schema";
+import type { EventFacts, PlanRecord } from "./schema";
 
 export interface BudgetLine {
   category: CategoryId;
@@ -59,7 +59,7 @@ function clampFactor(value: number): number {
 
 /** The plan's categories with their weights after event details and user shifts. */
 export function weightsFor(
-  brief: Brief,
+  brief: EventFacts,
   factors: PlanRecord["factors"],
 ): (readonly [CategoryId, number])[] {
   const variant = variantFactors(brief);
@@ -73,7 +73,7 @@ export function weightsFor(
   });
 }
 
-export function planBudget(brief: Brief, factors: PlanRecord["factors"]): BudgetLine[] {
+export function planBudget(brief: EventFacts, factors: PlanRecord["factors"]): BudgetLine[] {
   return allocate(brief.budget, weightsFor(brief, factors));
 }
 
@@ -100,7 +100,7 @@ export interface BudgetSummary {
 
 export function summariseBudget(
   lines: readonly BudgetLine[],
-  brief: Brief,
+  brief: EventFacts,
   vendors: PlanRecord["vendors"],
 ): BudgetSummary {
   const rows = lines.map((line) => {

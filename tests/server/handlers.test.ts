@@ -1,6 +1,6 @@
 import { healthHandler, planHandler, refineHandler, visionHandler } from "@/lib/server/handlers";
 import { DailyCap, RateLimiter } from "@/lib/server/rate-limit";
-import { TODAY, sampleEnrichment, weddingBrief } from "../fixtures";
+import { TODAY, sampleEnrichment, weddingFacts } from "../fixtures";
 import {
   JPEG,
   brokenGenerateModel,
@@ -13,7 +13,7 @@ import {
   testDeps,
 } from "../helpers/ai";
 
-const planBody = { brief: weddingBrief, locale: "en", today: TODAY };
+const planBody = { facts: weddingFacts, locale: "en", today: TODAY };
 const answer = JSON.stringify(sampleEnrichment);
 const halves = [answer.slice(0, 40), answer.slice(40)];
 
@@ -94,14 +94,14 @@ describe("POST /api/plan", () => {
     [
       "a past event",
       [],
-      { ...planBody, brief: { ...weddingBrief, date: "2026-10-01" } },
+      { ...planBody, facts: { ...weddingFacts, date: "2026-10-01" } },
       422,
       "invalid",
     ],
     [
       "an event too far out",
       [],
-      { ...planBody, brief: { ...weddingBrief, date: "2030-01-01" } },
+      { ...planBody, facts: { ...weddingFacts, date: "2030-01-01" } },
       422,
       "invalid",
     ],
@@ -144,7 +144,7 @@ describe("POST /api/plan", () => {
 
 describe("POST /api/refine", () => {
   const body = {
-    brief: weddingBrief,
+    facts: weddingFacts,
     factors: {},
     locale: "en",
     today: TODAY,
@@ -224,7 +224,7 @@ describe("POST /api/refine", () => {
 });
 
 describe("POST /api/vision", () => {
-  const fields = JSON.stringify({ brief: weddingBrief, locale: "hi", today: TODAY });
+  const fields = JSON.stringify({ facts: weddingFacts, locale: "hi", today: TODAY });
   const vision = JSON.stringify({
     kind: "decor",
     mood: "Warm and festive",

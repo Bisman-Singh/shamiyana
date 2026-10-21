@@ -12,7 +12,7 @@ import { planBudget } from "@/lib/plan/budget";
 import { parseChanges, type Change } from "@/lib/plan/changes";
 import type { Locale } from "@/lib/plan/constants";
 import { isEmptyEnrichment, sanitizeEnrichment } from "@/lib/plan/enrichment";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
+import type { EventFacts, PlanRecord } from "@/lib/plan/schema";
 import { clip } from "@/lib/plan/text";
 import { cacheKey, type AnswerCache } from "./cache";
 import { firstSuccess, firstWorking } from "./fallback";
@@ -82,7 +82,7 @@ export function textStream(text: string): ReadableStream<string> {
 function cacheWhenComplete(
   cache: AnswerCache,
   key: string,
-  brief: Brief,
+  brief: EventFacts,
 ): TransformStream<string, string> {
   let text = "";
   return new TransformStream<string, string>({
@@ -98,7 +98,7 @@ function cacheWhenComplete(
 }
 
 export interface PlanInput {
-  brief: Brief;
+  facts: EventFacts;
   locale: Locale;
   today: string;
   fresh: boolean;
@@ -109,12 +109,12 @@ export interface PlanStream {
   model: string;
 }
 
-/** The cache key for a brief and a finished answer for it, if one is cached and still fresh. */
+/** The cache key for the event facts and a finished answer for it, if one is cached and still fresh. */
 export async function lookupPlan(
   cache: AnswerCache,
   input: PlanInput,
 ): Promise<{ key: string; hit: string | null }> {
-  const key = await cacheKey([PROMPT_VERSION, input.locale, input.today, input.brief]);
+  const key = await cacheKey([PROMPT_VERSION, input.locale, input.today, input.facts]);
   return { key, hit: input.fresh ? null : cache.get(key) };
 }
 
@@ -124,7 +124,7 @@ export async function streamPlan(
   key: string,
   input: PlanInput,
 ): Promise<PlanStream | null> {
-  const lines = planBudget(input.brief, {});
+  const lines = planBudget(input.facts, {});
   const attempts = ctx.chain.map((spec) => ({
     id: spec.id,
     run: () =>
@@ -133,7 +133,7 @@ export async function streamPlan(
         providerOptions: spec.providerOptions,
         output: Output.object({ schema: enrichmentOutputSchema }),
         instructions: planSystem(input.locale),
-        prompt: planPrompt(input.brief, lines, input.today),
+        prompt: planPrompt(input.facts, lines, input.today),
         maxOutputTokens: AI_LIMITS.plan.maxOutputTokens,
         temperature: 0.8,
         maxRetries: 1,
@@ -153,14 +153,14 @@ export async function streamPlan(
   if (!opened) return null;
   return {
     stream: toTextStream({ stream: opened.stream }).pipeThrough(
-      cacheWhenComplete(cache, key, input.brief),
+      cacheWhenComplete(cache, key, input.facts),
     ),
     model: opened.id,
   };
 }
 
 export interface RefineInput {
-  brief: Brief;
+  facts: EventFacts;
   factors: PlanRecord["factors"];
   locale: Locale;
   today: string;
@@ -175,7 +175,7 @@ export interface RefineAnswer {
 }
 
 export async function runRefine(ctx: RunContext, input: RefineInput): Promise<RefineAnswer | null> {
-  const lines = planBudget(input.brief, input.factors);
+  const lines = planBudget(input.facts, input.factors);
   const result = await firstSuccess(
     ctx.chain.map((spec) => ({
       id: spec.id,
@@ -186,7 +186,7 @@ export async function runRefine(ctx: RunContext, input: RefineInput): Promise<Re
             providerOptions: spec.providerOptions,
             output: Output.object({ schema: refineOutputSchema }),
             instructions: refineSystem(input.locale),
-            prompt: refinePrompt(input.brief, lines, input.today, input.history, input.message),
+            prompt: refinePrompt(input.facts, lines, input.today, input.history, input.message),
             maxOutputTokens: AI_LIMITS.refine.maxOutputTokens,
             temperature: 0.4,
             maxRetries: 1,
@@ -213,7 +213,7 @@ export async function runRefine(ctx: RunContext, input: RefineInput): Promise<Re
 }
 
 export interface VisionInput {
-  brief: Brief;
+  facts: EventFacts;
   locale: Locale;
   today: string;
   image: Uint8Array;
@@ -224,7 +224,7 @@ export async function runVision(
   ctx: RunContext,
   input: VisionInput,
 ): Promise<(VisionResult & { model: string }) | null> {
-  const lines = planBudget(input.brief, {});
+  const lines = planBudget(input.facts, {});
   const result = await firstSuccess(
     ctx.chain.map((spec) => ({
       id: spec.id,
@@ -239,7 +239,7 @@ export async function runVision(
               {
                 role: "user",
                 content: [
-                  { type: "text", text: visionPrompt(input.brief, lines, input.today) },
+                  { type: "text", text: visionPrompt(input.facts, lines, input.today) },
                   { type: "file", mediaType: input.mediaType, data: input.image },
                 ],
               },

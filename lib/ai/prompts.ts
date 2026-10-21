@@ -2,7 +2,7 @@ import { BASE_SHARES } from "@/lib/plan/catalog";
 import type { CategoryId, Locale } from "@/lib/plan/constants";
 import type { BudgetLine } from "@/lib/plan/budget";
 import { daysBetween } from "@/lib/plan/dates";
-import type { Brief } from "@/lib/plan/schema";
+import type { EventFacts } from "@/lib/plan/schema";
 import { redact } from "./redact";
 
 /**
@@ -42,7 +42,7 @@ ${SHARED_RULES}
 - Write every text field in ${LANGUAGE[locale]}. Keep category, area, op and cost values exactly as the given codes.`;
 }
 
-function variantLine(brief: Brief): string {
+function variantLine(brief: EventFacts): string {
   switch (brief.type) {
     case "wedding":
       return `Functions: ${brief.functions.join(", ")}`;
@@ -57,7 +57,11 @@ export function inr(amount: number): string {
   return `₹${new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(amount)}`;
 }
 
-export function describeEvent(brief: Brief, lines: readonly BudgetLine[], today: string): string {
+export function describeEvent(
+  brief: EventFacts,
+  lines: readonly BudgetLine[],
+  today: string,
+): string {
   const month = MONTH.format(new Date(`${brief.date}T00:00:00Z`));
   const days = daysBetween(today, brief.date);
   return [
@@ -74,11 +78,11 @@ export function describeEvent(brief: Brief, lines: readonly BudgetLine[], today:
   ].join("\n");
 }
 
-export function shiftableCategories(brief: Brief): CategoryId[] {
+export function shiftableCategories(brief: EventFacts): CategoryId[] {
   return (Object.keys(BASE_SHARES[brief.type]) as CategoryId[]).filter((c) => c !== "contingency");
 }
 
-export function planPrompt(brief: Brief, lines: readonly BudgetLine[], today: string): string {
+export function planPrompt(brief: EventFacts, lines: readonly BudgetLine[], today: string): string {
   return `${describeEvent(brief, lines, today)}
 Categories you may shift: ${shiftableCategories(brief).join(", ")}
 
@@ -107,7 +111,7 @@ export interface Turn {
 }
 
 export function refinePrompt(
-  brief: Brief,
+  brief: EventFacts,
   lines: readonly BudgetLine[],
   today: string,
   history: readonly Turn[],
@@ -133,7 +137,11 @@ ${SHARED_RULES}
 - Write every text field in ${LANGUAGE[locale]}.`;
 }
 
-export function visionPrompt(brief: Brief, lines: readonly BudgetLine[], today: string): string {
+export function visionPrompt(
+  brief: EventFacts,
+  lines: readonly BudgetLine[],
+  today: string,
+): string {
   return `${describeEvent(brief, lines, today)}
 
 Suggest how this photo can shape the event.`;

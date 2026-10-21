@@ -1,6 +1,6 @@
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { createRecord } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
+import { factsOf, type Brief, type PlanRecord } from "@/lib/plan/schema";
 
 /** Synthetic data only: relation words and places, never real people. */
 
@@ -45,6 +45,10 @@ export const communityBrief: Extract<Brief, { type: "community" }> = {
   notes: "Society ground, evening only.",
   kind: "festival",
 };
+
+export const weddingFacts = factsOf(weddingBrief);
+export const birthdayFacts = factsOf(birthdayBrief);
+export const communityFacts = factsOf(communityBrief);
 
 export function recordFor(brief: Brief, patch: Partial<PlanRecord> = {}): PlanRecord {
   return { ...createRecord(brief, "plan-1", NOW), ...patch };
