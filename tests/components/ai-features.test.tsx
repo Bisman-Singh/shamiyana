@@ -128,7 +128,9 @@ describe("refine chat", () => {
       history: [],
     });
     await expectAccessible(container);
-    await userEvent.click(p.getByRole("checkbox", { name: "Save an idea: Phoolon ki holi" }));
+    expect(p.getByRole("checkbox", { name: "Set the budget to ₹15,00,000" })).not.toBeChecked();
+    expect(p.getByRole("button", { name: "Apply selected" })).toBeDisabled();
+    await userEvent.click(p.getByRole("checkbox", { name: "Set the budget to ₹15,00,000" }));
     await userEvent.click(p.getByRole("button", { name: "Apply selected" }));
     expect(saved.current.brief.budget).toBe(15_00_000);
     expect(saved.current.ideas).toEqual([]);

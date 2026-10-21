@@ -1,4 +1,5 @@
 import {
+  addressBucket,
   clientKey,
   errorResponse,
   guard,
@@ -181,10 +182,44 @@ describe("RateLimiter", () => {
   });
 });
 
+describe("addressBucket", () => {
+  it.each([
+    ["203.0.113.9", "203.0.113.9"],
+    ["2001:db8:85a3:12:8a2e:370:7334:1", "2001:db8:85a3:12::/64"],
+    ["2001:DB8:0:0:1::5", "2001:db8:0:0::/64"],
+    ["2001:db8::1", "2001:db8:0:0::/64"],
+    ["::1", "0:0:0:0::/64"],
+    ["fe80::", "fe80:0:0:0::/64"],
+    ["::ffff:198.51.100.7", "198.51.100.7"],
+    ["2001:0db8:0000:0042::", "2001:db8:0:42::/64"],
+  ])("keys %s as %s", (address, key) => {
+    expect(addressBucket(address)).toBe(key);
+  });
+
+  it("gives every address in one /64 the same rate-limit key", () => {
+    const req = (ip: string) => new Request("https://plan.test", { headers: { "x-real-ip": ip } });
+    expect(clientKey(req("2001:db8:1:2::a"))).toBe(clientKey(req("2001:db8:1:2:ffff::b")));
+  });
+});
+
 describe("DailyCap", () => {
+  it("limits each client separately under the instance ceiling", () => {
+    const cap = new DailyCap(3, 2, () => 0);
+    expect([cap.take("a"), cap.take("a"), cap.take("a")]).toEqual([true, true, false]);
+    expect(cap.take("b")).toBe(true);
+    expect(cap.take("c")).toBe(false);
+  });
+
+  it("forgets the least recent client past its memory bound", () => {
+    const cap = new DailyCap(100, 1, () => 0, 2);
+    expect([cap.take("a"), cap.take("b"), cap.take("c")]).toEqual([true, true, true]);
+    expect(cap.take("a")).toBe(true);
+    expect(cap.take("c")).toBe(false);
+  });
+
   it("allows the cap per UTC day and resets the next day", () => {
     let now = Date.parse("2026-10-21T23:59:00Z");
-    const cap = new DailyCap(2, () => now);
+    const cap = new DailyCap(2, 2, () => now);
     expect([cap.take(), cap.take(), cap.take()]).toEqual([true, true, false]);
     now = Date.parse("2026-10-22T00:00:01Z");
     expect(cap.take()).toBe(true);

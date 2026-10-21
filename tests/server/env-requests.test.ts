@@ -8,12 +8,13 @@ describe("readEnv", () => {
     expect(readEnv({ GOOGLE_GENERATIVE_AI_API_KEY: "  " })).toEqual({
       GOOGLE_GENERATIVE_AI_API_KEY: undefined,
       GEMINI_MODELS: [
+        "gemini-3.5-flash-lite",
         "gemini-3.5-flash",
         "gemini-3.6-flash",
         "gemini-3.8-flash",
-        "gemini-3.5-flash-lite",
       ],
       AI_DAILY_REQUEST_CAP: 2000,
+      AI_DAILY_CLIENT_CAP: 100,
     });
   });
 
@@ -27,6 +28,7 @@ describe("readEnv", () => {
       GOOGLE_GENERATIVE_AI_API_KEY: "k",
       GEMINI_MODELS: ["a-1", "b.2"],
       AI_DAILY_REQUEST_CAP: 50,
+      AI_DAILY_CLIENT_CAP: 100,
     });
   });
 

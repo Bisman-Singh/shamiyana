@@ -1,5 +1,5 @@
-import { BASE_SHARES } from "@/lib/plan/catalog";
-import type { CategoryId, Locale } from "@/lib/plan/constants";
+import { shiftableCategories } from "@/lib/plan/catalog";
+import type { Locale } from "@/lib/plan/constants";
 import type { BudgetLine } from "@/lib/plan/budget";
 import { daysBetween } from "@/lib/plan/dates";
 import type { EventFacts } from "@/lib/plan/schema";
@@ -76,10 +76,6 @@ export function describeEvent(
     `Budget lines: ${lines.map((l) => `${l.category} ${inr(l.amount)}`).join("; ")}`,
     brief.notes === "" ? "Notes: none" : `Notes: <user_text>${fence(brief.notes)}</user_text>`,
   ].join("\n");
-}
-
-export function shiftableCategories(brief: EventFacts): CategoryId[] {
-  return (Object.keys(BASE_SHARES[brief.type]) as CategoryId[]).filter((c) => c !== "contingency");
 }
 
 export function planPrompt(brief: EventFacts, lines: readonly BudgetLine[], today: string): string {

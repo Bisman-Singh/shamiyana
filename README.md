@@ -83,12 +83,13 @@ only. The key is never sent to the browser.
 - User text is fenced in `<user_text>` tags with angle brackets stripped, and
   the system prompt says fenced text is data. Proposed changes need the user's
   approval, so an injected instruction can at most suggest something.
-- Models are tried in order. The default chain is `gemini-3.5-flash`,
-  `gemini-3.6-flash`, `gemini-3.8-flash`, then `gemini-3.5-flash-lite`, set by
-  `GEMINI_MODELS`; free-tier models return 503 under load often enough that
-  one model is not enough. A stream that fails before its first token falls back to
-  the next model; one that fails midway keeps what arrived (`lib/ai/fallback.ts`,
-  `components/planner/use-enrichment.ts`).
+- Models are tried in order. The default chain is `gemini-3.5-flash-lite`,
+  which answers a full plan in about five seconds, then `gemini-3.5-flash`,
+  `gemini-3.6-flash` and `gemini-3.8-flash`, set by `GEMINI_MODELS`. Free-tier
+  models return 429 or 503 under load often enough that one model is not
+  enough. A stream that fails before its first token falls back to the next
+  model; one that fails midway keeps what arrived
+  (`components/planner/use-enrichment.ts`).
 - A live eval set checks the prompts against the real model. Veg and Jain
   menus must stay within their rules, Hindi must come back in Devanagari, an
   instruction hidden in the notes must be ignored, a clear request must map to

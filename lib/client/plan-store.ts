@@ -1,4 +1,5 @@
 import { LIMITS } from "@/lib/plan/constants";
+import { withCleanEnrichment } from "@/lib/plan/record";
 import { planRecordSchema, storeSchema, type PlanRecord, type Store } from "@/lib/plan/schema";
 
 /**
@@ -158,7 +159,7 @@ export function parseBackup(text: string | null, data: Store): BackupResult {
   if (!parsed.success) return { ok: false, reason: "bad" };
   const replaces = data.plans.some((p) => p.id === parsed.data.id);
   return replaces || canAddPlan(data)
-    ? { ok: true, record: parsed.data }
+    ? { ok: true, record: withCleanEnrichment(parsed.data) }
     : { ok: false, reason: "full" };
 }
 

@@ -28,7 +28,7 @@ const privacyEn: LegalPage = {
       heading: "What is sent to the AI",
       body: [
         "When the app writes ideas, answers a chat message or looks at a photo, our server sends Google's Gemini API the event type and functions, date, city, guest count, budget, style, food preference and your notes, plus the chat message and the last few turns of the conversation, or the photo you picked.",
-        "Before anything is sent, email addresses, phone numbers and identity numbers such as PAN and Aadhaar are removed from typed text. The event name, guest list, vendor notes and payment amounts are never sent.",
+        "Before anything is sent, email addresses, phone numbers and identity numbers such as PAN and Aadhaar, in their common formats, are removed from typed text. The event name, guest list, vendor notes and payment amounts are never sent.",
         `Google processes this data under the Gemini API terms at ${GEMINI_TERMS}`,
         "This site uses the free tier of the Gemini API. Under Google's terms for it, Google may use what is sent and the answers to improve its products, and human reviewers may read them. Keep anything private out of your notes, messages and photos.",
       ],
@@ -89,7 +89,7 @@ const privacyHi: LegalPage = {
       heading: "AI को क्या भेजा जाता है",
       body: [
         "जब ऐप सुझाव लिखता है, बातचीत का जवाब देता है या फ़ोटो देखता है, तब हमारा सर्वर Google के Gemini API को आयोजन का प्रकार और रस्में, तारीख़, शहर, मेहमानों की संख्या, बजट, अंदाज़, खाने की पसंद और आपके नोट भेजता है, साथ में बातचीत का संदेश और पिछली कुछ बातें, या आपकी चुनी हुई फ़ोटो।",
-        "भेजने से पहले लिखे गए पाठ से ईमेल पते, फ़ोन नंबर और PAN व आधार जैसे पहचान नंबर हटा दिए जाते हैं। आयोजन का नाम, मेहमानों की सूची, वेंडर नोट और भुगतान की रक़में कभी नहीं भेजी जातीं।",
+        "भेजने से पहले लिखे गए पाठ से ईमेल पते, फ़ोन नंबर और PAN व आधार जैसे पहचान नंबर, अपने आम रूपों में, हटा दिए जाते हैं। आयोजन का नाम, मेहमानों की सूची, वेंडर नोट और भुगतान की रक़में कभी नहीं भेजी जातीं।",
         `Google यह डेटा Gemini API की शर्तों के तहत प्रोसेस करता है, जो ${GEMINI_TERMS} पर हैं।`,
         "यह साइट Gemini API का मुफ़्त टियर इस्तेमाल करती है। उसकी शर्तों के तहत Google भेजी गई जानकारी और जवाबों को अपने उत्पाद बेहतर करने में इस्तेमाल कर सकता है, और लोग इन्हें पढ़ सकते हैं। अपने नोट, संदेश और फ़ोटो में कुछ भी निजी न डालें।",
       ],

@@ -9,6 +9,7 @@ import {
   type ToolSet,
 } from "ai";
 import { planBudget } from "@/lib/plan/budget";
+import { shiftableCategories } from "@/lib/plan/catalog";
 import { parseChanges, type Change } from "@/lib/plan/changes";
 import type { Locale } from "@/lib/plan/constants";
 import { isEmptyEnrichment, sanitizeEnrichment } from "@/lib/plan/enrichment";
@@ -23,7 +24,6 @@ import {
   planSystem,
   refinePrompt,
   refineSystem,
-  shiftableCategories,
   visionPrompt,
   visionSystem,
   type Turn,
@@ -33,7 +33,7 @@ import { sanitizeVision, type VisionResult } from "./vision-result";
 
 /** Output caps and deadlines: the model can't run long or write a novel on our key. */
 export const AI_LIMITS = {
-  plan: { maxOutputTokens: 3_000, totalMs: 60_000, firstChunkMs: 20_000 },
+  plan: { maxOutputTokens: 4_000, totalMs: 50_000, firstChunkMs: 15_000 },
   refine: { maxOutputTokens: 1_500, totalMs: 30_000 },
   vision: { maxOutputTokens: 1_500, totalMs: 40_000 },
 } as const;

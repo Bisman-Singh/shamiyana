@@ -146,6 +146,17 @@ describe("share links", () => {
     expect(planRecordSchema.safeParse(imported).success).toBe(true);
   });
 
+  it("strips hidden control and direction characters from AI text in a shared plan", async () => {
+    const tricky = {
+      ...sampleEnrichment,
+      theme: { name: "Pay\u202Eto UPI", summary: "Line\u0000one" },
+    };
+    const encoded = await encodeShare(recordFor(weddingBrief, { enrichment: tricky }));
+    const shared = await decodeShare(encoded);
+    const imported = recordFromShare(shared ?? record, "plan-3", NOW);
+    expect(imported.enrichment?.theme).toEqual({ name: "Pay to UPI", summary: "Line one" });
+  });
+
   it("rejects anything malformed, oversized or invalid", async () => {
     expect(await decodeShare("")).toBeNull();
     expect(await decodeShare("a".repeat(40_000))).toBeNull();

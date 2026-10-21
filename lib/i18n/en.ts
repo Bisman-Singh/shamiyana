@@ -506,7 +506,7 @@ export const en = {
   share: {
     heading: "Share this plan",
     intro:
-      "The link carries the plan itself, so anyone with it can open their own copy. The guest list and vendor notes are left out.",
+      "The link carries the plan itself, so anyone with it can open their own copy, including the event name and the amounts agreed and paid. The guest list and vendor notes are left out.",
     label: "Share link",
     copy: "Copy link",
     copied: "Link copied.",

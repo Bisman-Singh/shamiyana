@@ -105,10 +105,10 @@ describe("route files", () => {
     const { liveDeps } = await import("@/lib/server/handlers");
     expect(liveDeps()).toBe(liveDeps());
     expect(liveDeps().chain?.map((m) => m.id)).toEqual([
+      "gemini-3.5-flash-lite",
       "gemini-3.5-flash",
       "gemini-3.6-flash",
       "gemini-3.8-flash",
-      "gemini-3.5-flash-lite",
     ]);
   });
 });

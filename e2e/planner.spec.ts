@@ -52,6 +52,7 @@ test("guests, vendors and the refine chat update the plan", async ({ page }) => 
   await ideas.getByLabel("Your message").fill("Bring it down to 15 lakh");
   await ideas.getByRole("button", { name: "Send" }).click();
   await expect(ideas.getByText("Brought it down and added a dhol.")).toBeVisible();
+  await ideas.getByRole("checkbox", { name: "Set the budget to ₹15,00,000" }).check();
   await ideas.getByRole("button", { name: "Apply selected" }).click();
   await expect(page.getByText("₹15,00,000").first()).toBeVisible();
 });

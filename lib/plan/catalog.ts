@@ -51,6 +51,11 @@ export const BASE_SHARES: Record<EventType, Shares> = {
   },
 };
 
+/** The budget lines a plan may move money between: every line except contingency. */
+export function shiftableCategories(facts: EventFacts): CategoryId[] {
+  return (Object.keys(BASE_SHARES[facts.type]) as CategoryId[]).filter((c) => c !== "contingency");
+}
+
 /** How the event's details tilt the base split before it is renormalised. */
 export function variantFactors(brief: EventFacts): Shares {
   switch (brief.type) {

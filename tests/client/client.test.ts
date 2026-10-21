@@ -19,7 +19,7 @@ import {
   writeStore,
 } from "@/lib/client/plan-store";
 import { LIMITS } from "@/lib/plan/constants";
-import { TODAY, recordFor, weddingBrief } from "../fixtures";
+import { TODAY, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { MemoryStorage } from "../helpers/storage";
 
@@ -124,6 +124,16 @@ describe("plan storage", () => {
     expect(parseBackup(JSON.stringify(plan), EMPTY_STORE)).toEqual({ ok: true, record: plan });
     expect(parseBackup(JSON.stringify(plan), fullStore)).toEqual({ ok: false, reason: "full" });
     expect(parseBackup(JSON.stringify({ ...plan, id: "p3" }), fullStore).ok).toBe(true);
+    const tricky = recordFor(weddingBrief, {
+      enrichment: {
+        ...sampleEnrichment,
+        risks: [{ risk: "Rain\u2066", mitigation: "Tent\u0007" }],
+      },
+    });
+    const restored = parseBackup(JSON.stringify(tricky), EMPTY_STORE);
+    expect(restored.ok && restored.record.enrichment?.risks).toEqual([
+      { risk: "Rain", mitigation: "Tent" },
+    ]);
     expect(parseBackup(null, EMPTY_STORE)).toEqual({ ok: false, reason: "bad" });
     expect(parseBackup("[]", EMPTY_STORE)).toEqual({ ok: false, reason: "bad" });
   });

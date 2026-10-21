@@ -49,7 +49,25 @@ export function clientKey(request: Request): string {
   const h = request.headers;
   const forwarded = h.get("x-forwarded-for")?.split(",")[0]?.trim();
   const fallback = forwarded === undefined || forwarded === "" ? "unknown" : forwarded;
-  return h.get("x-vercel-forwarded-for") ?? h.get("x-real-ip") ?? fallback;
+  return addressBucket(h.get("x-vercel-forwarded-for") ?? h.get("x-real-ip") ?? fallback);
+}
+
+/**
+ * One key per IPv4 address, and per /64 for IPv6, since a single home or
+ * phone connection is usually handed a whole /64 and could rotate through it.
+ */
+export function addressBucket(address: string): string {
+  if (!address.includes(":")) return address;
+  if (address.includes(".")) return address.slice(address.lastIndexOf(":") + 1);
+  const [head = "", tail = ""] = address.toLowerCase().split("::");
+  const left = head === "" ? [] : head.split(":");
+  const right = tail === "" ? [] : tail.split(":");
+  const gap = address.includes("::") ? 8 - left.length - right.length : 0;
+  const groups = [...left, ...Array<string>(Math.max(0, gap)).fill("0"), ...right];
+  return `${groups
+    .slice(0, 4)
+    .map((g) => g.replace(/^0+(?=.)/, ""))
+    .join(":")}::/64`;
 }
 
 /** Browsers send Sec-Fetch-Site and Origin on POST; anything cross-site is refused. */

@@ -17,7 +17,7 @@ const schema = z.object({
     .transform((v) => (v === "" ? undefined : v)),
   GEMINI_MODELS: z
     .string()
-    .default("gemini-3.5-flash,gemini-3.6-flash,gemini-3.8-flash,gemini-3.5-flash-lite")
+    .default("gemini-3.5-flash-lite,gemini-3.5-flash,gemini-3.6-flash,gemini-3.8-flash")
     .transform((v) =>
       v
         .split(",")
@@ -26,6 +26,7 @@ const schema = z.object({
     )
     .pipe(z.array(z.string().regex(MODEL_ID)).min(1).max(4)),
   AI_DAILY_REQUEST_CAP: z.coerce.number().int().min(1).max(1_000_000).default(2000),
+  AI_DAILY_CLIENT_CAP: z.coerce.number().int().min(1).max(100_000).default(100),
 });
 
 export type ServerEnv = z.infer<typeof schema>;

@@ -1,7 +1,7 @@
 import { buildChain } from "@/lib/ai/models";
 import { lookupPlan, runRefine, streamPlan, type PlanInput } from "@/lib/ai/run";
 import { AnswerCache } from "@/lib/ai/cache";
-import { shiftableCategories } from "@/lib/ai/prompts";
+import { shiftableCategories } from "@/lib/plan/catalog";
 import { isEmptyEnrichment, sanitizeEnrichment, type Enrichment } from "@/lib/plan/enrichment";
 import { localToday } from "@/lib/plan/dates";
 import type { EventFacts } from "@/lib/plan/schema";

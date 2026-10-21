@@ -62,24 +62,40 @@ export class RateLimiter {
   }
 }
 
-/** A hard ceiling on AI calls per UTC day for this instance: a spend cap that needs no billing API. */
+/**
+ * Hard ceilings on AI calls per UTC day: one for this instance, a spend cap
+ * that needs no billing API, and a smaller one per client so a single
+ * client can't use up everyone's day. Client memory is bounded like the
+ * rate limiter's.
+ */
 export class DailyCap {
   private day = "";
   private count = 0;
+  private readonly byClient = new Map<string, number>();
 
   constructor(
     private readonly cap: number,
+    private readonly clientCap: number = cap,
     private readonly now: () => number = Date.now,
+    private readonly maxKeys = 10_000,
   ) {}
 
-  take(): boolean {
+  take(client = ""): boolean {
     const today = new Date(this.now()).toISOString().slice(0, 10);
     if (today !== this.day) {
       this.day = today;
       this.count = 0;
+      this.byClient.clear();
     }
-    if (this.count >= this.cap) return false;
+    const used = this.byClient.get(client) ?? 0;
+    if (this.count >= this.cap || used >= this.clientCap) return false;
     this.count += 1;
+    this.byClient.delete(client);
+    this.byClient.set(client, used + 1);
+    for (const stale of this.byClient.keys()) {
+      if (this.byClient.size <= this.maxKeys) break;
+      this.byClient.delete(stale);
+    }
     return true;
   }
 }

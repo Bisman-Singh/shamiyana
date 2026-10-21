@@ -192,7 +192,7 @@ export function RefineChat({ view, update }: { view: PlanView; update: Update })
         { id: newId(), role: "assistant" as const, text: result.data.reply },
       ].slice(-12),
     );
-    const items = result.data.changes.map((change) => ({ key: newId(), change, picked: true }));
+    const items = result.data.changes.map((change) => ({ key: newId(), change, picked: false }));
     setProposal(items.length > 0 ? { items } : null);
   }
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createRecord } from "@/lib/plan/record";
+import { createRecord, withCleanEnrichment } from "@/lib/plan/record";
 import { planRecordSchema, type PlanRecord } from "@/lib/plan/schema";
 
 /**
@@ -123,7 +123,7 @@ export async function decodeShare(encoded: string): Promise<SharedPlan | null> {
 }
 
 export function recordFromShare(shared: SharedPlan, id: string, now: string): PlanRecord {
-  return { ...createRecord(shared.brief, id, now), ...shared, guests: [] };
+  return withCleanEnrichment({ ...createRecord(shared.brief, id, now), ...shared, guests: [] });
 }
 
 export function shareUrl(origin: string, encoded: string): string {

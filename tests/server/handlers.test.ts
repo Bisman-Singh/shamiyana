@@ -33,7 +33,7 @@ describe("POST /api/plan", () => {
     const prompt = JSON.stringify(model.doStreamCalls[0]?.prompt);
     expect(prompt).toContain("City: <user_text>Jaipur</user_text>");
     expect(prompt).not.toContain("Winter wedding in Jaipur");
-    expect(model.doStreamCalls[0]?.maxOutputTokens).toBe(3_000);
+    expect(model.doStreamCalls[0]?.maxOutputTokens).toBe(4_000);
     expect(model.doStreamCalls[0]?.responseFormat?.type).toBe("json");
   });
 
@@ -270,6 +270,8 @@ describe("POST /api/vision", () => {
     ["a text field instead of a file", form("not a file"), "bad_request"],
     ["no image", form(null), "bad_request"],
     ["invalid fields", form(JPEG, "{}"), "invalid"],
+    ["fields that are not JSON", form(JPEG, "{oops"), "bad_request"],
+    ["fields over 16 KB", form(JPEG, JSON.stringify({ pad: "x".repeat(17_000) })), "too_large"],
   ])("rejects %s", async (_label, data, code) => {
     const response = await visionHandler(() => testDeps([spec(generatingModel(vision))]))(
       formPost(data),
@@ -314,6 +316,39 @@ describe("POST /api/vision", () => {
       formPost(form(JPEG), { "sec-fetch-site": "cross-site" }),
     );
     expect(response.status).toBe(403);
+  });
+});
+
+describe("every route", () => {
+  it("answers a bare 500 when something unexpected throws", async () => {
+    const broken = () => {
+      throw new Error("boom");
+    };
+    const plan = await planHandler(broken)(jsonPost({}));
+    expect(plan.status).toBe(500);
+    expect(await plan.json()).toEqual({ error: "internal" });
+    expect((await refineHandler(broken)(jsonPost({}))).status).toBe(500);
+    expect((await visionHandler(broken)(formPost(new FormData()))).status).toBe(500);
+  });
+
+  it("stops one client at its own daily allowance while others carry on", async () => {
+    const deps = testDeps([spec(generatingModel(JSON.stringify({ reply: "ok", changes: [] })))], {
+      daily: new DailyCap(100, 1),
+    });
+    const body = {
+      facts: weddingFacts,
+      factors: {},
+      locale: "en",
+      today: TODAY,
+      history: [],
+      message: "hi",
+    };
+    const as = (ip: string) => jsonPost(body, { "x-real-ip": ip });
+    expect((await refineHandler(() => deps)(as("198.51.100.1"))).status).toBe(200);
+    expect(await (await refineHandler(() => deps)(as("198.51.100.1"))).json()).toEqual({
+      error: "daily_cap",
+    });
+    expect((await refineHandler(() => deps)(as("198.51.100.2"))).status).toBe(200);
   });
 });
 

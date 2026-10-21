@@ -1,11 +1,26 @@
 import "server-only";
 import { createTextStreamResponse } from "ai";
+import type { z } from "zod";
 import { AnswerCache } from "@/lib/ai/cache";
 import { buildChain, type ModelSpec } from "@/lib/ai/models";
 import { PROMPT_VERSION } from "@/lib/ai/prompts";
-import { lookupPlan, runRefine, runVision, streamPlan, textStream } from "@/lib/ai/run";
+import {
+  lookupPlan,
+  runRefine,
+  runVision,
+  streamPlan,
+  textStream,
+  type RunContext,
+} from "@/lib/ai/run";
 import { readEnv } from "./env";
-import { errorResponse, guard, parseJson, type ErrorCode } from "./http";
+import {
+  clientKey,
+  errorResponse,
+  guard,
+  parseJson,
+  type ErrorCode,
+  type GuardOptions,
+} from "./http";
 import { logEvent } from "./log";
 import { DailyCap, RateLimiter } from "./rate-limit";
 import {
@@ -29,6 +44,13 @@ export interface AiDeps {
   now: () => Date;
 }
 
+/** Request body caps. The photo route's text part is capped on its own. */
+export const BODY_LIMITS = {
+  plan: 8_192,
+  refine: 16_384,
+  visionFields: 16_384,
+} as const;
+
 export function createDeps(env = readEnv()): AiDeps {
   return {
     chain: buildChain(env),
@@ -38,7 +60,7 @@ export function createDeps(env = readEnv()): AiDeps {
       refine: new RateLimiter({ limit: 20, windowMs: 60_000 }),
       vision: new RateLimiter({ limit: 6, windowMs: 60_000 }),
     },
-    daily: new DailyCap(env.AI_DAILY_REQUEST_CAP),
+    daily: new DailyCap(env.AI_DAILY_REQUEST_CAP, env.AI_DAILY_CLIENT_CAP),
     now: () => new Date(),
   };
 }
@@ -51,9 +73,9 @@ export function liveDeps(): AiDeps {
   return live;
 }
 
-type Route = "plan" | "refine" | "vision";
+type RouteName = "plan" | "refine" | "vision";
 
-function reporter(route: Route) {
+function reporter(route: RouteName) {
   const started = Date.now();
   return {
     fail: (code: ErrorCode, headers?: Record<string, string>): Response => {
@@ -78,25 +100,65 @@ function reporter(route: Route) {
   };
 }
 
+type Log = ReturnType<typeof reporter>;
+
+/** Runs a route; anything unexpected becomes a logged 500 with no details, never a stack in the response. */
+function route(
+  name: RouteName,
+  deps: () => AiDeps,
+  run: (request: Request, d: AiDeps, log: Log) => Promise<Response>,
+) {
+  return async (request: Request): Promise<Response> => {
+    const log = reporter(name);
+    try {
+      return await run(request, deps(), log);
+    } catch {
+      return log.fail("internal");
+    }
+  };
+}
+
+type Checked<T> =
+  { ok: true; data: T } | { ok: false; code: ErrorCode; headers?: Record<string, string> };
+
+/** Guard, parse and validate a JSON body against a schema built for this moment. */
+async function readJson<T>(
+  request: Request,
+  options: Omit<GuardOptions, "type">,
+  schema: z.ZodType<T>,
+): Promise<Checked<T>> {
+  const guarded = await guard(request, { ...options, type: "application/json" });
+  if (!guarded.ok) return guarded;
+  const body = parseJson(guarded.bytes);
+  if (body === undefined) return { ok: false, code: "bad_request" };
+  const parsed = schema.safeParse(body);
+  return parsed.success ? { ok: true, data: parsed.data } : { ok: false, code: "invalid" };
+}
+
+/** The model chain and today's allowance for this client, or the reason there is none. */
+function admit(
+  request: Request,
+  d: AiDeps,
+  log: Log,
+): { ctx: RunContext } | { refused: ErrorCode } {
+  if (!d.chain) return { refused: "ai_unavailable" };
+  if (!d.daily.take(clientKey(request))) return { refused: "daily_cap" };
+  return { ctx: { chain: d.chain, signal: request.signal, onFail: log.modelFailed } };
+}
+
 const STREAM_HEADERS = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
+const JSON_HEADERS = { "Cache-Control": "no-store" };
 
 export function planHandler(deps: () => AiDeps) {
-  return async (request: Request): Promise<Response> => {
-    const log = reporter("plan");
-    const d = deps();
-    const guarded = await guard(request, {
-      limiter: d.limiters.plan,
-      maxBytes: 8_192,
-      type: "application/json",
-    });
-    if (!guarded.ok) return log.fail(guarded.code, guarded.headers);
-    const body = parseJson(guarded.bytes);
-    if (body === undefined) return log.fail("bad_request");
-    const parsed = planRequestSchema(d.now()).safeParse(body);
-    if (!parsed.success) return log.fail("invalid");
+  return route("plan", deps, async (request, d, log) => {
+    const input = await readJson(
+      request,
+      { limiter: d.limiters.plan, maxBytes: BODY_LIMITS.plan },
+      planRequestSchema(d.now()),
+    );
+    if (!input.ok) return log.fail(input.code, input.headers);
     if (!d.chain) return log.fail("ai_unavailable");
-
-    const { key, hit } = await lookupPlan(d.cache, parsed.data);
+    const { key, hit } = await lookupPlan(d.cache, input.data);
     if (hit !== null) {
       return log.ok(
         createTextStreamResponse({ stream: textStream(hit), headers: STREAM_HEADERS }),
@@ -104,45 +166,32 @@ export function planHandler(deps: () => AiDeps) {
         true,
       );
     }
-    if (!d.daily.take()) return log.fail("daily_cap");
-    const result = await streamPlan(
-      { chain: d.chain, signal: request.signal, onFail: log.modelFailed },
-      d.cache,
-      key,
-      parsed.data,
-    );
+    const gate = admit(request, d, log);
+    if ("refused" in gate) return log.fail(gate.refused);
+    const result = await streamPlan(gate.ctx, d.cache, key, input.data);
     if (!result) return log.fail("ai_failed");
     return log.ok(
       createTextStreamResponse({ stream: result.stream, headers: STREAM_HEADERS }),
       result.model,
     );
-  };
+  });
 }
 
 export function refineHandler(deps: () => AiDeps) {
-  return async (request: Request): Promise<Response> => {
-    const log = reporter("refine");
-    const d = deps();
-    const guarded = await guard(request, {
-      limiter: d.limiters.refine,
-      maxBytes: 16_384,
-      type: "application/json",
-    });
-    if (!guarded.ok) return log.fail(guarded.code, guarded.headers);
-    const body = parseJson(guarded.bytes);
-    if (body === undefined) return log.fail("bad_request");
-    const parsed = refineRequestSchema(d.now()).safeParse(body);
-    if (!parsed.success) return log.fail("invalid");
-    if (!d.chain) return log.fail("ai_unavailable");
-    if (!d.daily.take()) return log.fail("daily_cap");
-    const answer = await runRefine(
-      { chain: d.chain, signal: request.signal, onFail: log.modelFailed },
-      parsed.data,
+  return route("refine", deps, async (request, d, log) => {
+    const input = await readJson(
+      request,
+      { limiter: d.limiters.refine, maxBytes: BODY_LIMITS.refine },
+      refineRequestSchema(d.now()),
     );
+    if (!input.ok) return log.fail(input.code, input.headers);
+    const gate = admit(request, d, log);
+    if ("refused" in gate) return log.fail(gate.refused);
+    const answer = await runRefine(gate.ctx, input.data);
     if (!answer) return log.fail("ai_failed");
     const { model, ...rest } = answer;
-    return log.ok(Response.json(rest, { headers: { "Cache-Control": "no-store" } }), model);
-  };
+    return log.ok(Response.json(rest, { headers: JSON_HEADERS }), model);
+  });
 }
 
 async function readForm(bytes: Uint8Array, contentType: string): Promise<FormData | null> {
@@ -155,15 +204,13 @@ async function readForm(bytes: Uint8Array, contentType: string): Promise<FormDat
   }
 }
 
-type Upload =
-  | { ok: true; image: Uint8Array; mediaType: string; fields: string }
-  | { ok: false; code: ErrorCode; headers?: Record<string, string> };
+type Upload = Checked<{ image: Uint8Array; mediaType: string; fields: unknown }>;
 
-/** The guarded multipart body: one image whose bytes are a real JPEG, PNG or WebP, plus a JSON field. */
+/** The guarded multipart body: one image whose bytes are a real JPEG, PNG or WebP, plus a small JSON part. */
 async function readUpload(request: Request, d: AiDeps): Promise<Upload> {
   const guarded = await guard(request, {
     limiter: d.limiters.vision,
-    maxBytes: IMAGE_MAX_BYTES + 16_384,
+    maxBytes: IMAGE_MAX_BYTES + BODY_LIMITS.visionFields,
     type: "multipart/form-data",
   });
   if (!guarded.ok) return guarded;
@@ -172,40 +219,39 @@ async function readUpload(request: Request, d: AiDeps): Promise<Upload> {
   const fields = form?.get("fields");
   if (!(image instanceof File) || typeof fields !== "string")
     return { ok: false, code: "bad_request" };
-  if (image.size > IMAGE_MAX_BYTES) return { ok: false, code: "too_large" };
+  if (image.size > IMAGE_MAX_BYTES || fields.length > BODY_LIMITS.visionFields)
+    return { ok: false, code: "too_large" };
+  const parsedFields = parseJson(new TextEncoder().encode(fields));
+  if (parsedFields === undefined) return { ok: false, code: "bad_request" };
   const bytes = new Uint8Array(await image.arrayBuffer());
   const mediaType = sniffImage(bytes);
   if (!mediaType) return { ok: false, code: "unsupported_media_type" };
-  return { ok: true, image: bytes, mediaType, fields };
+  return { ok: true, data: { image: bytes, mediaType, fields: parsedFields } };
 }
 
 export function visionHandler(deps: () => AiDeps) {
-  return async (request: Request): Promise<Response> => {
-    const log = reporter("vision");
-    const d = deps();
+  return route("vision", deps, async (request, d, log) => {
     const upload = await readUpload(request, d);
     if (!upload.ok) return log.fail(upload.code, upload.headers);
-    const { image: bytes, mediaType, fields } = upload;
-    const parsed = visionFieldsSchema(d.now()).safeParse(
-      parseJson(new TextEncoder().encode(fields)),
-    );
+    const parsed = visionFieldsSchema(d.now()).safeParse(upload.data.fields);
     if (!parsed.success) return log.fail("invalid");
-    if (!d.chain) return log.fail("ai_unavailable");
-    if (!d.daily.take()) return log.fail("daily_cap");
-    const result = await runVision(
-      { chain: d.chain, signal: request.signal, onFail: log.modelFailed },
-      { ...parsed.data, image: bytes, mediaType },
-    );
+    const gate = admit(request, d, log);
+    if ("refused" in gate) return log.fail(gate.refused);
+    const result = await runVision(gate.ctx, {
+      ...parsed.data,
+      image: upload.data.image,
+      mediaType: upload.data.mediaType,
+    });
     if (!result) return log.fail("ai_failed");
     const { model, ...rest } = result;
-    return log.ok(Response.json(rest, { headers: { "Cache-Control": "no-store" } }), model);
-  };
+    return log.ok(Response.json(rest, { headers: JSON_HEADERS }), model);
+  });
 }
 
 export function healthHandler(deps: () => AiDeps) {
   return (): Response =>
     Response.json(
       { status: "ok", ai: deps().chain ? "configured" : "off", prompts: PROMPT_VERSION },
-      { headers: { "Cache-Control": "no-store" } },
+      { headers: JSON_HEADERS },
     );
 }

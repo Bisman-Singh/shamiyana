@@ -1,7 +1,16 @@
 import type { Change } from "./changes";
 import { LIMITS, type CategoryId, type TaskArea } from "./constants";
-import type { Enrichment } from "./enrichment";
-import type { Brief, CustomTask, Guest, PlanRecord, SavedIdea, VendorProgress } from "./schema";
+import { sanitizeEnrichment, type Enrichment } from "./enrichment";
+import { shiftableCategories } from "./catalog";
+import {
+  factsOf,
+  type Brief,
+  type CustomTask,
+  type Guest,
+  type PlanRecord,
+  type SavedIdea,
+  type VendorProgress,
+} from "./schema";
 
 /**
  * Every edit to a plan is a pure function from one record to the next, which
@@ -76,6 +85,19 @@ export function withEnrichment(
     enrichedFor,
     tasks: [...kept, ...fresh].slice(0, LIMITS.customTasksMax),
   });
+}
+
+/**
+ * Re-cleans the AI text in a plan that came from outside this browser, a
+ * share link or a backup file. Schema checks bound its length; this also
+ * strips control and direction-override characters, as for a fresh answer.
+ */
+export function withCleanEnrichment(record: PlanRecord): PlanRecord {
+  if (!record.enrichment) return record;
+  return {
+    ...record,
+    enrichment: sanitizeEnrichment(record.enrichment, shiftableCategories(factsOf(record.brief))),
+  };
 }
 
 export function updateBrief(record: PlanRecord, brief: Brief, now: string): PlanRecord {

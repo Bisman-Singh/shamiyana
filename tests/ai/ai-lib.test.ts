@@ -11,7 +11,6 @@ import {
   planSystem,
   refinePrompt,
   refineSystem,
-  shiftableCategories,
   visionPrompt,
   visionSystem,
 } from "@/lib/ai/prompts";
@@ -19,6 +18,7 @@ import { REDACTED, redact } from "@/lib/ai/redact";
 import { runRefine, runVision } from "@/lib/ai/run";
 import { sanitizeVision, visionResultSchema } from "@/lib/ai/vision-result";
 import { planBudget } from "@/lib/plan/budget";
+import { shiftableCategories } from "@/lib/plan/catalog";
 import { TODAY, birthdayBrief, communityBrief, weddingBrief, weddingFacts } from "../fixtures";
 import { JPEG, brokenGenerateModel, generatingModel, spec } from "../helpers/ai";
 
@@ -30,8 +30,19 @@ describe("redact", () => {
     ["a PAN", "PAN ABCDE1234F for invoices"],
     ["an Aadhaar-shaped number", "id 1234 5678 9012"],
     ["a long number", "account 001234567890123"],
+    ["a mobile with a trunk zero", "call 098765 43210"],
+    ["a dashed mobile", "call 987-654-3210"],
+    ["a landline", "office 022 2345 6789"],
+    ["a city landline", "call 0141-2345678"],
+    ["a lowercase PAN", "pan abcde1234f"],
+    ["a mobile in Devanagari digits", "फ़ोन ९८७६५४३२१०"],
   ])("removes %s", (_label, text) => {
     expect(redact(text)).toContain(REDACTED);
+  });
+
+  it("reads Indian-script digits as digits and keeps other numbers", () => {
+    expect(redact("२५० मेहमान")).toBe("250 मेहमान");
+    expect(redact("৪০ guests")).toBe("40 guests");
   });
 
   it("leaves dates, money and guest counts alone", () => {
@@ -115,12 +126,14 @@ describe("models", () => {
       buildChain({
         GEMINI_MODELS: ["gemini-3.5-flash"],
         AI_DAILY_REQUEST_CAP: 1,
+        AI_DAILY_CLIENT_CAP: 1,
         GOOGLE_GENERATIVE_AI_API_KEY: undefined,
       }),
     ).toBeNull();
     const chain = buildChain({
       GEMINI_MODELS: ["a-model", "b-model"],
       AI_DAILY_REQUEST_CAP: 1,
+      AI_DAILY_CLIENT_CAP: 1,
       GOOGLE_GENERATIVE_AI_API_KEY: "k",
     });
     expect(chain?.map((s) => s.id)).toEqual(["a-model", "b-model"]);
