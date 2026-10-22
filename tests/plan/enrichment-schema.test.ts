@@ -160,7 +160,7 @@ describe("briefSchema", () => {
   it("cleans text fields and keeps newlines only in notes", () => {
     const parsed = briefSchema.parse({
       ...birthdayBrief,
-      title: " Dadi\nturns 80‮ ",
+      title: " Dadi\nturns 80\u202E ",
       notes: "Line one\nLine two\u0000",
     });
     expect(parsed.title).toBe("Dadi turns 80");

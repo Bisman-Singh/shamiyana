@@ -18,7 +18,7 @@ function asciiDigits(text: string): string {
 }
 
 const PATTERNS: readonly RegExp[] = [
-  /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g,
+  /[\w.+-]{1,254}@[\w-]{1,63}(?:\.[\w-]{1,63}){1,10}/g,
   /\b[A-Z]{5}\d{4}[A-Z]\b/gi,
   /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g,
   /(?<!\d)(?:\+?91[\s-]?|0)?[6-9](?:[\s-]?\d){9}(?!\d)/g,

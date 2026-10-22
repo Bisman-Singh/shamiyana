@@ -1,20 +1,21 @@
 /**
  * Plain-text hygiene for anything typed by a user or written by the model:
- * C0 controls, DEL and the bidi override and isolate marks are removed, so a
+ * C0 and C1 controls, DEL and the bidi override and isolate marks are removed, so a
  * string can't hide characters or reorder itself on screen, in a CSV or in a
  * calendar file.
  */
 
-// eslint-disable-next-line no-control-regex -- matching control characters is the point
-const CONTROLS = /[\u0000-\u0009\u000B-\u001F\u007F‪-‮⁦-⁩]/g;
-// eslint-disable-next-line no-control-regex -- matching control characters is the point
-const CONTROLS_AND_NEWLINES = /[\u0000-\u001F\u007F‪-‮⁦-⁩]/g;
+// Cc is every C0 and C1 control; the ranges are the bidi embeddings, overrides and isolates.
+const CONTROLS = /[^\P{Cc}\n]|[\u202A-\u202E\u2066-\u2069]/gu;
+const CONTROLS_AND_NEWLINES = /[\p{Cc}\u202A-\u202E\u2066-\u2069]/gu;
 
 export function cleanText(value: string, keepNewlines = false): string {
   return value
     .normalize("NFC")
     .replace(keepNewlines ? CONTROLS : CONTROLS_AND_NEWLINES, " ")
-    .replace(/[ \t]+\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .join("\n")
     .trim();
 }
 

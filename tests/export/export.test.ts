@@ -170,7 +170,7 @@ describe("share links", () => {
       return btoa(String.fromCharCode(...bytes))
         .replace(/\+/g, "-")
         .replace(/\//g, "_")
-        .replace(/=+$/, "");
+        .replace(/=/g, "");
     };
     expect(await decodeShare(await packed('{"v":1,"plan":{"brief":{}}}'))).toBeNull();
     expect(await decodeShare(await packed(" ".repeat(200_000)))).toBeNull();

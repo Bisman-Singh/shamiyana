@@ -36,7 +36,8 @@ function toBase64Url(bytes: Uint8Array): string {
   for (let i = 0; i < bytes.length; i += 0x8000) {
     binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   }
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  // = only ever pads the end of base64, so dropping every one is the same as trimming the end
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
 function fromBase64Url(text: string): Uint8Array | null {

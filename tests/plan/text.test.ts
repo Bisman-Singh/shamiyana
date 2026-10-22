@@ -2,7 +2,11 @@ import { cleanText, clip } from "@/lib/plan/text";
 
 describe("cleanText", () => {
   it("removes control characters and bidi overrides", () => {
-    expect(cleanText("a\u0000b‮c⁦d\u007F")).toBe("a b c d");
+    expect(cleanText("a\u0000b\u202Ec\u2066d\u007F")).toBe("a b c d");
+  });
+
+  it("removes C1 control characters too", () => {
+    expect(cleanText("a\u0085b\u009Fc")).toBe("a b c");
   });
 
   it("drops newlines unless asked to keep them", () => {

@@ -25,7 +25,7 @@ export function allocate(
 ): BudgetLine[] {
   const positive = weights.filter(([, w]) => w > 0);
   const sum = positive.reduce((acc, [, w]) => acc + w, 0);
-  if (positive.length === 0 || sum === 0 || total <= 0) return [];
+  if (total <= 0) return [];
 
   const step = total >= unit * positive.length ? unit : 1;
   const units = Math.floor(total / step);
@@ -45,10 +45,12 @@ export function allocate(
     share: p.share,
     amount: (p.base + (bonus.has(p.order) ? 1 : 0)) * step,
   }));
+  const [first, ...others] = lines;
+  if (!first) return [];
   const rest = total - units * step;
   const sink =
     lines.find((l) => l.category === "contingency") ??
-    lines.reduce((max, l) => (l.amount > max.amount ? l : max));
+    others.reduce((max, l) => (l.amount > max.amount ? l : max), first);
   sink.amount += rest;
   return lines;
 }

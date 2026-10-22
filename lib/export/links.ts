@@ -26,8 +26,8 @@ export function fileName(title: string, extension: string): string {
     .normalize("NFC")
     .toLowerCase()
     .replace(/[^\p{L}\p{M}\p{N}]+/gu, "-")
-    .replace(/^-+|-+$/g, "")
+    .replace(/^-|-$/g, "")
     .slice(0, 48)
-    .replace(/-+$/, "");
+    .replace(/-$/, "");
   return `${slug === "" ? "plan" : slug}.${extension}`;
 }
