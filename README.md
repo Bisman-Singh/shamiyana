@@ -131,8 +131,11 @@ only. The key is never sent to the browser.
   text is escaped and folded by bytes.
 - Logs hold route, outcome, status, timing and model only. Errors are short
   codes with no internals. Config is validated at boot.
+- Server code imports `server-only`, so the key and the handlers can never be
+  bundled for the browser. `/api/health` says only that the server is up.
 - CI runs `npm audit`, gitleaks over the full history and CodeQL. Dependabot
-  watches npm and Actions. Every Action is pinned to a commit SHA. More in
+  watches npm and Actions. Every Action is pinned to a commit SHA. The
+  reporting contact is in `/.well-known/security.txt`. More in
   [SECURITY.md](SECURITY.md).
 
 ### Efficiency

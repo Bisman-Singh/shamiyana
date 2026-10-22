@@ -58,8 +58,17 @@ test("AI routes refuse cross-site, wrong-type and oversized requests", async ({ 
   expect(await huge.json()).toEqual({ error: "too_large" });
 });
 
-test("health reports status without secrets and is never cached", async ({ request }) => {
+test("health says only that the server is up and is never cached", async ({ request }) => {
   const response = await request.get("/api/health");
   expect(response.headers()["cache-control"]).toContain("no-store");
-  expect(await response.json()).toMatchObject({ status: "ok", ai: "off" });
+  expect(await response.json()).toEqual({ status: "ok" });
+});
+
+test("security.txt is served as plain text with the reporting contact", async ({ request }) => {
+  const response = await request.get("/.well-known/security.txt");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toContain("text/plain");
+  expect(await response.text()).toContain(
+    "Contact: https://github.com/Bisman-Singh/shamiyana/security/advisories/new",
+  );
 });

@@ -3,7 +3,6 @@ import { createTextStreamResponse } from "ai";
 import type { z } from "zod";
 import { AnswerCache } from "@/lib/ai/cache";
 import { buildChain, type ModelSpec } from "@/lib/ai/models";
-import { PROMPT_VERSION } from "@/lib/ai/prompts";
 import {
   lookupPlan,
   runRefine,
@@ -254,10 +253,7 @@ export function visionHandler(deps: () => AiDeps) {
   });
 }
 
-export function healthHandler(deps: () => AiDeps) {
-  return (): Response =>
-    Response.json(
-      { status: "ok", ai: deps().chain ? "configured" : "off", prompts: PROMPT_VERSION },
-      { headers: JSON_HEADERS },
-    );
+/** Up or not, and nothing else: whether AI is configured stays private. */
+export function healthHandler(): Response {
+  return Response.json({ status: "ok" }, { headers: JSON_HEADERS });
 }

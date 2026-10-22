@@ -4,7 +4,7 @@
 
 Please use GitHub's private vulnerability reporting on this repository
 (Security tab, "Report a vulnerability"). Don't open a public issue for a
-security problem.
+security problem. The same contact is published at `/.well-known/security.txt`.
 
 ## What there is to protect
 
@@ -14,7 +14,7 @@ and spends money on every AI call. So the threats that matter are:
 
 | Threat                           | Controls                                                                                                                                                                                                                                                                               | Where                                                                                  |
 | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Key theft                        | Key read on the server only, validated at boot, never logged or sent to the browser; the client talks only to its own origin (`connect-src 'self'`)                                                                                                                                    | `lib/server/env.ts`, `proxy.ts`                                                        |
+| Key theft                        | Key read on the server only, in modules that import `server-only` so the build fails if one reaches the browser; validated at boot, never logged; the health check says only that the server is up; the client talks only to its own origin (`connect-src 'self'`)                     | `lib/server/env.ts`, `proxy.ts`                                                        |
 | Spend abuse                      | Same-origin check, per-client sliding-window limits of 8, 20 and 6 per minute for plan, refine and photo, a daily cap per instance and a smaller one per client, IPv6 clients grouped by /64, output token and time caps, and a six-hour answer cache                                  | `lib/server/http.ts`, `lib/server/rate-limit.ts`, `lib/ai/run.ts`                      |
 | Malformed or hostile input       | Strict Zod schemas that reject unknown keys and bound every string and number; bodies capped while being read; control and bidi characters stripped; images typed by magic bytes and capped at 4 MB; anything unexpected answered with a bare 500                                      | `lib/server/requests.ts`, `lib/plan/schema.ts`, `lib/server/handlers.ts`               |
 | Prompt injection                 | User text fenced and stripped of angle brackets; the system prompt treats it as data; model output sanitized and bounded; plan changes arrive unticked and apply only after the user ticks them                                                                                        | `lib/ai/prompts.ts`, `lib/plan/changes.ts`                                             |

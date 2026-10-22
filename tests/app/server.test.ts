@@ -25,6 +25,8 @@ describe("content security policy", () => {
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).not.toContain("unsafe-inline");
     expect(csp).not.toContain("unsafe-eval");
+    expect(csp).toContain("img-src 'self' blob:;");
+    expect(csp).not.toContain("data:");
   });
 
   it("relaxes only what the dev server needs", () => {
@@ -95,7 +97,7 @@ describe("route files", () => {
     );
     expect(refined.status).toBe(503);
     expect((await vision.POST(post({}))).status).toBe(415);
-    expect(await health.GET().json()).toMatchObject({ status: "ok", ai: "off" });
+    expect(await health.GET().json()).toEqual({ status: "ok" });
     expect(plan.maxDuration).toBe(60);
     expect(health.dynamic).toBe("force-dynamic");
     expect(TODAY).toBeTruthy();

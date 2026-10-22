@@ -381,13 +381,9 @@ describe("every route", () => {
 });
 
 describe("GET /api/health", () => {
-  it("reports whether AI is configured, without secrets", async () => {
-    const on = (await healthHandler(() => testDeps([spec(streamingModel([]))]))().json()) as Record<
-      string,
-      unknown
-    >;
-    expect(Object.keys(on).sort((a, b) => a.localeCompare(b))).toEqual(["ai", "prompts", "status"]);
-    expect(on).toMatchObject({ status: "ok", ai: "configured" });
-    expect(await healthHandler(() => testDeps(null))().json()).toMatchObject({ ai: "off" });
+  it("says only that the server is up, never how it is configured", async () => {
+    const response = healthHandler();
+    expect(await response.json()).toEqual({ status: "ok" });
+    expect(response.headers.get("cache-control")).toContain("no-store");
   });
 });

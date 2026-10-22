@@ -1,5 +1,5 @@
-import { healthHandler, liveDeps } from "@/lib/server/handlers";
+import { healthHandler } from "@/lib/server/handlers";
 
 export const dynamic = "force-dynamic";
 
-export const GET = healthHandler(liveDeps);
+export const GET = healthHandler;
