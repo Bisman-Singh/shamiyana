@@ -610,6 +610,8 @@ input[type="radio"] {
 
 .skeleton {
   padding-block: 32px;
+  /* keeps the footer below the fold until the saved plans are read */
+  min-height: 100vh;
 }
 
 .skeleton-line,
