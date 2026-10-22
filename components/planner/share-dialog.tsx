@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { encodeShare, shareUrl } from "@/lib/export/share";
+import { MAX_ENCODED, encodeShare, shareUrl } from "@/lib/export/share";
 import type { PlanRecord } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
-
-const MAX_LINK = 30_000;
 
 /** A modal with the share link. The native dialog traps focus and closes on Escape. */
 export function ShareDialog({ record, onClose }: { record: PlanRecord; onClose: () => void }) {
@@ -17,6 +15,7 @@ export function ShareDialog({ record, onClose }: { record: PlanRecord; onClose: 
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [link, setLink] = useState<string | null>(null);
   const [broken, setBroken] = useState(false);
+  const [tooLong, setTooLong] = useState(false);
   const announce = useAnnounce();
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
 
@@ -25,7 +24,9 @@ export function ShareDialog({ record, onClose }: { record: PlanRecord; onClose: 
     let live = true;
     encodeShare(record).then(
       (encoded) => {
-        if (live) setLink(shareUrl(window.location.origin, encoded));
+        if (!live) return;
+        if (encoded.length > MAX_ENCODED) setTooLong(true);
+        else setLink(shareUrl(window.location.origin, encoded));
       },
       () => {
         if (live) setBroken(true);
@@ -46,17 +47,16 @@ export function ShareDialog({ record, onClose }: { record: PlanRecord; onClose: 
     }
   }
 
-  const tooLong = link !== null && link.length > MAX_LINK;
   const canShare = typeof navigator !== "undefined" && "share" in navigator;
 
   return (
     <dialog ref={dialogRef} className="dialog" aria-labelledby={`${baseId}-h`} onClose={onClose}>
       <h2 id={`${baseId}-h`}>{s.heading}</h2>
       <p>{s.intro}</p>
-      {link === null && !broken ? <p>{dict.common.loading}</p> : null}
+      {link === null && !broken && !tooLong ? <p>{dict.common.loading}</p> : null}
       {broken ? <Notice tone="error">{s.failed}</Notice> : null}
       {tooLong ? <Notice tone="error">{s.tooLong}</Notice> : null}
-      {link !== null && !tooLong ? (
+      {link !== null ? (
         <>
           <label htmlFor={`${baseId}-link`}>{s.label}</label>
           <input

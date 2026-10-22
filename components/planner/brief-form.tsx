@@ -141,7 +141,13 @@ export function BriefForm({
       {editing ? null : (
         <Samples
           onPick={(type) => {
-            setDraft(sampleDraft(type, today, f.sampleTitles[type]));
+            setDraft(
+              sampleDraft(type, today, {
+                title: f.sampleTitles[type],
+                city: f.sampleCities[type],
+                notes: f.sampleNotes[type],
+              }),
+            );
             setErrors({});
           }}
         />

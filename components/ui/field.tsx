@@ -4,6 +4,7 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from "react";
+import { oneOf } from "@/lib/plan/loose";
 
 /**
  * Labelled form controls. Hint and error are tied to the control with
@@ -88,14 +89,23 @@ export interface Option<T extends string> {
   hint?: string;
 }
 
+type SelectProps<T extends string> = Described & {
+  options: readonly Option<T>[];
+  value: T;
+  /** Gets the chosen option's value; anything outside the options is ignored. */
+  onValueChange: (value: T) => void;
+} & Omit<SelectHTMLAttributes<HTMLSelectElement>, "value" | "defaultValue" | "onChange">;
+
 export function SelectField<T extends string>({
   id,
   label,
   hint,
   error,
   options,
+  value,
+  onValueChange,
   ...select
-}: Described & { options: readonly Option<T>[] } & SelectHTMLAttributes<HTMLSelectElement>) {
+}: SelectProps<T>) {
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
@@ -103,6 +113,14 @@ export function SelectField<T extends string>({
         id={id}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy(id, hint, error)}
+        value={value}
+        onChange={(e) => {
+          const chosen = oneOf(
+            e.target.value,
+            options.map((o) => o.value),
+          );
+          if (chosen !== null) onValueChange(chosen);
+        }}
         {...select}
       >
         {options.map((o) => (

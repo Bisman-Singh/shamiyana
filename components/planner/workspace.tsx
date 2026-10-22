@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { downloadText } from "@/lib/client/files";
 import { fileName } from "@/lib/export/links";
 import { formatDate, formatMoney, plural } from "@/lib/i18n/format";
@@ -13,6 +13,7 @@ import { buildVendors } from "@/lib/plan/vendors";
 import { useLocale } from "../locale-provider";
 import { useAnnounce, useFocusOnMount } from "../ui/announcer";
 import { Notice } from "../ui/notice";
+import { UndoButton } from "../ui/undo-button";
 import { Tabs, type Tab } from "../ui/tabs";
 import { AiStatus } from "./ai-status";
 import { BudgetPanel } from "./budget-panel";
@@ -43,11 +44,13 @@ export function usePlanView(record: PlanRecord, today: string): PlanView {
 }
 
 function PlanHeader({
+  titleId,
   view,
   focusOnOpen,
   onEdit,
   onShare,
 }: {
+  titleId: string;
   view: PlanView;
   focusOnOpen: boolean;
   onEdit: () => void;
@@ -62,7 +65,7 @@ function PlanHeader({
   return (
     <header className="plan-head">
       <div>
-        <h1 id="plan-title" ref={titleRef} tabIndex={-1}>
+        <h1 id={titleId} ref={titleRef} tabIndex={-1}>
           {brief.title}
         </h1>
         <p className="plan-facts">
@@ -109,17 +112,8 @@ function PlanHeader({
 
 /** Shown after a removal; its button takes focus, since the removed row took the focus with it. */
 function UndoNotice({ message, onUndo }: { message: string; onUndo: () => void }) {
-  const { dict } = useLocale();
-  const buttonRef = useFocusOnMount<HTMLButtonElement>(true);
   return (
-    <Notice
-      tone="success"
-      action={
-        <button ref={buttonRef} type="button" className="btn btn-small" onClick={onUndo}>
-          {dict.common.undo}
-        </button>
-      }
-    >
+    <Notice tone="success" action={<UndoButton onUndo={onUndo} />}>
       {message}
     </Notice>
   );
@@ -176,6 +170,7 @@ export function Workspace({ record, today, onSave, findPlan, focusOnOpen = false
   const announce = useAnnounce();
   const [tab, setTab] = useState<TabId>("overview");
   const [sharing, setSharing] = useState(false);
+  const titleId = useId();
   const view = usePlanView(record, today);
   const { update, undo, clearUndo } = useUndoable(record, onSave);
 
@@ -228,8 +223,9 @@ export function Workspace({ record, today, onSave, findPlan, focusOnOpen = false
   ];
 
   return (
-    <article className="workspace" aria-labelledby="plan-title">
+    <article className="workspace" aria-labelledby={titleId}>
       <PlanHeader
+        titleId={titleId}
         view={view}
         focusOnOpen={focusOnOpen}
         onEdit={onEdit}

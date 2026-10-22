@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CATEGORY_IDS, IDEA_AREAS } from "@/lib/plan/constants";
+import { CATEGORY_IDS, IDEA_AREAS, IDEA_COSTS, LIMITS, TASK_AREAS } from "@/lib/plan/constants";
 import { CHANGE_OPS } from "@/lib/plan/changes";
 
 /**
@@ -9,8 +9,8 @@ import { CHANGE_OPS } from "@/lib/plan/changes";
  * `parseChanges` and `sanitizeVision` enforce the real bounds afterwards.
  */
 
-const areas = [...CATEGORY_IDS, "planning"] as const;
-const changeAreas = [...new Set<string>([...areas, ...IDEA_AREAS])] as [string, ...string[]];
+const changeAreas = [...new Set<string>([...TASK_AREAS, ...IDEA_AREAS])] as [string, ...string[]];
+const factorRange = `${String(LIMITS.factorMin)} to ${String(LIMITS.factorMax)}`;
 
 export const enrichmentOutputSchema = z.object({
   theme: z.object({
@@ -23,7 +23,7 @@ export const enrichmentOutputSchema = z.object({
         area: z.enum(IDEA_AREAS),
         title: z.string().describe("Under 8 words."),
         detail: z.string().describe("One or two practical sentences."),
-        cost: z.enum(["low", "medium", "high"]),
+        cost: z.enum(IDEA_COSTS),
       }),
     )
     .describe("Six to eight personalised ideas across different areas."),
@@ -34,7 +34,7 @@ export const enrichmentOutputSchema = z.object({
     .array(
       z.object({
         category: z.enum(CATEGORY_IDS),
-        factor: z.number().describe("Multiplier between 0.5 and 1.5 on this category's share."),
+        factor: z.number().describe(`Multiplier from ${factorRange} on this category's share.`),
         reason: z.string().describe("One sentence tied to this event's details."),
       }),
     )
@@ -43,8 +43,11 @@ export const enrichmentOutputSchema = z.object({
     .array(
       z.object({
         title: z.string().describe("An imperative task, under 12 words."),
-        area: z.enum(areas),
-        weeksBefore: z.number().int().describe("Whole weeks before the event, 0 to 52."),
+        area: z.enum(TASK_AREAS),
+        weeksBefore: z
+          .number()
+          .int()
+          .describe(`Whole weeks before the event, 0 to ${String(LIMITS.weeksMax)}.`),
       }),
     )
     .describe("Up to five tasks specific to this event that a standard checklist would miss."),
@@ -66,7 +69,7 @@ export const refineOutputSchema = z.object({
         count: z.number().int().optional().describe("set_guests: new guest count."),
         date: z.string().optional().describe("set_date: YYYY-MM-DD."),
         category: z.enum(CATEGORY_IDS).optional().describe("shift_category: which line."),
-        factor: z.number().optional().describe("shift_category: 0.5 to 1.5."),
+        factor: z.number().optional().describe(`shift_category: ${factorRange}.`),
         title: z.string().optional().describe("add_task or add_idea: the title."),
         detail: z.string().optional().describe("add_idea: one sentence."),
         area: z.enum(changeAreas).optional().describe("Task area or idea area."),
@@ -75,7 +78,6 @@ export const refineOutputSchema = z.object({
     )
     .describe("Proposed plan changes. Empty when the user only asked a question."),
 });
-export type RefineOutput = z.infer<typeof refineOutputSchema>;
 
 export const VISION_KINDS = ["venue", "decor", "invitation", "outfit", "other"] as const;
 

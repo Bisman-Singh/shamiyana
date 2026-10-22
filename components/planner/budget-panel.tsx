@@ -1,24 +1,29 @@
 "use client";
 
-import { toCsv } from "@/lib/export/csv";
-import { fileName } from "@/lib/export/links";
+import { useId } from "react";
 import { budgetRows } from "@/lib/export/sheets";
-import { downloadText } from "@/lib/client/files";
+import { downloadCsv } from "@/lib/client/files";
 import { format, formatMoney } from "@/lib/i18n/format";
-import type { BudgetRow as Row } from "@/lib/plan/budget";
-import type { CategoryId } from "@/lib/plan/constants";
+import {
+  clampFactor,
+  previewShifts,
+  type BudgetRow as Row,
+  type ShiftPreview,
+} from "@/lib/plan/budget";
+import { LIMITS, type CategoryId } from "@/lib/plan/constants";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { setFactor } from "@/lib/plan/record";
+import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import type { PlanView, Update } from "./types";
 
 const STEP = 0.1;
-const MIN = 0.5;
-const MAX = 1.5;
+const MIN = LIMITS.factorMin;
+const MAX = LIMITS.factorMax;
 
-/** One step up or down on a category's weight, kept inside 0.5 to 1.5. */
+/** One step up or down on a category's weight, on the 0.1 grid and inside its bounds. */
 export function nudge(current: number, direction: 1 | -1): number {
-  return Math.round(Math.min(MAX, Math.max(MIN, current + direction * STEP)) * 10) / 10;
+  return clampFactor(Math.round((current + direction * STEP) * 10) / 10);
 }
 
 type Shift = (category: CategoryId, factor: number | null) => void;
@@ -112,20 +117,27 @@ function BudgetLine({
 function Suggestions({
   ideas,
   factors,
+  preview,
   shift,
 }: {
   ideas: Enrichment;
   factors: PlanView["record"]["factors"];
+  preview: ShiftPreview;
   shift: Shift;
 }) {
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
+  const id = useId();
   const b = dict.budget;
   return (
-    <section aria-labelledby="ai-shifts" className="suggestions">
-      <h3 id="ai-shifts">{b.suggestions}</h3>
+    <section aria-labelledby={id} className="suggestions">
+      <h3 id={id}>{b.suggestions}</h3>
       <ul className="plain-list">
         {ideas.shifts.map((s) => {
           const applied = factors[s.category] === s.factor;
+          // Once applied, the line already holds the shift; compare with no shift instead.
+          const { before, after } = applied
+            ? { before: preview(s.category, 1).after, after: preview(s.category, s.factor).before }
+            : preview(s.category, s.factor);
           return (
             <li key={s.category} className="suggestion">
               <p>
@@ -133,7 +145,8 @@ function Suggestions({
                   {format(b.suggestion, {
                     direction: s.factor > 1 ? b.up : b.down,
                     category: dict.categories[s.category],
-                    pct: Math.round(Math.abs(s.factor - 1) * 100),
+                    before: formatMoney(before, locale),
+                    after: formatMoney(after, locale),
                   })}
                 </strong>{" "}
                 {s.reason}
@@ -238,11 +251,7 @@ export function BudgetPanel({
           type="button"
           className="btn btn-quiet"
           onClick={() => {
-            downloadText(
-              fileName(record.brief.title, "budget.csv"),
-              "text/csv;charset=utf-8",
-              toCsv(budgetRows(budget, dict)),
-            );
+            downloadCsv(record.brief.title, "budget", budgetRows(budget, dict));
           }}
         >
           {b.csv}
@@ -256,7 +265,12 @@ export function BudgetPanel({
       </p>
       <BudgetTable view={view} shift={shift} />
       {ideas && ideas.shifts.length > 0 ? (
-        <Suggestions ideas={ideas} factors={record.factors} shift={shift} />
+        <Suggestions
+          ideas={ideas}
+          factors={record.factors}
+          preview={previewShifts(factsOf(record.brief), record.factors)}
+          shift={shift}
+        />
       ) : null}
     </div>
   );

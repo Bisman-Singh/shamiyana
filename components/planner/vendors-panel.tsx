@@ -1,11 +1,10 @@
 "use client";
 
-import { toCsv } from "@/lib/export/csv";
-import { fileName, mapsSearchUrl } from "@/lib/export/links";
+import { mapsSearchUrl } from "@/lib/export/links";
 import { checklistRows } from "@/lib/export/sheets";
-import { downloadText } from "@/lib/client/files";
+import { downloadCsv } from "@/lib/client/files";
 import { format, formatMoney } from "@/lib/i18n/format";
-import { LIMITS, VENDOR_STATUSES, type VendorStatus } from "@/lib/plan/constants";
+import { LIMITS, VENDOR_STATUSES } from "@/lib/plan/constants";
 import { readAmount } from "@/lib/plan/draft";
 import { setVendor } from "@/lib/plan/record";
 import type { VendorProgress } from "@/lib/plan/schema";
@@ -54,13 +53,13 @@ function Card({ card, city, update }: { card: VendorCard; city: string; update: 
         </summary>
         <div className="vendor-body">
           <div className="form-row">
-            <SelectField<VendorStatus>
+            <SelectField
               id={`${id}-status`}
               label={format(v.statusLabel, { category: name })}
               value={card.progress.status}
               options={VENDOR_STATUSES.map((s) => ({ value: s, label: v.statuses[s] }))}
-              onChange={(e) => {
-                save({ status: e.target.value as VendorStatus });
+              onValueChange={(status) => {
+                save({ status });
               }}
             />
             <TextField
@@ -87,10 +86,10 @@ function Card({ card, city, update }: { card: VendorCard; city: string; update: 
             label={v.note}
             hint={v.noteHint}
             rows={2}
-            maxLength={200}
+            maxLength={LIMITS.vendorNoteMax}
             value={card.progress.note}
             onChange={(e) => {
-              save({ note: e.target.value.slice(0, 200) });
+              save({ note: e.target.value.slice(0, LIMITS.vendorNoteMax) });
             }}
           />
           <Questions title={v.ask} items={questions} />
@@ -127,11 +126,7 @@ export function VendorsPanel({ view, update }: { view: PlanView; update: Update 
           type="button"
           className="btn btn-quiet"
           onClick={() => {
-            downloadText(
-              fileName(record.brief.title, "checklist.csv"),
-              "text/csv;charset=utf-8",
-              toCsv(checklistRows(view.vendors, dict)),
-            );
+            downloadCsv(record.brief.title, "checklist", checklistRows(view.vendors, dict));
           }}
         >
           {dict.downloads.checklist}

@@ -10,9 +10,12 @@ import { CheckGroup, RadioGroup, SelectField, TextArea, TextField } from "@/comp
 import { nextTabIndex } from "@/components/ui/tabs";
 import { PlanStore } from "@/lib/client/plan-store";
 import { getDictionary } from "@/lib/i18n";
+import { formatMoney } from "@/lib/i18n/format";
+import { planBudget } from "@/lib/plan/budget";
 import { draftFromBrief } from "@/lib/plan/draft";
 import { saveIdea, withEnrichment } from "@/lib/plan/record";
-import { NOW, communityBrief, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
+import { NOW, TODAY, communityBrief, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
+import { stubCanvas, stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch, streamed } from "../helpers/fetch";
 import { expectAccessible, renderIn } from "../helpers/render";
 import { MemoryStorage } from "../helpers/storage";
@@ -25,6 +28,27 @@ afterEach(() => {
 });
 
 describe("small pieces", () => {
+  it("hands over the chosen option and ignores a value outside the options", () => {
+    const onValueChange = vi.fn();
+    render(
+      <SelectField
+        id="size"
+        label="Size"
+        value="m"
+        onValueChange={onValueChange}
+        options={[
+          { value: "s", label: "Small" },
+          { value: "m", label: "Medium" },
+        ]}
+      />,
+    );
+    const select = screen.getByLabelText("Size");
+    fireEvent.change(select, { target: { value: "s" } });
+    expect(onValueChange).toHaveBeenCalledWith("s");
+    fireEvent.change(select, { target: { value: "xl" } });
+    expect(onValueChange).toHaveBeenCalledTimes(1);
+  });
+
   it("refuses to run without a locale provider", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     expect(() => renderHook(() => useLocale())).toThrow("useLocale needs a LocaleProvider");
@@ -74,9 +98,17 @@ describe("form controls", () => {
           label="Pick"
           hint="One of these"
           error="Pick one"
+          value="x"
+          onValueChange={vi.fn()}
           options={[{ value: "x", label: "X" }]}
         />
-        <SelectField id="d" label="Plain" options={[{ value: "y", label: "Y" }]} />
+        <SelectField
+          id="d"
+          label="Plain"
+          value="y"
+          onValueChange={vi.fn()}
+          options={[{ value: "y", label: "Y" }]}
+        />
         <RadioGroup
           id="e"
           name="e"
@@ -166,21 +198,8 @@ describe("workspace edges", () => {
   });
 
   it("ignores an empty file pick and frees the preview when leaving", async () => {
-    vi.stubGlobal(
-      "createImageBitmap",
-      vi.fn(() => Promise.resolve({ width: 10, height: 10, close: vi.fn() })),
-    );
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
-      drawImage: vi.fn(),
-    } as never);
-    vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation((done) => {
-      done(new Blob(["j"], { type: "image/jpeg" }));
-    });
-    const revoke = vi.fn();
-    vi.stubGlobal(
-      "URL",
-      Object.assign(URL, { createObjectURL: vi.fn(() => "blob:p"), revokeObjectURL: revoke }),
-    );
+    stubCanvas();
+    const { revoke } = stubObjectUrls("blob:p");
     const { unmount } = renderWorkspace(ready());
     await openTab("Ideas");
     const input = panel().getByLabelText("Choose a photo");
@@ -224,11 +243,18 @@ describe("budget and photo edges", () => {
     );
     renderWorkspace(record);
     await openTab("Budget");
-    expect(panel().getByText("Less for Venue by 20%")).toBeInTheDocument();
+    const venue = planBudget(factsOf(weddingBrief), {});
+    const shifted = planBudget(factsOf(weddingBrief), { venue: 0.8 });
+    const amount = (lines: typeof venue) =>
+      formatMoney(lines.find((l) => l.category === "venue")?.amount ?? 0, "en");
+    const text = `Less for Venue: ${amount(venue)} to ${amount(shifted)}`;
+    expect(panel().getByText(text)).toBeInTheDocument();
+    await userEvent.click(panel().getByRole("button", { name: /^Apply/ }));
+    expect(panel().getByText(text)).toBeInTheDocument();
     const { BudgetPanel } = await import("@/components/planner/budget-panel");
     const { usePlanView } = await import("@/components/planner/workspace");
     function NoFood() {
-      const view = usePlanView(recordFor(weddingBrief), "2026-10-21");
+      const view = usePlanView(recordFor(weddingBrief), TODAY);
       return (
         <BudgetPanel
           view={{ ...view, budget: { ...view.budget, perGuestCatering: null } }}
@@ -242,20 +268,8 @@ describe("budget and photo edges", () => {
   });
 
   it("shows a photo answer without colours or notes", async () => {
-    vi.stubGlobal(
-      "createImageBitmap",
-      vi.fn(() => Promise.resolve({ width: 10, height: 10, close: vi.fn() })),
-    );
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
-      drawImage: vi.fn(),
-    } as never);
-    vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation((done) => {
-      done(new Blob(["j"], { type: "image/jpeg" }));
-    });
-    vi.stubGlobal(
-      "URL",
-      Object.assign(URL, { createObjectURL: vi.fn(() => "blob:p"), revokeObjectURL: vi.fn() }),
-    );
+    stubCanvas();
+    stubObjectUrls("blob:p");
     mockFetch({
       "/api/plan": () => jsonError("ai_unavailable", 503),
       "/api/vision": () =>

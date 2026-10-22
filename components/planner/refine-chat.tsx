@@ -4,7 +4,9 @@ import { useId, useState, useRef, type RefObject, type SubmitEvent } from "react
 import { requestRefine } from "@/lib/client/api";
 import type { Dictionary } from "@/lib/i18n/en";
 import { format, formatDate, formatMoney, plural } from "@/lib/i18n/format";
-import type { Change } from "@/lib/plan/changes";
+import { previewShifts, type ShiftPreview } from "@/lib/plan/budget";
+import { fitChanges, type Change } from "@/lib/plan/changes";
+import { wholeWeeks } from "@/lib/plan/dates";
 import { LIMITS, type Locale } from "@/lib/plan/constants";
 import { applyChanges, newId } from "@/lib/plan/record";
 import { cleanText } from "@/lib/plan/text";
@@ -13,6 +15,7 @@ import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 import type { PlanView, Update } from "./types";
+import { useRequestSignal } from "./use-request-signal";
 
 interface Turn {
   id: string;
@@ -25,7 +28,12 @@ interface Proposal {
 }
 
 /** Plain words for a proposed change, so the user knows exactly what they approve. */
-export function describeChange(change: Change, dict: Dictionary, locale: Locale): string {
+export function describeChange(
+  change: Change,
+  dict: Dictionary,
+  locale: Locale,
+  preview: ShiftPreview,
+): string {
   const c = dict.refine.changes;
   switch (change.op) {
     case "set_budget":
@@ -34,11 +42,14 @@ export function describeChange(change: Change, dict: Dictionary, locale: Locale)
       return format(c.set_guests, { n: change.count });
     case "set_date":
       return format(c.set_date, { date: formatDate(change.date, locale) });
-    case "shift_category":
+    case "shift_category": {
+      const { before, after } = preview(change.category, change.factor);
       return format(change.factor >= 1 ? c.shift_more : c.shift_less, {
         category: dict.categories[change.category],
-        pct: Math.round(Math.abs(change.factor - 1) * 100),
+        before: formatMoney(before, locale),
+        after: formatMoney(after, locale),
       });
+    }
     case "add_task":
       return format(c.add_task, { title: change.title, weeks: change.weeksBefore });
     case "add_idea":
@@ -65,11 +76,13 @@ function ChatLog({ turns }: { turns: readonly Turn[] }) {
 
 function ProposalForm({
   proposal,
+  preview,
   onChange,
   onApply,
   onDiscard,
 }: {
   proposal: Proposal;
+  preview: ShiftPreview;
   onChange: (next: Proposal) => void;
   onApply: () => void;
   onDiscard: () => void;
@@ -92,7 +105,7 @@ function ProposalForm({
               });
             }}
           />
-          <span>{describeChange(item.change, dict, locale)}</span>
+          <span>{describeChange(item.change, dict, locale, preview)}</span>
         </label>
       ))}
       <div className="actions">
@@ -154,6 +167,18 @@ function ChatForm({
   );
 }
 
+/** What the refine route needs: the facts, never the title or guests, and the last few turns. */
+function refineBody(view: PlanView, locale: Locale, turns: readonly Turn[], message: string) {
+  return {
+    facts: factsOf(view.record.brief),
+    factors: view.record.factors,
+    locale,
+    today: view.today,
+    history: turns.slice(-LIMITS.chatHistoryMax).map(({ role, text }) => ({ role, text })),
+    message,
+  };
+}
+
 export function RefineChat({ view, update }: { view: PlanView; update: Update }) {
   const { dict, locale } = useLocale();
   const r = dict.refine;
@@ -166,6 +191,7 @@ export function RefineChat({ view, update }: { view: PlanView; update: Update })
   const [quiet, setQuiet] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const announce = useAnnounce();
+  const requests = useRequestSignal();
 
   async function send(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -174,21 +200,14 @@ export function RefineChat({ view, update }: { view: PlanView; update: Update })
     setPending(true);
     setError(null);
     setQuiet(false);
-    const { record } = view;
-    const history = turns.slice(-6).map(({ role, text: said }) => ({ role, text: said }));
-    const body = {
-      facts: factsOf(record.brief),
-      factors: record.factors,
-      locale,
-      today: view.today,
-      history,
-      message: text,
-    };
+    const signal = requests.next();
     const result = await requestRefine(
-      body,
+      refineBody(view, locale, turns, text),
       view.budget.rows.map((row) => row.category),
       view.today,
+      signal,
     );
+    if (signal.aborted) return;
     setPending(false);
     if (!result.ok) {
       setError(dict.ai.errors[result.error]);
@@ -202,7 +221,12 @@ export function RefineChat({ view, update }: { view: PlanView; update: Update })
         { id: newId(), role: "assistant" as const, text: result.data.reply },
       ].slice(-12),
     );
-    const items = result.data.changes.map((change) => ({ key: newId(), change, picked: false }));
+    const weeks = wholeWeeks(view.today, view.record.brief.date);
+    const items = fitChanges(result.data.changes, weeks).map((change) => ({
+      key: newId(),
+      change,
+      picked: false,
+    }));
     setProposal(items.length > 0 ? { items } : null);
     setQuiet(items.length === 0);
     announce(items.length > 0 ? result.data.reply : `${result.data.reply} ${r.noChanges}`);
@@ -223,6 +247,7 @@ export function RefineChat({ view, update }: { view: PlanView; update: Update })
       {proposal ? (
         <ProposalForm
           proposal={proposal}
+          preview={previewShifts(factsOf(view.record.brief), view.record.factors)}
           onChange={setProposal}
           onApply={() => {
             apply(proposal);

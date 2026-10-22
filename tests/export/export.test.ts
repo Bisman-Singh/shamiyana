@@ -2,6 +2,7 @@ import { csvCell, toCsv } from "@/lib/export/csv";
 import { buildIcs, escapeText, foldLine } from "@/lib/export/ics";
 import { fileName, googleCalendarUrl, mapsSearchUrl } from "@/lib/export/links";
 import {
+  MAX_ENCODED,
   decodeShare,
   encodeShare,
   readShareHash,
@@ -160,6 +161,7 @@ describe("share links", () => {
   it("rejects anything malformed, oversized or invalid", async () => {
     expect(await decodeShare("")).toBeNull();
     expect(await decodeShare("a".repeat(40_000))).toBeNull();
+    expect(await decodeShare("a".repeat(MAX_ENCODED + 1))).toBeNull();
     expect(await decodeShare("not+base64/")).toBeNull();
     expect(await decodeShare("AAAA")).toBeNull();
     const packed = async (text: string) => {

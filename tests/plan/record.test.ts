@@ -1,7 +1,9 @@
 import { factsOf } from "@/lib/plan/schema";
+import { fitChanges } from "@/lib/plan/changes";
 import { LIMITS } from "@/lib/plan/constants";
+import { wholeWeeks } from "@/lib/plan/dates";
+import { fitTasks } from "@/lib/plan/enrichment";
 import {
-  IDEAS_MAX,
   addTask,
   applyChanges,
   newId,
@@ -30,6 +32,37 @@ const guest: Guest = {
   rsvp: "yes",
   diet: "veg",
 };
+
+describe("fitting AI tasks to the date", () => {
+  it("counts whole weeks and never below zero", () => {
+    expect(wholeWeeks("2026-10-21", "2027-02-14")).toBe(16);
+    expect(wholeWeeks("2026-10-21", "2026-10-27")).toBe(0);
+    expect(wholeWeeks("2026-10-21", "2026-10-01")).toBe(0);
+  });
+
+  it("caps AI and proposed tasks at the weeks left and leaves the rest alone", () => {
+    const e = {
+      ...sampleEnrichment,
+      tasks: [
+        { title: "Far", area: "planning" as const, weeksBefore: 30 },
+        { title: "Near", area: "planning" as const, weeksBefore: 2 },
+      ],
+    };
+    expect(fitTasks(e, 16).tasks.map((t) => t.weeksBefore)).toEqual([16, 2]);
+    expect(fitTasks(e, 16).ideas).toBe(e.ideas);
+    const changes = fitChanges(
+      [
+        { op: "add_task", title: "Far", area: "planning", weeksBefore: 30 },
+        { op: "set_guests", count: 120 },
+      ],
+      4,
+    );
+    expect(changes).toEqual([
+      { op: "add_task", title: "Far", area: "planning", weeksBefore: 4 },
+      { op: "set_guests", count: 120 },
+    ]);
+  });
+});
 
 describe("record helpers", () => {
   it("creates a valid empty record", () => {
@@ -159,10 +192,10 @@ describe("record helpers", () => {
     let record = saveIdea(recordFor(weddingBrief), idea, LATER);
     expect(saveIdea(record, { ...idea, id: "i2" }, LATER)).toBe(record);
     expect(removeIdea(record, "i1", LATER).ideas).toEqual([]);
-    for (let i = 0; i < IDEAS_MAX + 2; i += 1) {
+    for (let i = 0; i < LIMITS.savedIdeasMax + 2; i += 1) {
       record = saveIdea(record, { ...idea, id: `n${i}`, title: `Idea ${i}` }, LATER);
     }
-    expect(record.ideas).toHaveLength(IDEAS_MAX);
+    expect(record.ideas).toHaveLength(LIMITS.savedIdeasMax);
   });
 
   it("applies approved changes in order", () => {

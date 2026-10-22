@@ -5,18 +5,16 @@ import { buildIcs } from "@/lib/export/ics";
 import { fileName, googleCalendarUrl } from "@/lib/export/links";
 import { downloadText } from "@/lib/client/files";
 import { format, formatDate, plural } from "@/lib/i18n/format";
-import { CATEGORY_IDS, LIMITS, type TaskArea } from "@/lib/plan/constants";
+import { LIMITS, TASK_AREAS, type TaskArea } from "@/lib/plan/constants";
 import { daysBetween, isIsoDate } from "@/lib/plan/dates";
 import { addTask, newId, removeTask, restoreHiddenTasks, toggleTask } from "@/lib/plan/record";
-import { cleanText } from "@/lib/plan/text";
+import { customTaskSchema } from "@/lib/plan/schema";
 import { PHASES, type TimelineItem } from "@/lib/plan/timeline";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
 import { areaName, taskTitle } from "./task-title";
 import type { PlanView, Update } from "./types";
-
-const AREAS: TaskArea[] = ["planning", ...CATEGORY_IDS];
 
 function AddTask({ view, update }: { view: PlanView; update: Update }) {
   const { dict } = useLocale();
@@ -31,10 +29,11 @@ function AddTask({ view, update }: { view: PlanView; update: Update }) {
 
   function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    const clean = cleanText(title);
+    const named = customTaskSchema.shape.title.safeParse(title);
+    const clean = named.success ? named.data : "";
     const lead = isIsoDate(date) ? daysBetween(date, brief.date) : -1;
     const next = {
-      title: clean.length < 1 || clean.length > 120 ? t.addTitleError : undefined,
+      title: named.success ? undefined : t.addTitleError,
       date: lead < 0 || daysBetween(view.today, date) < 0 ? t.addDateError : undefined,
     };
     setErrors(next);
@@ -59,7 +58,7 @@ function AddTask({ view, update }: { view: PlanView; update: Update }) {
           id={`${baseId}-title`}
           label={t.addTitle}
           value={title}
-          maxLength={120}
+          maxLength={LIMITS.taskTitleMax}
           error={errors.title}
           onChange={(e) => {
             setTitle(e.target.value);
@@ -81,10 +80,8 @@ function AddTask({ view, update }: { view: PlanView; update: Update }) {
           id={`${baseId}-area`}
           label={t.addArea}
           value={area}
-          options={AREAS.map((a) => ({ value: a, label: areaName(a, dict) }))}
-          onChange={(e) => {
-            setArea(e.target.value as TaskArea);
-          }}
+          options={TASK_AREAS.map((a) => ({ value: a, label: areaName(a, dict) }))}
+          onValueChange={setArea}
         />
         <button type="submit" className="btn">
           {t.addSubmit}

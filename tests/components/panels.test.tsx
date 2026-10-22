@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import { factsOf } from "@/lib/plan/schema";
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { nudge } from "@/components/planner/budget-panel";
+import { tasksFor } from "@/lib/plan/catalog";
 import { withEnrichment } from "@/lib/plan/record";
 import type { Brief, PlanRecord } from "@/lib/plan/schema";
 import {
@@ -13,6 +14,7 @@ import {
   sampleEnrichment,
   weddingBrief,
 } from "../fixtures";
+import { stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
@@ -32,10 +34,7 @@ const downloads: { name: string; text: string }[] = [];
 
 beforeEach(() => {
   downloads.length = 0;
-  vi.stubGlobal(
-    "URL",
-    Object.assign(URL, { createObjectURL: vi.fn(() => "blob:x"), revokeObjectURL: vi.fn() }),
-  );
+  stubObjectUrls("blob:x");
   vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
     this: HTMLAnchorElement,
   ) {
@@ -71,25 +70,9 @@ describe("overview", () => {
 
   it("congratulates when no task is left", () => {
     const base = recordFor(birthdayBrief);
-    const ids = [
-      "b_guests_date",
-      "b_book_venue",
-      "b_memory_book",
-      "b_theme",
-      "b_send_invites",
-      "b_entertainment",
-    ];
-    const rest = [
-      "b_caterer",
-      "b_cake",
-      "b_return_gifts",
-      "b_rsvp_count",
-      "b_playlist_photos",
-      "b_setup",
-    ];
     renderWorkspace({
       ...base,
-      done: [...ids, ...rest],
+      done: tasksFor(birthdayBrief).map((t) => t.id),
       enrichedFor: { facts: factsOf(birthdayBrief), locale: "en" },
     });
     expect(panel().getByText("Every task is done. Enjoy the day.")).toBeInTheDocument();
@@ -267,7 +250,11 @@ describe("guests", () => {
       group: "friends",
     });
     await expectAccessible(container);
-    await userEvent.selectOptions(p.getByLabelText("Reply from Mamaji's family"), "yes");
+    const reply = p.getByLabelText("Reply from Mamaji's family");
+    fireEvent.change(reply, { target: { value: "bogus" } });
+    expect(saved.current.guests[0]?.rsvp).toBe("pending");
+    await userEvent.selectOptions(reply, "yes");
+    expect(saved.current.guests[0]?.rsvp).toBe("yes");
     expect(p.getByText(/Jain 4/)).toBeInTheDocument();
     await userEvent.click(p.getByRole("button", { name: "Use 4 as the guest count" }));
     expect(saved.current.brief.guests).toBe(4);

@@ -11,6 +11,7 @@ import {
 } from "../helpers/ai";
 
 beforeEach(() => {
+  vi.spyOn(console, "info").mockImplementation(() => undefined);
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
   vi.spyOn(console, "error").mockImplementation(() => undefined);
 });

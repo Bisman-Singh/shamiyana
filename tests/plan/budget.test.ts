@@ -1,5 +1,12 @@
-import { allocate, planBudget, summariseBudget, weightsFor } from "@/lib/plan/budget";
+import {
+  allocate,
+  planBudget,
+  previewShifts,
+  summariseBudget,
+  weightsFor,
+} from "@/lib/plan/budget";
 import type { CategoryId } from "@/lib/plan/constants";
+import { BASE_SHARES } from "@/lib/plan/catalog";
 import { birthdayBrief, communityBrief, seeded, weddingBrief } from "../fixtures";
 
 const sum = (xs: readonly { amount: number }[]) => xs.reduce((a, x) => a + x.amount, 0);
@@ -72,9 +79,32 @@ describe("allocate", () => {
 describe("weightsFor", () => {
   it("applies event details and clamps user shifts to 0.5–1.5", () => {
     const weights = new Map(weightsFor(weddingBrief, { decor: 9, venue: 0.1 }));
-    expect(weights.get("beauty")).toBeCloseTo(0.03 * 1.5);
-    expect(weights.get("decor")).toBeCloseTo(0.12 * 1.15 * 1.5);
-    expect(weights.get("venue")).toBeCloseTo(0.2 * 0.5);
+    const get = (c: CategoryId) => weights.get(c) ?? 0;
+    expect(get("decor") / get("venue")).toBeCloseTo((0.12 * 1.12 * 1.5) / (0.18 * 0.5));
+    expect(get("beauty") / get("venue")).toBeCloseTo((0.03 * 1.5) / (0.18 * 0.5));
+  });
+
+  it("keeps contingency at its share however the other lines are tilted", () => {
+    for (const brief of [weddingBrief, birthdayBrief, communityBrief]) {
+      const weights = weightsFor(brief, { venue: 1.5, catering: 1.5 });
+      const total = weights.reduce((acc, [, w]) => acc + w, 0);
+      expect(total).toBeCloseTo(1);
+      expect(new Map(weights).get("contingency")).toBe(BASE_SHARES[brief.type].contingency);
+    }
+    const contingency = planBudget(weddingBrief, {}).find((l) => l.category === "contingency");
+    expect(contingency?.amount).toBeGreaterThanOrEqual(0.08 * weddingBrief.budget);
+  });
+});
+
+describe("previewShifts", () => {
+  it("gives a line's rupees now and with a shift, and nothing for a line the plan lacks", () => {
+    const preview = previewShifts(weddingBrief, { decor: 1.2 });
+    const decor = planBudget(weddingBrief, { decor: 1.2 }).find((l) => l.category === "decor");
+    const { before, after } = preview("decor", 1.5);
+    expect(before).toBe(decor?.amount);
+    expect(after).toBeGreaterThan(before);
+    expect(preview("decor", 1).after).toBeLessThan(before);
+    expect(preview("cake", 1.2)).toEqual({ before: 0, after: 0 });
   });
 });
 

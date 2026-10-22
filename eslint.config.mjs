@@ -56,6 +56,10 @@ export default defineConfig([
     },
   },
   {
+    files: ["lib/server/log.ts"],
+    rules: { "no-console": ["error", { allow: ["info", "warn", "error"] }] },
+  },
+  {
     files: ["tests/**", "e2e/**", "scripts/**"],
     rules: { "max-lines-per-function": "off" },
   },

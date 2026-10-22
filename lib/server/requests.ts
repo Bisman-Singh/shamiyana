@@ -1,8 +1,8 @@
 import "server-only";
 import { z } from "zod";
-import { CATEGORY_IDS, LIMITS, LOCALES } from "@/lib/plan/constants";
+import { LIMITS, LOCALES } from "@/lib/plan/constants";
 import { daysBetween, isIsoDate } from "@/lib/plan/dates";
-import { factsSchema } from "@/lib/plan/schema";
+import { factorsSchema, factsSchema } from "@/lib/plan/schema";
 import { cleanText } from "@/lib/plan/text";
 
 /**
@@ -43,17 +43,17 @@ const turn = z.strictObject({
   text: z
     .string()
     .transform((v) => cleanText(v))
-    .pipe(z.string().min(1).max(600)),
+    .pipe(z.string().min(1).max(LIMITS.replyMax)),
 });
 
 export function refineRequestSchema(serverNow: Date) {
   return z
     .strictObject({
       facts: factsSchema,
-      factors: z.partialRecord(z.enum(CATEGORY_IDS), z.number().min(0.5).max(1.5)),
+      factors: factorsSchema,
       locale: z.enum(LOCALES),
       today: dated(serverNow),
-      history: z.array(turn).max(6),
+      history: z.array(turn).max(LIMITS.chatHistoryMax),
       message: z
         .string()
         .transform((v) => cleanText(v))

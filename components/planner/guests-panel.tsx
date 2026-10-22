@@ -1,10 +1,8 @@
 "use client";
 
 import { useId, useState, type SubmitEvent } from "react";
-import { toCsv } from "@/lib/export/csv";
-import { fileName } from "@/lib/export/links";
 import { guestRows } from "@/lib/export/sheets";
-import { downloadText } from "@/lib/client/files";
+import { downloadCsv } from "@/lib/client/files";
 import { format, formatNumber } from "@/lib/i18n/format";
 import {
   DIETS,
@@ -15,9 +13,9 @@ import {
   type GuestGroup,
   type RsvpStatus,
 } from "@/lib/plan/constants";
+import { oneOf } from "@/lib/plan/loose";
 import { newId, removeGuest, updateBrief, upsertGuest } from "@/lib/plan/record";
-import type { Guest } from "@/lib/plan/schema";
-import { cleanText } from "@/lib/plan/text";
+import { guestSchema, type Guest } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
@@ -36,12 +34,13 @@ function AddGuest({ update, full }: { update: Update; full: boolean }) {
 
   function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    const clean = cleanText(name);
-    if (clean.length < 1 || clean.length > LIMITS.guestNameMax) {
+    const named = guestSchema.shape.name.safeParse(name);
+    if (!named.success) {
       setError(g.nameError);
       document.getElementById(`${baseId}-name`)?.focus();
       return;
     }
+    const clean = named.data;
     setError(undefined);
     const size = Math.min(LIMITS.partyMax, Math.max(1, Number.parseInt(party, 10) || 1));
     const guest: Guest = { id: newId(), name: clean, group, party: size, rsvp: "pending", diet };
@@ -73,9 +72,7 @@ function AddGuest({ update, full }: { update: Update; full: boolean }) {
           label={g.group}
           value={group}
           options={GUEST_GROUPS.map((v) => ({ value: v, label: g.groups[v] }))}
-          onChange={(e) => {
-            setGroup(e.target.value as GuestGroup);
-          }}
+          onValueChange={setGroup}
         />
         <TextField
           id={`${baseId}-party`}
@@ -94,9 +91,7 @@ function AddGuest({ update, full }: { update: Update; full: boolean }) {
           label={g.diet}
           value={diet}
           options={DIETS.map((v) => ({ value: v, label: g.diets[v] }))}
-          onChange={(e) => {
-            setDiet(e.target.value as Diet);
-          }}
+          onValueChange={setDiet}
         />
         <button type="submit" className="btn">
           {g.add}
@@ -176,8 +171,8 @@ function GuestRow({ guest, update }: { guest: Guest; update: Update }) {
           aria-label={format(g.rsvpLabel, { name: guest.name })}
           value={guest.rsvp}
           onChange={(e) => {
-            const rsvp = e.target.value as RsvpStatus;
-            update((r, now) => upsertGuest(r, { ...guest, rsvp }, now));
+            const rsvp = oneOf(e.target.value, RSVP_STATUSES);
+            if (rsvp) update((r, now) => upsertGuest(r, { ...guest, rsvp }, now));
           }}
         >
           {RSVP_STATUSES.map((s) => (
@@ -228,9 +223,7 @@ function GuestTable({ guests, update }: { guests: readonly Guest[]; update: Upda
           { value: "all", label: g.all },
           ...RSVP_STATUSES.map((s) => ({ value: s, label: g.rsvps[s] })),
         ]}
-        onChange={(e) => {
-          setFilter(e.target.value as RsvpStatus | "all");
-        }}
+        onValueChange={setFilter}
       />
       <div className="table-scroll">
         <table className="ledger-table">
@@ -284,11 +277,7 @@ export function GuestsPanel({ view, update }: { view: PlanView; update: Update }
           className="btn btn-quiet"
           disabled={record.guests.length === 0}
           onClick={() => {
-            downloadText(
-              fileName(record.brief.title, "guests.csv"),
-              "text/csv;charset=utf-8",
-              toCsv(guestRows(record.guests, dict)),
-            );
+            downloadCsv(record.brief.title, "guests", guestRows(record.guests, dict));
           }}
         >
           {g.csv}

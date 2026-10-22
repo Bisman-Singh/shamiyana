@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { readAtMost } from "@/lib/plan/bytes";
 import { createRecord, withCleanEnrichment } from "@/lib/plan/record";
 import { planRecordSchema, type PlanRecord } from "@/lib/plan/schema";
 
@@ -10,7 +11,8 @@ import { planRecordSchema, type PlanRecord } from "@/lib/plan/schema";
  */
 
 export const SHARE_KEY = "plan";
-const MAX_ENCODED = 32_000;
+/** The longest fragment a link carries. The share dialog never offers a longer one, so every offered link opens. */
+export const MAX_ENCODED = 30_000;
 const MAX_JSON = 128_000;
 
 const sharedSchema = z.strictObject({
@@ -54,27 +56,8 @@ function through(stream: CompressionStream | DecompressionStream, bytes: Uint8Ar
 }
 
 /** Inflates at most `max` bytes; a bomb that would expand further is cut off and rejected. */
-async function inflate(bytes: Uint8Array, max: number): Promise<Uint8Array | null> {
-  const reader = through(new DecompressionStream("deflate-raw"), bytes).getReader();
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.length;
-    if (size > max) {
-      await reader.cancel();
-      return null;
-    }
-    chunks.push(value);
-  }
-  const out = new Uint8Array(size);
-  let offset = 0;
-  for (const chunk of chunks) {
-    out.set(chunk, offset);
-    offset += chunk.length;
-  }
-  return out;
+function inflate(bytes: Uint8Array, max: number): Promise<Uint8Array | null> {
+  return readAtMost(through(new DecompressionStream("deflate-raw"), bytes), max);
 }
 
 export async function encodeShare(record: PlanRecord): Promise<string> {

@@ -1,13 +1,15 @@
+import { clampFactor } from "./budget";
 import {
   CATEGORY_IDS,
   IDEA_AREAS,
   LIMITS,
+  TASK_AREAS,
   type CategoryId,
   type IdeaArea,
   type TaskArea,
 } from "./constants";
 import { daysBetween, isIsoDate } from "./dates";
-import { ENRICHMENT_LIMITS } from "./enrichment";
+import { finite, int, oneOf, records, type Loose } from "./loose";
 import { clip } from "./text";
 
 /**
@@ -34,20 +36,6 @@ export const CHANGE_OPS = [
 
 export const MAX_CHANGES = 6;
 
-type Loose = Record<string, unknown>;
-
-function int(value: unknown, min: number, max: number): number | null {
-  if (typeof value !== "number" || !Number.isFinite(value)) return null;
-  const n = Math.round(value);
-  return n >= min && n <= max ? n : null;
-}
-
-function within<T extends string>(value: unknown, allowed: readonly T[]): T | null {
-  return allowed.find((a) => a === value) ?? null;
-}
-
-const AREAS = [...CATEGORY_IDS, "planning"] as const;
-
 function budget(item: Loose): Change | null {
   const amount = int(item.amount, LIMITS.budgetMin, LIMITS.budgetMax);
   return amount === null ? null : { op: "set_budget", amount };
@@ -65,32 +53,28 @@ function date(item: Loose, today: string): Change | null {
 }
 
 function shift(item: Loose, categories: ReadonlySet<CategoryId>): Change | null {
-  const category = within(item.category, CATEGORY_IDS);
-  const factor = item.factor;
+  const category = oneOf(item.category, CATEGORY_IDS);
+  const factor = finite(item.factor);
   if (!category || !categories.has(category) || category === "contingency") return null;
-  if (typeof factor !== "number" || !Number.isFinite(factor)) return null;
-  const bounded = Math.min(
-    ENRICHMENT_LIMITS.factorMax,
-    Math.max(ENRICHMENT_LIMITS.factorMin, factor),
-  );
-  return { op: "shift_category", category, factor: Math.round(bounded * 100) / 100 };
+  if (factor === null) return null;
+  return { op: "shift_category", category, factor: clampFactor(factor) };
 }
 
 function task(item: Loose): Change | null {
-  const title = clip(item.title, 120);
-  const weeksBefore = int(item.weeksBefore, 0, ENRICHMENT_LIMITS.weeksMax);
+  const title = clip(item.title, LIMITS.taskTitleMax);
+  const weeksBefore = int(item.weeksBefore, 0, LIMITS.weeksMax);
   if (title === "" || weeksBefore === null) return null;
-  return { op: "add_task", title, area: within(item.area, AREAS) ?? "planning", weeksBefore };
+  return { op: "add_task", title, area: oneOf(item.area, TASK_AREAS) ?? "planning", weeksBefore };
 }
 
 function idea(item: Loose): Change | null {
-  const title = clip(item.title, 80);
+  const title = clip(item.title, LIMITS.ideaTitleMax);
   if (title === "") return null;
   return {
     op: "add_idea",
-    area: within(item.area, IDEA_AREAS) ?? "theme",
+    area: oneOf(item.area, IDEA_AREAS) ?? "theme",
     title,
-    detail: clip(item.detail, 300),
+    detail: clip(item.detail, LIMITS.ideaDetailMax),
   };
 }
 
@@ -114,20 +98,24 @@ function singleKey(change: Change): string | null {
   return change.op === "shift_category" ? `shift:${change.category}` : change.op;
 }
 
+/** Added tasks moved no earlier than today, so none is overdue the moment it is approved. */
+export function fitChanges(changes: readonly Change[], weeksLeft: number): Change[] {
+  return changes.map((c) =>
+    c.op === "add_task" ? { ...c, weeksBefore: Math.min(c.weeksBefore, weeksLeft) } : c,
+  );
+}
+
 /** Keeps only well-formed, in-bounds changes, without duplicates, at most `MAX_CHANGES`. */
 export function parseChanges(
   raw: unknown,
   categories: readonly CategoryId[],
   today: string,
 ): Change[] {
-  if (!Array.isArray(raw)) return [];
   const ctx: Context = { categories: new Set(categories), today };
   const seen = new Set<string>();
   const out: Change[] = [];
-  for (const entry of raw as unknown[]) {
-    if (typeof entry !== "object" || entry === null) continue;
-    const item = entry as Loose;
-    const op = within(item.op, CHANGE_OPS);
+  for (const item of records(raw)) {
+    const op = oneOf(item.op, CHANGE_OPS);
     const change = op ? PARSERS[op](item, ctx) : null;
     if (!change) continue;
     const key = singleKey(change);

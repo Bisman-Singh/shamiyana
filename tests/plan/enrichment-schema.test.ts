@@ -6,6 +6,37 @@ import { birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../fix
 const CATS: CategoryId[] = ["venue", "catering", "decor", "contingency"];
 
 describe("sanitizeEnrichment", () => {
+  it("drops repeated lines, ignoring case, so every rendered list has unique keys", () => {
+    const idea = { area: "decor", title: "Marigold canopy", detail: "", cost: "low" };
+    const clean = sanitizeEnrichment(
+      {
+        ideas: [idea, { ...idea, title: "marigold CANOPY", detail: "again" }],
+        menu: [
+          { course: "Mains", dishes: ["Dal baati", "dal baati", "Gatte"] },
+          { course: "mains", dishes: ["Kadhi"] },
+        ],
+        tasks: [
+          { title: "Book a dhol", area: "entertainment", weeksBefore: 3 },
+          { title: "Book a dhol", area: "entertainment", weeksBefore: 2 },
+        ],
+        questions: [
+          { category: "venue", items: ["Parking?", "parking?"] },
+          { category: "venue", items: ["Lifts?"] },
+        ],
+        risks: [
+          { risk: "Rain", mitigation: "Tent" },
+          { risk: "rain", mitigation: "Umbrellas" },
+        ],
+      },
+      CATS,
+    );
+    expect(clean.ideas.map((i) => i.detail)).toEqual([""]);
+    expect(clean.menu).toEqual([{ course: "Mains", dishes: ["Dal baati", "Gatte"] }]);
+    expect(clean.tasks).toEqual([{ title: "Book a dhol", area: "entertainment", weeksBefore: 3 }]);
+    expect(clean.questions).toEqual([{ category: "venue", items: ["Parking?"] }]);
+    expect(clean.risks).toEqual([{ risk: "Rain", mitigation: "Tent" }]);
+  });
+
   it("keeps a valid enrichment as it is", () => {
     const clean = sanitizeEnrichment(sampleEnrichment, CATS);
     expect(clean).toEqual(sampleEnrichment);
@@ -35,14 +66,14 @@ describe("sanitizeEnrichment", () => {
     const clean = sanitizeEnrichment(
       {
         theme: { name: long, summary: long },
-        ideas: Array.from({ length: 20 }, () => ({
+        ideas: Array.from({ length: 20 }, (_, n) => ({
           area: "food",
-          title: long,
+          title: `${String(n)}${long}`,
           detail: long,
           cost: "low",
         })),
         menu: [
-          { course: "Mains", dishes: Array.from({ length: 20 }, () => "Dal") },
+          { course: "Mains", dishes: Array.from({ length: 20 }, (_, n) => `Dal ${String(n)}`) },
           { course: "", dishes: ["x"] },
         ],
         risks: [
@@ -55,7 +86,7 @@ describe("sanitizeEnrichment", () => {
     expect(clean.theme.name).toHaveLength(60);
     expect(clean.ideas).toHaveLength(8);
     expect(clean.menu).toEqual([
-      { course: "Mains", dishes: Array.from({ length: 8 }, () => "Dal") },
+      { course: "Mains", dishes: Array.from({ length: 8 }, (_, n) => `Dal ${String(n)}`) },
     ]);
     expect(clean.risks).toEqual([{ risk: "Heat", mitigation: "Shade" }]);
     expect(enrichmentSchema.safeParse(clean).success).toBe(true);

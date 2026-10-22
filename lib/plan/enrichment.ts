@@ -1,5 +1,14 @@
 import { z } from "zod";
-import { CATEGORY_IDS, IDEA_AREAS, type CategoryId } from "./constants";
+import { clampFactor } from "./budget";
+import {
+  CATEGORY_IDS,
+  IDEA_AREAS,
+  IDEA_COSTS,
+  LIMITS,
+  TASK_AREAS,
+  type CategoryId,
+} from "./constants";
+import { clamp, finite, isRecord, oneOf, records, texts, uniqueBy } from "./loose";
 import { clip } from "./text";
 
 /**
@@ -17,152 +26,133 @@ export const ENRICHMENT_LIMITS = {
   questions: 8,
   questionItems: 4,
   risks: 4,
-  factorMin: 0.5,
-  factorMax: 1.5,
-  weeksMax: 52,
+  themeName: 60,
+  themeSummary: 300,
+  course: 40,
+  dish: 60,
+  reason: 200,
+  question: 160,
+  risk: 160,
+  mitigation: 200,
 } as const;
 
+const L = ENRICHMENT_LIMITS;
 const s = (max: number) => z.string().max(max);
-const taskArea = z.enum([...CATEGORY_IDS, "planning"]);
 
 export const enrichmentSchema = z.strictObject({
-  theme: z.strictObject({ name: s(60), summary: s(300) }),
+  theme: z.strictObject({ name: s(L.themeName), summary: s(L.themeSummary) }),
   ideas: z
     .array(
       z.strictObject({
         area: z.enum(IDEA_AREAS),
-        title: s(80),
-        detail: s(300),
-        cost: z.enum(["low", "medium", "high"]),
+        title: s(LIMITS.ideaTitleMax),
+        detail: s(LIMITS.ideaDetailMax),
+        cost: z.enum(IDEA_COSTS),
       }),
     )
-    .max(ENRICHMENT_LIMITS.ideas),
+    .max(L.ideas),
   menu: z
-    .array(z.strictObject({ course: s(40), dishes: z.array(s(60)).max(ENRICHMENT_LIMITS.dishes) }))
-    .max(ENRICHMENT_LIMITS.menu),
+    .array(z.strictObject({ course: s(L.course), dishes: z.array(s(L.dish)).max(L.dishes) }))
+    .max(L.menu),
   shifts: z
     .array(
       z.strictObject({
         category: z.enum(CATEGORY_IDS),
-        factor: z.number().min(ENRICHMENT_LIMITS.factorMin).max(ENRICHMENT_LIMITS.factorMax),
-        reason: s(200),
+        factor: z.number().min(LIMITS.factorMin).max(LIMITS.factorMax),
+        reason: s(L.reason),
       }),
     )
-    .max(ENRICHMENT_LIMITS.shifts),
+    .max(L.shifts),
   tasks: z
     .array(
       z.strictObject({
-        title: s(120),
-        area: taskArea,
-        weeksBefore: z.int().min(0).max(ENRICHMENT_LIMITS.weeksMax),
+        title: s(LIMITS.taskTitleMax),
+        area: z.enum(TASK_AREAS),
+        weeksBefore: z.int().min(0).max(LIMITS.weeksMax),
       }),
     )
-    .max(ENRICHMENT_LIMITS.tasks),
+    .max(L.tasks),
   questions: z
     .array(
       z.strictObject({
         category: z.enum(CATEGORY_IDS),
-        items: z.array(s(160)).max(ENRICHMENT_LIMITS.questionItems),
+        items: z.array(s(L.question)).max(L.questionItems),
       }),
     )
-    .max(ENRICHMENT_LIMITS.questions),
-  risks: z.array(z.strictObject({ risk: s(160), mitigation: s(200) })).max(ENRICHMENT_LIMITS.risks),
+    .max(L.questions),
+  risks: z.array(z.strictObject({ risk: s(L.risk), mitigation: s(L.mitigation) })).max(L.risks),
 });
 export type Enrichment = z.infer<typeof enrichmentSchema>;
 
-type Loose = Record<string, unknown>;
-
-function isRecord(value: unknown): value is Loose {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function list(value: unknown): Loose[] {
-  return Array.isArray(value) ? value.filter(isRecord) : [];
-}
-
-function clamp(value: unknown, min: number, max: number): number | null {
-  if (typeof value !== "number" || !Number.isFinite(value)) return null;
-  return Math.min(max, Math.max(min, value));
-}
-
-function oneOf<T extends string>(value: unknown, allowed: readonly T[]): T | null {
-  return allowed.find((option) => option === value) ?? null;
-}
-
-const COSTS = ["low", "medium", "high"] as const;
-const AREAS = [...CATEGORY_IDS, "planning"] as const;
-
 function ideas(raw: unknown): Enrichment["ideas"] {
-  return list(raw)
+  const all = records(raw)
     .map((item) => ({
       area: oneOf(item.area, IDEA_AREAS) ?? "theme",
-      title: clip(item.title, 80),
-      detail: clip(item.detail, 300),
-      cost: oneOf(item.cost, COSTS) ?? "medium",
+      title: clip(item.title, LIMITS.ideaTitleMax),
+      detail: clip(item.detail, LIMITS.ideaDetailMax),
+      cost: oneOf(item.cost, IDEA_COSTS) ?? "medium",
     }))
-    .filter((idea) => idea.title !== "")
-    .slice(0, ENRICHMENT_LIMITS.ideas);
+    .filter((idea) => idea.title !== "");
+  return uniqueBy(all, (idea) => idea.title).slice(0, L.ideas);
 }
 
 function menu(raw: unknown): Enrichment["menu"] {
-  return list(raw)
+  const all = records(raw)
     .map((item) => ({
-      course: clip(item.course, 40),
-      dishes: (Array.isArray(item.dishes) ? item.dishes : [])
-        .map((dish) => clip(dish, 60))
-        .filter((dish) => dish !== "")
-        .slice(0, ENRICHMENT_LIMITS.dishes),
+      course: clip(item.course, L.course),
+      dishes: texts(item.dishes, L.dish, L.dishes),
     }))
-    .filter((course) => course.course !== "" && course.dishes.length > 0)
-    .slice(0, ENRICHMENT_LIMITS.menu);
+    .filter((course) => course.course !== "" && course.dishes.length > 0);
+  return uniqueBy(all, (course) => course.course).slice(0, L.menu);
 }
 
 function shifts(raw: unknown, allowed: ReadonlySet<CategoryId>): Enrichment["shifts"] {
   const seen = new Set<CategoryId>();
   const out: Enrichment["shifts"] = [];
-  for (const item of list(raw)) {
+  for (const item of records(raw)) {
     const category = oneOf(item.category, CATEGORY_IDS);
-    const factor = clamp(item.factor, ENRICHMENT_LIMITS.factorMin, ENRICHMENT_LIMITS.factorMax);
-    if (!category || factor === null || !allowed.has(category) || seen.has(category)) continue;
+    const value = finite(item.factor);
+    if (!category || value === null || !allowed.has(category) || seen.has(category)) continue;
+    const factor = clampFactor(value);
     if (category === "contingency" || factor === 1) continue;
     seen.add(category);
-    out.push({ category, factor: Math.round(factor * 100) / 100, reason: clip(item.reason, 200) });
+    out.push({ category, factor, reason: clip(item.reason, L.reason) });
   }
-  return out.slice(0, ENRICHMENT_LIMITS.shifts);
+  return out.slice(0, L.shifts);
 }
 
 function tasks(raw: unknown): Enrichment["tasks"] {
-  return list(raw)
+  const all = records(raw)
     .map((item) => ({
-      title: clip(item.title, 120),
-      area: oneOf(item.area, AREAS) ?? "planning",
-      weeksBefore: Math.round(clamp(item.weeksBefore, 0, ENRICHMENT_LIMITS.weeksMax) ?? 0),
+      title: clip(item.title, LIMITS.taskTitleMax),
+      area: oneOf(item.area, TASK_AREAS) ?? "planning",
+      weeksBefore: Math.round(clamp(item.weeksBefore, 0, LIMITS.weeksMax) ?? 0),
     }))
-    .filter((task) => task.title !== "")
-    .slice(0, ENRICHMENT_LIMITS.tasks);
+    .filter((task) => task.title !== "");
+  return uniqueBy(all, (task) => task.title).slice(0, L.tasks);
 }
 
 function questions(raw: unknown): Enrichment["questions"] {
-  return list(raw)
+  const all = records(raw)
     .map((item) => ({
       category: oneOf(item.category, CATEGORY_IDS),
-      items: (Array.isArray(item.items) ? item.items : [])
-        .map((q) => clip(q, 160))
-        .filter((q) => q !== "")
-        .slice(0, ENRICHMENT_LIMITS.questionItems),
+      items: texts(item.items, L.question, L.questionItems),
     }))
     .filter(
       (group): group is Enrichment["questions"][number] =>
         group.category !== null && group.items.length > 0,
-    )
-    .slice(0, ENRICHMENT_LIMITS.questions);
+    );
+  return uniqueBy(all, (group) => group.category).slice(0, L.questions);
 }
 
 function risks(raw: unknown): Enrichment["risks"] {
-  return list(raw)
-    .map((item) => ({ risk: clip(item.risk, 160), mitigation: clip(item.mitigation, 200) }))
-    .filter((r) => r.risk !== "" && r.mitigation !== "")
-    .slice(0, ENRICHMENT_LIMITS.risks);
+  const all = records(raw)
+    .map((item) => ({
+      risk: clip(item.risk, L.risk),
+      mitigation: clip(item.mitigation, L.mitigation),
+    }))
+    .filter((r) => r.risk !== "" && r.mitigation !== "");
+  return uniqueBy(all, (r) => r.risk).slice(0, L.risks);
 }
 
 /**
@@ -174,13 +164,21 @@ export function sanitizeEnrichment(raw: unknown, categories: readonly CategoryId
   const value = isRecord(raw) ? raw : {};
   const theme = isRecord(value.theme) ? value.theme : {};
   return {
-    theme: { name: clip(theme.name, 60), summary: clip(theme.summary, 300) },
+    theme: { name: clip(theme.name, L.themeName), summary: clip(theme.summary, L.themeSummary) },
     ideas: ideas(value.ideas),
     menu: menu(value.menu),
     shifts: shifts(value.shifts, new Set(categories)),
     tasks: tasks(value.tasks),
     questions: questions(value.questions),
     risks: risks(value.risks),
+  };
+}
+
+/** AI tasks moved no earlier than today, so none is overdue the moment it arrives. */
+export function fitTasks(e: Enrichment, weeksLeft: number): Enrichment {
+  return {
+    ...e,
+    tasks: e.tasks.map((t) => ({ ...t, weeksBefore: Math.min(t.weeksBefore, weeksLeft) })),
   };
 }
 

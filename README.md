@@ -20,8 +20,8 @@ gone, and the guest count the caterer needs is a guess. Generic AI chat can
 write a nice list of ideas, but it can't keep a budget that adds up, it forgets
 what was agreed, and it invents prices.
 
-Shamiyana keeps the arithmetic and the schedule in code, where they are always
-right, and uses the model for what it is good at. The model judges and
+Shamiyana keeps the arithmetic and the schedule in code, where tests can pin
+them down, and uses the model for what it is good at. The model judges and
 suggests; the code adds up, schedules and checks.
 
 ## What it does
@@ -31,7 +31,7 @@ suggests; the code adds up, schedules and checks.
   that add up to the total exactly. Track agreed prices and payments per
   vendor; overspends are flagged per line and against the total. Shows the food
   budget per guest.
-- **Timeline.** Every task back-scheduled from the event date with real lead
+- **Timeline.** Every task back-scheduled from the event date with typical lead
   times. A wedding 116 days out says plainly that booking the venue was due in
   June, instead of hiding it. Tick tasks off, remove them with undo, add your
   own, export everything as an `.ics` calendar or one task at a time to Google
@@ -45,7 +45,8 @@ suggests; the code adds up, schedules and checks.
 - **AI ideas, streamed.** Theme, ideas across decor, food, music and more, a
   menu that respects veg, Jain or mixed, budget shifts with reasons (applied
   only when you click), extra tasks specific to the event, sharper vendor
-  questions and the real risks for that date and place.
+  questions and the risks it sees for that date and place. The model is shown
+  the checklist and vendor questions the app already has, so it adds to them.
 - **Ask for changes.** "Bring it down to 15 lakh" or "add a mehndi night". The
   assistant answers and proposes changes; nothing changes until you tick and
   apply them, and every applied change can be undone.
@@ -88,13 +89,14 @@ only. The key is never sent to the browser.
   `gemini-3.6-flash` and `gemini-3.8-flash`, set by `GEMINI_MODELS`. Free-tier
   models return 429 or 503 under load often enough that one model is not
   enough. A stream that fails before its first token falls back to the next
-  model; one that fails midway keeps what arrived
-  (`components/planner/use-enrichment.ts`).
+  model (`lib/ai/fallback.ts`). One that fails midway is logged as `cut_off`
+  and the page keeps what arrived (`components/planner/use-enrichment.ts`).
 - A live eval set checks the prompts against the real model. Veg and Jain
-  menus must stay within their rules, Hindi must come back in Devanagari, an
-  instruction hidden in the notes must be ignored, a clear request must map to
-  the right change and an off-topic one to none (`evals/prompts.eval.ts`,
-  `npm run eval`).
+  menus must stay within their rules, nothing may suggest alcohol or fireworks
+  unasked, new tasks must fit the weeks left and not repeat the checklist, Hindi
+  must come back in Devanagari, an instruction hidden in the notes must be
+  ignored, a clear request must map to the right change and an off-topic one to
+  none (`evals/prompts.eval.ts`, `npm run eval`).
 
 ## Judging criteria
 

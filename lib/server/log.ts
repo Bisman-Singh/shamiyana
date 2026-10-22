@@ -1,4 +1,5 @@
 import "server-only";
+import type { ErrorCode } from "./http";
 
 /**
  * One JSON line per request outcome. Fields are an allowlist of operational
@@ -6,17 +7,36 @@ import "server-only";
  * and addresses are never logged.
  */
 
+export type LogRoute = "plan" | "refine" | "vision";
+
+/** `cut_off`: a streamed answer stopped partway while the client was still there. */
+export type LogOutcome = "ok" | "model_failed" | "cut_off" | ErrorCode;
+
 export interface LogFields {
-  route: string;
-  outcome: string;
+  route: LogRoute;
+  outcome: LogOutcome;
   status: number;
   ms?: number;
   model?: string;
   cached?: boolean;
 }
 
+function line(fields: object): string {
+  return JSON.stringify({ at: new Date().toISOString(), ...fields });
+}
+
+/** Failures and cut-off answers at error level, everything else as information. */
 export function logEvent(fields: LogFields): void {
-  const line = JSON.stringify({ at: new Date().toISOString(), ...fields });
-  if (fields.status >= 500) console.error(line);
-  else console.warn(line);
+  if (fields.status >= 500 || fields.outcome === "cut_off") console.error(line(fields));
+  else console.info(line(fields));
+}
+
+export interface Notice {
+  event: "ai_off";
+  reason: "no_api_key";
+}
+
+/** A configuration warning at startup, such as the AI being off for want of a key. */
+export function logNotice(notice: Notice): void {
+  console.warn(line(notice));
 }

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { screen } from "@testing-library/react";
 import { ShareDialog } from "@/components/planner/share-dialog";
+import { MAX_ENCODED } from "@/lib/export/share";
 import type * as Share from "@/lib/export/share";
 import { recordFor, weddingBrief } from "../fixtures";
 import { renderIn } from "../helpers/render";
@@ -44,6 +45,16 @@ describe("share dialog limits", () => {
     renderIn(<ShareDialog record={recordFor(weddingBrief)} onClose={vi.fn()} />);
     expect(await screen.findByText(/too large for a link/)).toBeInTheDocument();
     expect(screen.queryByLabelText("Share link")).toBeNull();
+    expect(screen.queryByText("Loading…")).toBeNull();
+  });
+
+  it("offers a link right up to the longest fragment the decoder accepts", async () => {
+    encoded.value = "x".repeat(MAX_ENCODED);
+    renderIn(<ShareDialog record={recordFor(weddingBrief)} onClose={vi.fn()} />);
+    expect(await screen.findByLabelText("Share link")).toHaveValue(
+      `${window.location.origin}/#plan=${"x".repeat(MAX_ENCODED)}`,
+    );
+    encoded.value = "x".repeat(40_000);
   });
 
   it("shows loading until the link is ready and survives closing early", async () => {

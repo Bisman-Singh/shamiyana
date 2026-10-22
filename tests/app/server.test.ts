@@ -6,6 +6,7 @@ import { TODAY, weddingFacts } from "../fixtures";
 
 beforeEach(() => {
   vi.resetModules();
+  vi.spyOn(console, "info").mockImplementation(() => undefined);
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
   vi.spyOn(console, "error").mockImplementation(() => undefined);
 });

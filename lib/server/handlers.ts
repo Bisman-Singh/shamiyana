@@ -21,7 +21,7 @@ import {
   type ErrorCode,
   type GuardOptions,
 } from "./http";
-import { logEvent } from "./log";
+import { logEvent, type LogRoute } from "./log";
 import { DailyCap, RateLimiter } from "./rate-limit";
 import {
   IMAGE_MAX_BYTES,
@@ -73,9 +73,7 @@ export function liveDeps(): AiDeps {
   return live;
 }
 
-type RouteName = "plan" | "refine" | "vision";
-
-function reporter(route: RouteName) {
+function reporter(route: LogRoute) {
   const started = Date.now();
   return {
     fail: (code: ErrorCode, headers?: Record<string, string>): Response => {
@@ -97,6 +95,9 @@ function reporter(route: RouteName) {
     modelFailed: (model: string): void => {
       logEvent({ route, outcome: "model_failed", status: 502, ms: Date.now() - started, model });
     },
+    cutOff: (model: string): void => {
+      logEvent({ route, outcome: "cut_off", status: 200, ms: Date.now() - started, model });
+    },
   };
 }
 
@@ -104,7 +105,7 @@ type Log = ReturnType<typeof reporter>;
 
 /** Runs a route; anything unexpected becomes a logged 500 with no details, never a stack in the response. */
 function route(
-  name: RouteName,
+  name: LogRoute,
   deps: () => AiDeps,
   run: (request: Request, d: AiDeps, log: Log) => Promise<Response>,
 ) {
@@ -143,11 +144,25 @@ function admit(
 ): { ctx: RunContext } | { refused: ErrorCode } {
   if (!d.chain) return { refused: "ai_unavailable" };
   if (!d.daily.take(clientKey(request))) return { refused: "daily_cap" };
-  return { ctx: { chain: d.chain, signal: request.signal, onFail: log.modelFailed } };
+  return {
+    ctx: {
+      chain: d.chain,
+      signal: request.signal,
+      onFail: log.modelFailed,
+      onCutOff: log.cutOff,
+    },
+  };
 }
 
 const STREAM_HEADERS = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
 const JSON_HEADERS = { "Cache-Control": "no-store" };
+
+/** A finished answer as JSON, logged with the model that wrote it. */
+function answered(log: Log, result: { model: string } | null): Response {
+  if (!result) return log.fail("ai_failed");
+  const { model, ...rest } = result;
+  return log.ok(Response.json(rest, { headers: JSON_HEADERS }), model);
+}
 
 export function planHandler(deps: () => AiDeps) {
   return route("plan", deps, async (request, d, log) => {
@@ -187,10 +202,7 @@ export function refineHandler(deps: () => AiDeps) {
     if (!input.ok) return log.fail(input.code, input.headers);
     const gate = admit(request, d, log);
     if ("refused" in gate) return log.fail(gate.refused);
-    const answer = await runRefine(gate.ctx, input.data);
-    if (!answer) return log.fail("ai_failed");
-    const { model, ...rest } = answer;
-    return log.ok(Response.json(rest, { headers: JSON_HEADERS }), model);
+    return answered(log, await runRefine(gate.ctx, input.data));
   });
 }
 
@@ -237,14 +249,8 @@ export function visionHandler(deps: () => AiDeps) {
     if (!parsed.success) return log.fail("invalid");
     const gate = admit(request, d, log);
     if ("refused" in gate) return log.fail(gate.refused);
-    const result = await runVision(gate.ctx, {
-      ...parsed.data,
-      image: upload.data.image,
-      mediaType: upload.data.mediaType,
-    });
-    if (!result) return log.fail("ai_failed");
-    const { model, ...rest } = result;
-    return log.ok(Response.json(rest, { headers: JSON_HEADERS }), model);
+    const { image, mediaType } = upload.data;
+    return answered(log, await runVision(gate.ctx, { ...parsed.data, image, mediaType }));
   });
 }
 

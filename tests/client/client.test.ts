@@ -20,6 +20,7 @@ import {
 } from "@/lib/client/plan-store";
 import { LIMITS } from "@/lib/plan/constants";
 import { TODAY, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
+import { stubCanvas, stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { MemoryStorage } from "../helpers/storage";
 
@@ -141,9 +142,7 @@ describe("plan storage", () => {
 
 describe("files", () => {
   it("downloads text through a temporary link", () => {
-    const create = vi.fn(() => "blob:file");
-    const revoke = vi.fn();
-    vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: create, revokeObjectURL: revoke }));
+    const { revoke } = stubObjectUrls("blob:file");
     const click = vi
       .spyOn(HTMLAnchorElement.prototype, "click")
       .mockImplementation(() => undefined);
@@ -154,21 +153,9 @@ describe("files", () => {
   });
 
   it("scales a large photo down to 1600px and re-encodes it as JPEG", async () => {
-    const close = vi.fn();
-    vi.stubGlobal(
-      "createImageBitmap",
-      vi.fn(() => Promise.resolve({ width: 4000, height: 3000, close })),
-    );
-    const draw = vi.fn();
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
-      drawImage: draw,
-    } as never);
+    const { close, toBlob } = stubCanvas({ width: 4000, height: 3000 });
     let size: [number, number] = [0, 0];
-    vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation(function (
-      this: HTMLCanvasElement,
-      done,
-      type,
-    ) {
+    toBlob.mockImplementation(function (this: HTMLCanvasElement, done, type) {
       size = [this.width, this.height];
       done(new Blob(["x"], { type: type ?? "" }));
     });
@@ -182,10 +169,7 @@ describe("files", () => {
     await expect(prepareImage(new File(["p"], "a.svg", { type: "image/svg+xml" }))).rejects.toThrow(
       TypeError,
     );
-    vi.stubGlobal(
-      "createImageBitmap",
-      vi.fn(() => Promise.resolve({ width: 10, height: 10, close: vi.fn() })),
-    );
+    stubCanvas();
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
     await expect(prepareImage(new File(["p"], "a.png", { type: "image/png" }))).rejects.toThrow(
       "canvas",

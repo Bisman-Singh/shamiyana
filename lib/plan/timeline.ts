@@ -1,4 +1,4 @@
-import { TASKS } from "./catalog";
+import { tasksFor } from "./catalog";
 import type { TaskArea } from "./constants";
 import { addDays, daysBetween } from "./dates";
 import type { PlanRecord } from "./schema";
@@ -55,15 +55,13 @@ export function buildTimeline(record: PlanRecord, today: string): Timeline {
   const done = new Set(record.done);
   const daysToGo = daysBetween(today, brief.date);
 
-  const templates = TASKS[brief.type]
-    .filter((t) => (t.when ? t.when(brief) : true))
-    .map((t) => ({
-      id: t.id,
-      area: t.area,
-      leadDays: t.leadDays,
-      source: "template" as const,
-      title: null,
-    }));
+  const templates = tasksFor(brief).map((t) => ({
+    id: t.id,
+    area: t.area,
+    leadDays: t.leadDays,
+    source: "template" as const,
+    title: null,
+  }));
   const items = [...templates, ...record.tasks]
     .filter((t) => !hidden.has(t.id))
     .map((t, order) => {

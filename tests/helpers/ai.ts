@@ -31,6 +31,41 @@ export function streamingModel(pieces: readonly string[]): MockLanguageModelV4 {
   });
 }
 
+/**
+ * A model whose stream starts and then stops early: on an error part, by
+ * just ending ("silent"), or by hitting the output cap ("length").
+ */
+export function cutOffModel(
+  pieces: readonly string[],
+  ending: "error" | "silent" | "length" = "error",
+  chunkDelayInMs = 0,
+): MockLanguageModelV4 {
+  return new MockLanguageModelV4({
+    doStream: () =>
+      Promise.resolve({
+        stream: simulateReadableStream({
+          chunkDelayInMs,
+          chunks: [
+            { type: "text-start" as const, id: "t" },
+            ...pieces.map((delta) => ({ type: "text-delta" as const, id: "t", delta })),
+            ...(ending === "error"
+              ? [{ type: "error" as const, error: new Error("upstream reset") }]
+              : []),
+            ...(ending === "length"
+              ? [
+                  {
+                    type: "finish" as const,
+                    finishReason: { unified: "length" as const, raw: undefined },
+                    usage,
+                  },
+                ]
+              : []),
+          ],
+        }),
+      }),
+  });
+}
+
 /** A model whose stream fails before any text. */
 export function brokenStreamModel(): MockLanguageModelV4 {
   return new MockLanguageModelV4({

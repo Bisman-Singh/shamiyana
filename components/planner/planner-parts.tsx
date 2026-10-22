@@ -8,8 +8,8 @@ import { LIMITS } from "@/lib/plan/constants";
 import { localToday } from "@/lib/plan/dates";
 import type { PlanRecord } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
-import { useFocusOnMount } from "../ui/announcer";
 import { Notice } from "../ui/notice";
+import { UndoButton } from "../ui/undo-button";
 
 /** Today's date on this device, rolling over at midnight while the page is open. */
 export function useToday(): string {
@@ -109,29 +109,6 @@ export interface Message {
   undo?: PlanRecord;
 }
 
-function UndoButton({
-  record,
-  onUndo,
-}: {
-  record: PlanRecord;
-  onUndo: (record: PlanRecord) => void;
-}) {
-  const { dict } = useLocale();
-  const ref = useFocusOnMount<HTMLButtonElement>(true);
-  return (
-    <button
-      ref={ref}
-      type="button"
-      className="btn btn-small"
-      onClick={() => {
-        onUndo(record);
-      }}
-    >
-      {dict.common.undo}
-    </button>
-  );
-}
-
 export function MessageNotice({
   message,
   onUndo,
@@ -139,10 +116,19 @@ export function MessageNotice({
   message: Message;
   onUndo: (record: PlanRecord) => void;
 }) {
+  const deleted = message.undo;
   return (
     <Notice
       tone={message.tone}
-      action={message.undo ? <UndoButton record={message.undo} onUndo={onUndo} /> : undefined}
+      action={
+        deleted ? (
+          <UndoButton
+            onUndo={() => {
+              onUndo(deleted);
+            }}
+          />
+        ) : undefined
+      }
     >
       {message.text}
     </Notice>

@@ -1,11 +1,17 @@
 "use client";
 
 import { useObject } from "@ai-sdk/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { enrichmentOutputSchema } from "@/lib/ai/schemas";
 import { errorFromMessage, type ApiError } from "@/lib/client/api";
 import type { CategoryId, Locale } from "@/lib/plan/constants";
-import { isEmptyEnrichment, sanitizeEnrichment, type Enrichment } from "@/lib/plan/enrichment";
+import { wholeWeeks } from "@/lib/plan/dates";
+import {
+  fitTasks,
+  isEmptyEnrichment,
+  sanitizeEnrichment,
+  type Enrichment,
+} from "@/lib/plan/enrichment";
 import { factsOf, type EventFacts, type PlanRecord } from "@/lib/plan/schema";
 
 export type EnrichmentState =
@@ -17,6 +23,8 @@ interface Target {
   planId: string;
   facts: EventFacts;
   locale: Locale;
+  /** The day it was asked, so suggested tasks can be kept from landing in the past. */
+  today: string;
 }
 
 export type OnEnriched = (target: Target, enrichment: Enrichment) => void;
@@ -44,8 +52,9 @@ export function useEnrichment(
   const [failure, setFailure] = useState<ApiError | "partial" | null>(null);
   const asked = useRef<string | null>(null);
   const facts = factsOf(record.brief);
-  const target = useRef<Target>({ planId: record.id, facts, locale });
+  const target = useRef<Target>({ planId: record.id, facts, locale, today });
   const latest = useRef<unknown>(undefined);
+  // onFinish is fixed at submit time; these give it current values.
   const done = useRef(onDone);
   const cats = useRef(categories);
   useEffect(() => {
@@ -58,7 +67,9 @@ export function useEnrichment(
     schema: enrichmentOutputSchema,
     onFinish: ({ object: complete, error }) => {
       const clean = sanitizeEnrichment(complete ?? latest.current, cats.current);
-      if (!isEmptyEnrichment(clean)) done.current(target.current, clean);
+      const { facts: forFacts, today: askedOn } = target.current;
+      const fitted = fitTasks(clean, wholeWeeks(askedOn, forFacts.date));
+      if (!isEmptyEnrichment(fitted)) done.current(target.current, fitted);
       setFailure(error ? "partial" : null);
     },
     onError: (error) => {
@@ -76,19 +87,18 @@ export function useEnrichment(
 
   function request(fresh: boolean) {
     asked.current = `${record.id}|${key}`;
-    target.current = { planId: record.id, facts, locale };
+    target.current = { planId: record.id, facts, locale, today };
     setFailure(null);
     submit({ facts, locale, today, fresh });
   }
 
-  const requestRef = useRef(request);
-  useEffect(() => {
-    requestRef.current = request;
+  const askFirstTime = useEffectEvent(() => {
+    request(false);
   });
 
   useEffect(() => {
     if (madeFor === key || asked.current === `${record.id}|${key}`) return;
-    requestRef.current(false);
+    askFirstTime();
   }, [record.id, key, madeFor]);
 
   const state: EnrichmentState = isLoading

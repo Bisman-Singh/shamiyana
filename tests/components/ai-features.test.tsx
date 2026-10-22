@@ -7,6 +7,7 @@ import { getDictionary } from "@/lib/i18n";
 import { withEnrichment } from "@/lib/plan/record";
 import type { Brief, PlanRecord } from "@/lib/plan/schema";
 import { NOW, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
+import { stubCanvas, stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch, streamed } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
@@ -178,49 +179,123 @@ describe("refine chat", () => {
     expect(await p.findByText(/Too many requests/)).toBeInTheDocument();
   });
 
-  it("describes every kind of change in plain words", () => {
+  it("describes every kind of change in plain words, shifts in rupees", () => {
     const dict = getDictionary("en");
-    expect(describeChange({ op: "set_guests", count: 120 }, dict, "en")).toBe(
+    const preview = () => ({ before: 1_00_000, after: 1_20_000 });
+    expect(describeChange({ op: "set_guests", count: 120 }, dict, "en", preview)).toBe(
       "Set the guest count to 120",
     );
-    expect(describeChange({ op: "set_date", date: "2027-03-01" }, dict, "en")).toBe(
+    expect(describeChange({ op: "set_date", date: "2027-03-01" }, dict, "en", preview)).toBe(
       "Move the date to 1 Mar 2027",
     );
     expect(
-      describeChange({ op: "shift_category", category: "decor", factor: 1.2 }, dict, "en"),
-    ).toBe("Give Decor and flowers 20% more");
+      describeChange({ op: "shift_category", category: "decor", factor: 1.2 }, dict, "en", preview),
+    ).toBe("Give Decor and flowers more: ₹1,00,000 to ₹1,20,000");
     expect(
-      describeChange({ op: "shift_category", category: "decor", factor: 0.7 }, dict, "en"),
-    ).toBe("Give Decor and flowers 30% less");
+      describeChange({ op: "shift_category", category: "decor", factor: 0.7 }, dict, "en", preview),
+    ).toBe("Give Decor and flowers less: ₹1,00,000 to ₹1,20,000");
     expect(
       describeChange(
         { op: "add_task", title: "Book dhol", area: "entertainment", weeksBefore: 3 },
         dict,
         "en",
+        preview,
       ),
     ).toBe("Add a task: Book dhol, 3 weeks before");
   });
 });
 
+describe("leaving the plan", () => {
+  /** A request that never answers, and rejects once aborted, the way fetch does. */
+  const hanging = (seen: AbortSignal[]) => (_body: unknown, init: RequestInit) =>
+    new Promise<Response>((_resolve, reject) => {
+      const signal = init.signal;
+      if (!signal) return;
+      seen.push(signal);
+      signal.addEventListener("abort", () => {
+        reject(new DOMException("aborted", "AbortError"));
+      });
+    });
+
+  it("cancels a pending chat reply and photo answer", async () => {
+    stubCanvas();
+    stubObjectUrls();
+    const seen: AbortSignal[] = [];
+    mockFetch({
+      "/api/plan": () => jsonError("ai_unavailable", 503),
+      "/api/refine": hanging(seen),
+      "/api/vision": hanging(seen),
+    });
+    const { unmount } = renderWorkspace(ready());
+    await openTab("Ideas");
+    await userEvent.click(panel().getByLabelText("Your message"));
+    await userEvent.paste("Less on decor");
+    await userEvent.click(panel().getByRole("button", { name: "Send" }));
+    await userEvent.upload(
+      panel().getByLabelText("Choose a photo"),
+      new File(["x"], "a.jpg", { type: "image/jpeg" }),
+    );
+    await userEvent.click(
+      await panel().findByRole("button", { name: "Get ideas from this photo" }),
+    );
+    expect(seen).toHaveLength(2);
+    expect(seen.some((s) => s.aborted)).toBe(false);
+    unmount();
+    expect(seen.every((s) => s.aborted)).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+});
+
+describe("a new photo while one is being read", () => {
+  it("drops the old answer and shows only the new one", async () => {
+    stubCanvas();
+    stubObjectUrls();
+    const seen: AbortSignal[] = [];
+    let call = 0;
+    mockFetch({
+      "/api/plan": () => jsonError("ai_unavailable", 503),
+      "/api/vision": (_body, init) => {
+        call += 1;
+        if (call === 1) {
+          return new Promise<Response>((_resolve, reject) => {
+            if (init.signal) seen.push(init.signal);
+            init.signal?.addEventListener("abort", () => {
+              reject(new DOMException("aborted", "AbortError"));
+            });
+          });
+        }
+        return Response.json({
+          kind: "decor",
+          mood: "Bright",
+          palette: [],
+          ideas: [{ area: "decor", title: "Second photo idea", detail: "" }],
+          notes: [],
+        });
+      },
+    });
+    renderWorkspace(ready());
+    await openTab("Ideas");
+    const input = panel().getByLabelText("Choose a photo");
+    await userEvent.upload(input, new File(["a"], "a.jpg", { type: "image/jpeg" }));
+    await userEvent.click(
+      await panel().findByRole("button", { name: "Get ideas from this photo" }),
+    );
+    await userEvent.upload(input, new File(["b"], "b.jpg", { type: "image/jpeg" }));
+    expect(seen[0]?.aborted).toBe(true);
+    await userEvent.click(
+      await panel().findByRole("button", { name: "Get ideas from this photo" }),
+    );
+    expect(
+      await panel().findByText("Second photo idea", { selector: ".idea-title" }),
+    ).toBeInTheDocument();
+    expect(call).toBe(2);
+  });
+});
+
 describe("photo ideas", () => {
   function mockCanvas(blob: Blob | null = new Blob(["jpeg"], { type: "image/jpeg" })) {
-    vi.stubGlobal(
-      "createImageBitmap",
-      vi.fn(() => Promise.resolve({ width: 3200, height: 1600, close: vi.fn() })),
-    );
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
-      drawImage: vi.fn(),
-    } as never);
-    vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation((done) => {
-      done(blob);
-    });
-    vi.stubGlobal(
-      "URL",
-      Object.assign(URL, {
-        createObjectURL: vi.fn(() => "blob:preview"),
-        revokeObjectURL: vi.fn(),
-      }),
-    );
+    stubCanvas({ width: 3200, height: 1600, blob });
+    stubObjectUrls("blob:preview");
   }
 
   const photo = () => new File(["raw"], "venue.png", { type: "image/png" });

@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { format, formatDate, formatMoney, formatNumber } from "@/lib/i18n/format";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { vendorTally } from "@/lib/plan/vendors";
@@ -9,6 +10,7 @@ import type { PlanView } from "./types";
 
 export function OverviewPanel({ view, ideas }: { view: PlanView; ideas: Enrichment | null }) {
   const { dict, locale } = useLocale();
+  const id = useId();
   const o = dict.overview;
   const { budget, timeline, guests } = view;
   const tally = vendorTally(view.vendors);
@@ -51,8 +53,8 @@ export function OverviewPanel({ view, ideas }: { view: PlanView; ideas: Enrichme
         </div>
       </dl>
 
-      <section aria-labelledby="next-up">
-        <h2 id="next-up">{o.next}</h2>
+      <section aria-labelledby={`${id}-next`}>
+        <h2 id={`${id}-next`}>{o.next}</h2>
         {open.length === 0 ? (
           <p>{o.allDone}</p>
         ) : (
@@ -72,16 +74,16 @@ export function OverviewPanel({ view, ideas }: { view: PlanView; ideas: Enrichme
       </section>
 
       {ideas && ideas.theme.name !== "" ? (
-        <section aria-labelledby="theme">
-          <h2 id="theme">{o.theme}</h2>
+        <section aria-labelledby={`${id}-theme`}>
+          <h2 id={`${id}-theme`}>{o.theme}</h2>
           <p className="theme-name">{ideas.theme.name}</p>
           <p>{ideas.theme.summary}</p>
         </section>
       ) : null}
 
       {ideas && ideas.risks.length > 0 ? (
-        <section aria-labelledby="risks">
-          <h2 id="risks">{o.risks}</h2>
+        <section aria-labelledby={`${id}-risks`}>
+          <h2 id={`${id}-risks`}>{o.risks}</h2>
           <ul className="plain-list">
             {ideas.risks.map((r) => (
               <li key={r.risk}>

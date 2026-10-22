@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { format } from "@/lib/i18n/format";
 import { newId, removeIdea, saveIdea } from "@/lib/plan/record";
@@ -19,19 +19,20 @@ function AiIdeas({
   update: Update;
 }) {
   const { dict } = useLocale();
+  const id = useId();
   const i = dict.ideas;
   return (
     <>
       {ideas.theme.name === "" ? null : (
-        <section aria-labelledby="idea-theme">
-          <h3 id="idea-theme">{i.theme}</h3>
+        <section aria-labelledby={`${id}-theme`}>
+          <h3 id={`${id}-theme`}>{i.theme}</h3>
           <p className="theme-name">{ideas.theme.name}</p>
           <p>{ideas.theme.summary}</p>
         </section>
       )}
       {ideas.ideas.length === 0 ? null : (
-        <section aria-labelledby="idea-list">
-          <h3 id="idea-list">{i.list}</h3>
+        <section aria-labelledby={`${id}-list`}>
+          <h3 id={`${id}-list`}>{i.list}</h3>
           <ul className="idea-list">
             {ideas.ideas.map((idea) => (
               <li key={idea.title} className="idea">
@@ -65,8 +66,8 @@ function AiIdeas({
         </section>
       )}
       {ideas.menu.length === 0 ? null : (
-        <section aria-labelledby="idea-menu">
-          <h3 id="idea-menu">{i.menu}</h3>
+        <section aria-labelledby={`${id}-menu`}>
+          <h3 id={`${id}-menu`}>{i.menu}</h3>
           <dl className="menu">
             {ideas.menu.map((course) => (
               <div key={course.course}>
@@ -83,10 +84,11 @@ function AiIdeas({
 
 function SavedIdeas({ view, update }: { view: PlanView; update: Update }) {
   const { dict } = useLocale();
+  const id = useId();
   const i = dict.ideas;
   return (
-    <section aria-labelledby="idea-saved">
-      <h3 id="idea-saved">{i.saved}</h3>
+    <section aria-labelledby={id}>
+      <h3 id={id}>{i.saved}</h3>
       {view.record.ideas.length === 0 ? (
         <p className="hint">{i.savedEmpty}</p>
       ) : (

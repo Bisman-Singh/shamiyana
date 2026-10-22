@@ -44,6 +44,17 @@ export function daysBetween(from: string, to: string): number {
   return dayOf(to) - dayOf(from);
 }
 
+/** The Saturday on or before a date. */
+export function saturdayOnOrBefore(iso: string): string {
+  const weekday = new Date(dayOf(iso) * DAY_MS).getUTCDay();
+  return addDays(iso, -((weekday + 1) % 7));
+}
+
+/** Whole weeks from `from` to `to`, never below zero. */
+export function wholeWeeks(from: string, to: string): number {
+  return Math.max(0, Math.floor(daysBetween(from, to) / 7));
+}
+
 /** Today's calendar date where the user is, from a clock reading. */
 export function localToday(now: Date = new Date()): string {
   const y = String(now.getFullYear()).padStart(4, "0");

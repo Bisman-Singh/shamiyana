@@ -10,6 +10,7 @@ import {
   LIMITS,
   LOCALES,
   RSVP_STATUSES,
+  TASK_AREAS,
   STYLES,
   VENDOR_STATUSES,
   WEDDING_FUNCTIONS,
@@ -86,8 +87,8 @@ export type Guest = z.infer<typeof guestSchema>;
 
 export const customTaskSchema = z.strictObject({
   id,
-  title: line(1, 120),
-  area: z.enum([...CATEGORY_IDS, "planning"]),
+  title: line(1, LIMITS.taskTitleMax),
+  area: z.enum(TASK_AREAS),
   leadDays: z.int().min(0).max(LIMITS.maxDaysAhead),
   source: z.enum(["custom", "ai"]),
 });
@@ -96,18 +97,24 @@ export type CustomTask = z.infer<typeof customTaskSchema>;
 export const savedIdeaSchema = z.strictObject({
   id,
   area: z.enum(IDEA_AREAS),
-  title: line(1, 80),
-  detail: line(0, 300),
+  title: line(1, LIMITS.ideaTitleMax),
+  detail: line(0, LIMITS.ideaDetailMax),
 });
 export type SavedIdea = z.infer<typeof savedIdeaSchema>;
 
 const rupees = z.int().min(0).max(LIMITS.budgetMax);
 
+/** The user's weight per budget line; a missing line means the standard 1. */
+export const factorsSchema = z.partialRecord(
+  z.enum(CATEGORY_IDS),
+  z.number().min(LIMITS.factorMin).max(LIMITS.factorMax),
+);
+
 export const vendorProgressSchema = z.strictObject({
   status: z.enum(VENDOR_STATUSES),
   quote: rupees,
   paid: rupees,
-  note: line(0, 200),
+  note: line(0, LIMITS.vendorNoteMax),
 });
 export type VendorProgress = z.infer<typeof vendorProgressSchema>;
 
@@ -119,12 +126,12 @@ export const planRecordSchema = z.strictObject({
   enrichment: enrichmentSchema.nullable(),
   /** The event facts and language the stored ideas were written for; different facts mean they are stale. */
   enrichedFor: z.strictObject({ facts: factsSchema, locale: z.enum(LOCALES) }).nullable(),
-  factors: z.partialRecord(z.enum(CATEGORY_IDS), z.number().min(0.5).max(1.5)),
+  factors: factorsSchema,
   tasks: z.array(customTaskSchema).max(LIMITS.customTasksMax),
   hidden: z.array(id).max(200),
   done: z.array(id).max(400),
   vendors: z.partialRecord(z.enum(CATEGORY_IDS), vendorProgressSchema),
-  ideas: z.array(savedIdeaSchema).max(40),
+  ideas: z.array(savedIdeaSchema).max(LIMITS.savedIdeasMax),
   guests: z.array(guestSchema).max(LIMITS.guestListMax),
 });
 export type PlanRecord = z.infer<typeof planRecordSchema>;

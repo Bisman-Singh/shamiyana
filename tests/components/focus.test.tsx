@@ -10,6 +10,7 @@ import { getDictionary } from "@/lib/i18n";
 import { withEnrichment } from "@/lib/plan/record";
 import { factsOf, type Brief } from "@/lib/plan/schema";
 import { NOW, communityBrief, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
+import { stubCanvas, stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch, streamed } from "../helpers/fetch";
 import { MemoryStorage } from "../helpers/storage";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
@@ -66,6 +67,23 @@ describe("focus follows every view change", () => {
     await userEvent.click(screen.getByRole("button", { name: "Undo" }));
     expect(store.getSnapshot().data.plans.map((p) => p.id)).toEqual([id]);
     expect(screen.getByRole("heading", { level: 1, name: "Block C Diwali mela" })).toHaveFocus();
+  });
+});
+
+describe("deleting twice", () => {
+  it("gives Undo focus again for the second plan", async () => {
+    mockFetch({ "/api/plan": () => jsonError("ai_unavailable", 503) });
+    planner();
+    await userEvent.click(screen.getByRole("button", { name: /Diwali mela/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Make my plan" }));
+    await userEvent.click(screen.getByRole("button", { name: "New plan" }));
+    await userEvent.click(screen.getByRole("button", { name: /80th birthday/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Make my plan" }));
+    await userEvent.click(screen.getByRole("button", { name: "Delete this plan" }));
+    expect(screen.getByRole("button", { name: "Undo" })).toHaveFocus();
+    await userEvent.click(screen.getByRole("button", { name: "Delete this plan" }));
+    await announced(/Deleted “Block C Diwali mela”/);
+    expect(screen.getByRole("button", { name: "Undo" })).toHaveFocus();
   });
 });
 
@@ -158,6 +176,28 @@ describe("workspace focus and announcements", () => {
 });
 
 describe("AI announcements", () => {
+  it("keeps AI tasks and proposed tasks from landing before today", async () => {
+    const late = { title: "Print a guest map", area: "planning" as const, weeksBefore: 40 };
+    mockFetch({
+      "/api/plan": () => streamed([JSON.stringify({ ...sampleEnrichment, tasks: [late] })]),
+      "/api/refine": () =>
+        Response.json({
+          reply: "Added.",
+          changes: [{ op: "add_task", title: "Hire a valet", area: "transport", weeksBefore: 40 }],
+        }),
+    });
+    const { saved } = renderWorkspace(recordFor(weddingBrief));
+    await announced("Ideas ready.");
+    expect(saved.current.tasks.find((t) => t.title === late.title)?.leadDays).toBe(16 * 7);
+    await openTab("Ideas");
+    await userEvent.click(panel().getByLabelText("Your message"));
+    await userEvent.paste("Add a valet task");
+    await userEvent.click(panel().getByRole("button", { name: "Send" }));
+    expect(
+      await panel().findByText("Add a task: Hire a valet, 16 weeks before"),
+    ).toBeInTheDocument();
+  });
+
   it("says when ideas are ready", async () => {
     mockFetch({ "/api/plan": () => streamed([JSON.stringify(sampleEnrichment)]) });
     renderWorkspace(recordFor(weddingBrief));
@@ -225,18 +265,8 @@ describe("error page", () => {
 
 describe("photo guards", () => {
   it("sends one photo at a time and saves each idea once", async () => {
-    vi.stubGlobal(
-      "createImageBitmap",
-      vi.fn(() => Promise.resolve({ width: 10, height: 10, close: vi.fn() })),
-    );
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
-      drawImage: vi.fn(),
-    } as never);
-    vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation((done) => {
-      done(new Blob(["j"], { type: "image/jpeg" }));
-    });
-    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:p");
-    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
+    stubCanvas();
+    stubObjectUrls("blob:p");
     let release: (r: Response) => void = () => undefined;
     const fetch = mockFetch({
       "/api/plan": () => jsonError("ai_unavailable", 503),

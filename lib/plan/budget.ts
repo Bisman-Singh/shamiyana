@@ -1,7 +1,7 @@
 import { BASE_SHARES, variantFactors } from "./catalog";
-import type { CategoryId, VendorStatus } from "./constants";
-import { ENRICHMENT_LIMITS } from "./enrichment";
+import { LIMITS, type CategoryId, type VendorStatus } from "./constants";
 import type { EventFacts, PlanRecord } from "./schema";
+import { isSecured } from "./vendors";
 
 export interface BudgetLine {
   category: CategoryId;
@@ -53,8 +53,9 @@ export function allocate(
   return lines;
 }
 
-function clampFactor(value: number): number {
-  return Math.min(ENRICHMENT_LIMITS.factorMax, Math.max(ENRICHMENT_LIMITS.factorMin, value));
+/** A budget line's weight kept inside its bounds, to two decimals. */
+export function clampFactor(value: number): number {
+  return Math.round(Math.min(LIMITS.factorMax, Math.max(LIMITS.factorMin, value)) * 100) / 100;
 }
 
 /** The plan's categories with their weights after event details and user shifts. */
@@ -63,18 +64,40 @@ export function weightsFor(
   factors: PlanRecord["factors"],
 ): (readonly [CategoryId, number])[] {
   const variant = variantFactors(brief);
-  return Object.entries(BASE_SHARES[brief.type]).map(([key, base]) => {
+  const shares = BASE_SHARES[brief.type];
+  // Contingency keeps its share however the other lines are tilted.
+  const reserve = shares.contingency;
+  const raw = Object.entries(shares).map(([key, base]) => {
     const category = key as CategoryId;
     const user = factors[category];
-    return [
-      category,
-      base * (variant[category] ?? 1) * (user === undefined ? 1 : clampFactor(user)),
-    ];
+    const weight = base * (variant[category] ?? 1) * (user === undefined ? 1 : clampFactor(user));
+    return [category, weight] as const;
   });
+  const rest = raw.reduce((acc, [c, w]) => (c === "contingency" ? acc : acc + w), 0);
+  return raw.map(([c, w]) => [c, c === "contingency" ? reserve : (w / rest) * (1 - reserve)]);
 }
 
 export function planBudget(brief: EventFacts, factors: PlanRecord["factors"]): BudgetLine[] {
   return allocate(brief.budget, weightsFor(brief, factors));
+}
+
+/** A line's rupees now and with its shift set to `factor`. */
+export type ShiftPreview = (
+  category: CategoryId,
+  factor: number,
+) => { before: number; after: number };
+
+/**
+ * Shows a shift in rupees. A shift scales a line's share and the rest make
+ * room, so ×1.2 is not exactly 20% more money; the user should see the money.
+ */
+export function previewShifts(brief: EventFacts, factors: PlanRecord["factors"]): ShiftPreview {
+  const amount = (f: PlanRecord["factors"], category: CategoryId) =>
+    planBudget(brief, f).find((l) => l.category === category)?.amount ?? 0;
+  return (category, factor) => ({
+    before: amount(factors, category),
+    after: amount({ ...factors, [category]: factor }, category),
+  });
 }
 
 export interface BudgetRow extends BudgetLine {
@@ -114,8 +137,7 @@ export function summariseBudget(
       variance: quote > 0 ? quote - line.amount : 0,
     };
   });
-  const isCommitted = (r: BudgetRow) => r.status === "booked" || r.status === "paid";
-  const committed = rows.filter(isCommitted).reduce((acc, r) => acc + r.quote, 0);
+  const committed = rows.filter((r) => isSecured(r.status)).reduce((acc, r) => acc + r.quote, 0);
   const catering = lines.find((l) => l.category === "catering");
   return {
     rows,

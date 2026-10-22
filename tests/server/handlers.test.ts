@@ -5,6 +5,7 @@ import {
   JPEG,
   brokenGenerateModel,
   brokenStreamModel,
+  cutOffModel,
   formPost,
   generatingModel,
   jsonPost,
@@ -17,7 +18,14 @@ const planBody = { facts: weddingFacts, locale: "en", today: TODAY };
 const answer = JSON.stringify(sampleEnrichment);
 const halves = [answer.slice(0, 40), answer.slice(40)];
 
+/** Info-level log lines from the current test. */
+const infoLines: string[] = [];
+
 beforeEach(() => {
+  infoLines.length = 0;
+  vi.spyOn(console, "info").mockImplementation((line: unknown) => {
+    infoLines.push(String(line));
+  });
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
   vi.spyOn(console, "error").mockImplementation(() => undefined);
 });
@@ -44,13 +52,33 @@ describe("POST /api/plan", () => {
     ]);
     const response = await planHandler(() => deps)(jsonPost(planBody));
     expect(JSON.parse(await response.text())).toEqual(sampleEnrichment);
-    const lines = vi.mocked(console.warn).mock.calls.map((c) => String(c[0]));
-    expect(lines.some((l) => l.includes('"model":"second"') && l.includes('"outcome":"ok"'))).toBe(
-      true,
-    );
+    expect(
+      infoLines.some((l) => l.includes('"model":"second"') && l.includes('"outcome":"ok"')),
+    ).toBe(true);
     expect(
       vi.mocked(console.error).mock.calls.some((c) => String(c[0]).includes('"model":"first"')),
     ).toBe(true);
+  });
+
+  it("logs an answer that stops partway as cut off, after the text that arrived", async () => {
+    const deps = testDeps([spec(cutOffModel([answer.slice(0, 40)]), "flaky")]);
+    const response = await planHandler(() => deps)(jsonPost(planBody));
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe(answer.slice(0, 40));
+    const errors = vi.mocked(console.error).mock.calls.map((c) => String(c[0]));
+    expect(
+      errors.some((l) => l.includes('"outcome":"cut_off"') && l.includes('"model":"flaky"')),
+    ).toBe(true);
+    expect(infoLines.some((l) => l.includes("cut_off"))).toBe(false);
+  });
+
+  it("does not log a complete answer as cut off", async () => {
+    await (
+      await planHandler(() => testDeps([spec(streamingModel(halves))]))(jsonPost(planBody))
+    ).text();
+    expect(vi.mocked(console.error).mock.calls.some((c) => String(c[0]).includes("cut_off"))).toBe(
+      false,
+    );
   });
 
   it("answers 502 when every model fails", async () => {

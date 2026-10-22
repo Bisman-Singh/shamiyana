@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { visionResultSchema, type VisionResult } from "@/lib/ai/vision-result";
 import { parseChanges, type Change } from "@/lib/plan/changes";
-import type { CategoryId } from "@/lib/plan/constants";
+import { LIMITS, type CategoryId } from "@/lib/plan/constants";
+import { isRecord } from "@/lib/plan/loose";
 
 /**
  * Browser calls to the AI routes. Every failure becomes one of the error
@@ -24,8 +25,7 @@ export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: ApiError 
 
 /** Maps an error body or status to a known code. */
 export function errorCode(body: unknown, status: number): ApiError {
-  const code =
-    typeof body === "object" && body !== null ? (body as { error?: unknown }).error : undefined;
+  const code = isRecord(body) ? body.error : undefined;
   const known = API_ERRORS.find((e) => e === code);
   if (known) return known;
   if (status === 429) return "rate_limited";
@@ -54,7 +54,10 @@ async function send(path: string, init: RequestInit): Promise<ApiResult<unknown>
   return { ok: true, data: body };
 }
 
-const refineAnswer = z.object({ reply: z.string().max(600), changes: z.array(z.unknown()) });
+const refineAnswer = z.object({
+  reply: z.string().max(LIMITS.replyMax),
+  changes: z.array(z.unknown()),
+});
 
 export interface RefineReply {
   reply: string;

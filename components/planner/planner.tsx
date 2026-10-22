@@ -135,7 +135,9 @@ function PlannerNotices({
         />
       ) : null}
       <SharedImport incoming={incoming} full={full} onAdd={onAdd} onDismiss={onDismissShare} />
-      {message ? <MessageNotice message={message} onUndo={onUndo} /> : null}
+      {message ? (
+        <MessageNotice key={message.undo?.id ?? message.text} message={message} onUndo={onUndo} />
+      ) : null}
     </>
   );
 }

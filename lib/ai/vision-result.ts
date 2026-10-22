@@ -1,33 +1,42 @@
 import { z } from "zod";
-import { IDEA_AREAS } from "@/lib/plan/constants";
+import { IDEA_AREAS, LIMITS } from "@/lib/plan/constants";
+import { isRecord, oneOf, records, texts, uniqueBy } from "@/lib/plan/loose";
 import { clip } from "@/lib/plan/text";
+import { redact } from "./redact";
 import { VISION_KINDS } from "./schemas";
+
+const VISION_LIMITS = { mood: 200, colourName: 30, colours: 5, ideas: 5, note: 200, notes: 3 };
+const V = VISION_LIMITS;
 
 /** Photo insights as the client receives them: bounded, with colours as checked hex codes. */
 export const visionResultSchema = z.strictObject({
   kind: z.enum(VISION_KINDS),
-  mood: z.string().max(200),
+  mood: z.string().max(V.mood),
   palette: z
-    .array(z.strictObject({ name: z.string().max(30), hex: z.string().regex(/^#[0-9a-f]{6}$/) }))
-    .max(5),
+    .array(
+      z.strictObject({
+        name: z.string().max(V.colourName),
+        hex: z.string().regex(/^#[0-9a-f]{6}$/),
+      }),
+    )
+    .max(V.colours),
   ideas: z
     .array(
       z.strictObject({
         area: z.enum(IDEA_AREAS),
-        title: z.string().max(80),
-        detail: z.string().max(300),
+        title: z.string().max(LIMITS.ideaTitleMax),
+        detail: z.string().max(LIMITS.ideaDetailMax),
       }),
     )
-    .max(5),
-  notes: z.array(z.string().max(200)).max(3),
+    .max(V.ideas),
+  notes: z.array(z.string().max(V.note)).max(V.notes),
 });
 export type VisionResult = z.infer<typeof visionResultSchema>;
 
-type Loose = Record<string, unknown>;
-const records = (v: unknown): Loose[] =>
-  Array.isArray(v) ? v.filter((x): x is Loose => typeof x === "object" && x !== null) : [];
-const pick = <T extends string>(v: unknown, all: readonly T[], fallback: T): T =>
-  all.find((a) => a === v) ?? fallback;
+/** Photos of invitations carry phone numbers and emails; strip any the model repeats. */
+function scrub(value: unknown): unknown {
+  return typeof value === "string" ? redact(value) : value;
+}
 
 function hex(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -36,25 +45,26 @@ function hex(value: unknown): string | null {
 }
 
 export function sanitizeVision(raw: unknown): VisionResult {
-  const value: Loose = typeof raw === "object" && raw !== null ? (raw as Loose) : {};
+  const value = isRecord(raw) ? raw : {};
   return {
-    kind: pick(value.kind, VISION_KINDS, "other"),
-    mood: clip(value.mood, 200),
-    palette: records(value.palette)
-      .map((c) => ({ name: clip(c.name, 30), hex: hex(c.hex) }))
-      .filter((c): c is { name: string; hex: string } => c.hex !== null)
-      .slice(0, 5),
-    ideas: records(value.ideas)
-      .map((i) => ({
-        area: pick(i.area, IDEA_AREAS, "decor"),
-        title: clip(i.title, 80),
-        detail: clip(i.detail, 300),
-      }))
-      .filter((i) => i.title !== "")
-      .slice(0, 5),
-    notes: (Array.isArray(value.notes) ? value.notes : [])
-      .map((n) => clip(n, 200))
-      .filter((n) => n !== "")
-      .slice(0, 3),
+    kind: oneOf(value.kind, VISION_KINDS) ?? "other",
+    mood: clip(scrub(value.mood), V.mood),
+    palette: uniqueBy(
+      records(value.palette)
+        .map((c) => ({ name: clip(c.name, V.colourName), hex: hex(c.hex) }))
+        .filter((c): c is { name: string; hex: string } => c.hex !== null),
+      (c) => c.hex,
+    ).slice(0, V.colours),
+    ideas: uniqueBy(
+      records(value.ideas)
+        .map((i) => ({
+          area: oneOf(i.area, IDEA_AREAS) ?? "decor",
+          title: clip(scrub(i.title), LIMITS.ideaTitleMax),
+          detail: clip(scrub(i.detail), LIMITS.ideaDetailMax),
+        }))
+        .filter((i) => i.title !== ""),
+      (i) => i.title,
+    ).slice(0, V.ideas),
+    notes: texts(Array.isArray(value.notes) ? value.notes.map(scrub) : [], V.note, V.notes),
   };
 }

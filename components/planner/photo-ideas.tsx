@@ -10,6 +10,7 @@ import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 import type { PlanView, Update } from "./types";
+import { useRequestSignal } from "./use-request-signal";
 
 interface Photo {
   blob: Blob;
@@ -101,6 +102,7 @@ export function PhotoIdeas({ view, update }: { view: PlanView; update: Update })
   const headingId = useId();
   const [state, setState] = useState<State>({ phase: "empty" });
   const photo = "photo" in state ? state.photo : undefined;
+  const requests = useRequestSignal();
 
   useEffect(() => {
     return () => {
@@ -112,6 +114,7 @@ export function PhotoIdeas({ view, update }: { view: PlanView; update: Update })
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
+    requests.cancel();
     try {
       const blob = await prepareImage(file);
       setState({ phase: "ready", photo: { blob, url: URL.createObjectURL(blob) } });
@@ -131,7 +134,9 @@ export function PhotoIdeas({ view, update }: { view: PlanView; update: Update })
       "fields",
       JSON.stringify({ facts: factsOf(view.record.brief), locale, today: view.today }),
     );
-    const result = await requestVision(form);
+    const signal = requests.next();
+    const result = await requestVision(form, signal);
+    if (signal.aborted) return;
     if (result.ok) announce(p.ready);
     setState(
       result.ok

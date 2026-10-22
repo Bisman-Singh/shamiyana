@@ -1,4 +1,5 @@
 import "server-only";
+import { readAtMost } from "@/lib/plan/bytes";
 import type { RateLimiter } from "./rate-limit";
 
 /**
@@ -36,7 +37,7 @@ const STATUS: Record<ErrorCode, number> = {
 export function errorResponse(code: ErrorCode, headers: Record<string, string> = {}): Response {
   return Response.json(
     { error: code },
-    { status: STATUS[code], headers: { "Cache-Control": "no-store", ...headers } },
+    { status: statusOf(code), headers: { "Cache-Control": "no-store", ...headers } },
   );
 }
 
@@ -89,26 +90,7 @@ export async function readCapped(request: Request, max: number): Promise<Uint8Ar
   const declared = Number(request.headers.get("content-length") ?? "0");
   if (declared > max) return null;
   if (!request.body) return new Uint8Array();
-  const reader = request.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.length;
-    if (size > max) {
-      await reader.cancel();
-      return null;
-    }
-    chunks.push(value);
-  }
-  const out = new Uint8Array(size);
-  let offset = 0;
-  for (const chunk of chunks) {
-    out.set(chunk, offset);
-    offset += chunk.length;
-  }
-  return out;
+  return readAtMost(request.body, max);
 }
 
 export interface GuardOptions {

@@ -47,7 +47,8 @@ export const CATEGORY_IDS = [
 export type CategoryId = (typeof CATEGORY_IDS)[number];
 
 /** Tasks also belong to "planning", which has no budget line of its own. */
-export type TaskArea = CategoryId | "planning";
+export const TASK_AREAS = ["planning", ...CATEGORY_IDS] as const;
+export type TaskArea = (typeof TASK_AREAS)[number];
 
 export const IDEA_AREAS = [
   "theme",
@@ -60,6 +61,9 @@ export const IDEA_AREAS = [
   "sustainability",
 ] as const;
 export type IdeaArea = (typeof IDEA_AREAS)[number];
+
+export const IDEA_COSTS = ["low", "medium", "high"] as const;
+export type IdeaCost = (typeof IDEA_COSTS)[number];
 
 export const VENDOR_STATUSES = ["todo", "shortlisted", "booked", "paid"] as const;
 export type VendorStatus = (typeof VENDOR_STATUSES)[number];
@@ -92,4 +96,15 @@ export const LIMITS = {
   customTasksMax: 60,
   plansMax: 20,
   chatMessageMax: 400,
+  chatHistoryMax: 6,
+  replyMax: 600,
+  taskTitleMax: 120,
+  ideaTitleMax: 80,
+  ideaDetailMax: 300,
+  savedIdeasMax: 40,
+  vendorNoteMax: 200,
+  weeksMax: 52,
+  /** A budget line's weight: 1 is the standard share. */
+  factorMin: 0.5,
+  factorMax: 1.5,
 } as const;

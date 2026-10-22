@@ -69,7 +69,10 @@ describe("BriefForm", () => {
     const date = screen.getByLabelText("Date");
     await userEvent.clear(date);
     await userEvent.type(date, "2026-10-01");
-    await userEvent.click(screen.getByLabelText(/Anything else/));
+    const notes = screen.getByLabelText(/Anything else/);
+    expect(notes).toHaveValue("Ground floor only, Dadi uses a walker.");
+    await userEvent.clear(notes);
+    await userEvent.click(notes);
     await userEvent.paste("Garden");
     expect(screen.getByText(/6 of 500/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Make my plan" }));
