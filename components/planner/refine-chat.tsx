@@ -57,7 +57,7 @@ export function describeChange(
   }
 }
 
-function ChatLog({ turns }: { turns: readonly Turn[] }) {
+function ChatLog({ turns }: Readonly<{ turns: readonly Turn[] }>) {
   const { dict } = useLocale();
   if (turns.length === 0) return null;
   return (
@@ -80,13 +80,13 @@ function ProposalForm({
   onChange,
   onApply,
   onDiscard,
-}: {
+}: Readonly<{
   proposal: Proposal;
   preview: ShiftPreview;
   onChange: (next: Proposal) => void;
   onApply: () => void;
   onDiscard: () => void;
-}) {
+}>) {
   const { dict, locale } = useLocale();
   const r = dict.refine;
   return (
@@ -131,13 +131,13 @@ function ChatForm({
   inputRef,
   onChange,
   onSend,
-}: {
+}: Readonly<{
   message: string;
   pending: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
   onChange: (value: string) => void;
   onSend: (event: SubmitEvent<HTMLFormElement>) => void;
-}) {
+}>) {
   const { dict } = useLocale();
   const r = dict.refine;
   const inputId = useId();
@@ -179,7 +179,7 @@ function refineBody(view: PlanView, locale: Locale, turns: readonly Turn[], mess
   };
 }
 
-export function RefineChat({ view, update }: { view: PlanView; update: Update }) {
+export function RefineChat({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict, locale } = useLocale();
   const r = dict.refine;
   const baseId = useId();

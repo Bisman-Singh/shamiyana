@@ -39,7 +39,8 @@ describe("dictionaries", () => {
   it("use the same placeholders in Hindi as in English", () => {
     const hiMap = new Map(leaves(hi));
     for (const [path, text] of leaves(en)) {
-      const names = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+      const names = (s: string) =>
+        [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1] ?? "").sort((a, b) => a.localeCompare(b));
       expect(names(hiMap.get(path) ?? ""), path).toEqual(names(text));
     }
   });

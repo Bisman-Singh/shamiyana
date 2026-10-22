@@ -22,7 +22,7 @@ type Announce = (message: string) => void;
 
 const AnnouncerContext = createContext<Announce>(() => undefined);
 
-export function AnnouncerProvider({ children }: { children: ReactNode }) {
+export function AnnouncerProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [message, setMessage] = useState("");
   const announce = useCallback((next: string) => {
     // Clearing first makes a repeated message count as a change.

@@ -101,11 +101,9 @@ export function useEnrichment(
     askFirstTime();
   }, [record.id, key, madeFor]);
 
-  const state: EnrichmentState = isLoading
-    ? { phase: "streaming", partial: sanitizeEnrichment(object, categories) }
-    : failure
-      ? { phase: "error", error: failure }
-      : { phase: "idle" };
+  let state: EnrichmentState = { phase: "idle" };
+  if (isLoading) state = { phase: "streaming", partial: sanitizeEnrichment(object, categories) };
+  else if (failure) state = { phase: "error", error: failure };
 
   return {
     state,

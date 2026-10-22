@@ -3,7 +3,7 @@ import type { Dictionary } from "@/lib/i18n/en";
 import { BrandMark, ScallopRule } from "./brand-mark";
 import { LanguageSwitch } from "./language-switch";
 
-export function SiteHeader({ dict }: { dict: Dictionary }) {
+export function SiteHeader({ dict }: Readonly<{ dict: Dictionary }>) {
   return (
     <header className="site-header">
       <div className="wrap header-row">
@@ -21,7 +21,7 @@ export function SiteHeader({ dict }: { dict: Dictionary }) {
   );
 }
 
-export function SiteFooter({ dict }: { dict: Dictionary }) {
+export function SiteFooter({ dict }: Readonly<{ dict: Dictionary }>) {
   return (
     <footer className="site-footer">
       <div className="wrap footer-grid">

@@ -27,11 +27,11 @@ function VisionResultView({
   result,
   saved,
   update,
-}: {
+}: Readonly<{
   result: VisionResult;
   saved: ReadonlySet<string>;
   update: Update;
-}) {
+}>) {
   const { dict } = useLocale();
   const p = dict.photo;
   return (
@@ -95,7 +95,7 @@ function VisionResultView({
   );
 }
 
-export function PhotoIdeas({ view, update }: { view: PlanView; update: Update }) {
+export function PhotoIdeas({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict, locale } = useLocale();
   const p = dict.photo;
   const announce = useAnnounce();

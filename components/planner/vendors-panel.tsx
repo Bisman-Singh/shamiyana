@@ -17,7 +17,7 @@ function rupees(text: string): number {
   return Math.min(LIMITS.budgetMax, readAmount(text) ?? 0);
 }
 
-function Questions({ title, items }: { title: string; items: readonly string[] }) {
+function Questions({ title, items }: Readonly<{ title: string; items: readonly string[] }>) {
   if (items.length === 0) return null;
   return (
     <>
@@ -31,7 +31,11 @@ function Questions({ title, items }: { title: string; items: readonly string[] }
   );
 }
 
-function Card({ card, city, update }: { card: VendorCard; city: string; update: Update }) {
+function Card({
+  card,
+  city,
+  update,
+}: Readonly<{ card: VendorCard; city: string; update: Update }>) {
   const { dict, locale } = useLocale();
   const v = dict.vendors;
   const name = dict.categories[card.category];
@@ -109,7 +113,7 @@ function Card({ card, city, update }: { card: VendorCard; city: string; update: 
   );
 }
 
-export function VendorsPanel({ view, update }: { view: PlanView; update: Update }) {
+export function VendorsPanel({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict } = useLocale();
   const v = dict.vendors;
   const tally = vendorTally(view.vendors);

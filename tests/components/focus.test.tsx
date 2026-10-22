@@ -231,13 +231,10 @@ describe("AI announcements", () => {
   });
 
   it("does not send a second message while the first is pending", async () => {
-    let release: (r: Response) => void = () => undefined;
+    const { promise: answer, resolve: release } = Promise.withResolvers<Response>();
     const fetch = mockFetch({
       "/api/plan": () => jsonError("ai_unavailable", 503),
-      "/api/refine": () =>
-        new Promise<Response>((resolve) => {
-          release = resolve;
-        }),
+      "/api/refine": () => answer,
     });
     renderWorkspace(ready());
     await openTab("Ideas");
@@ -267,13 +264,10 @@ describe("photo guards", () => {
   it("sends one photo at a time and saves each idea once", async () => {
     stubCanvas();
     stubObjectUrls("blob:p");
-    let release: (r: Response) => void = () => undefined;
+    const { promise: answer, resolve: release } = Promise.withResolvers<Response>();
     const fetch = mockFetch({
       "/api/plan": () => jsonError("ai_unavailable", 503),
-      "/api/vision": () =>
-        new Promise<Response>((resolve) => {
-          release = resolve;
-        }),
+      "/api/vision": () => answer,
     });
     const { saved } = renderWorkspace(ready());
     await openTab("Ideas");

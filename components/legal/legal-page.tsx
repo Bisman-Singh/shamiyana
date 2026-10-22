@@ -12,7 +12,7 @@ export function linkify(text: string): { at: number; text: string; link: boolean
 }
 
 /** Renders policy text; bare https links in it become real links. */
-function Paragraph({ text }: { text: string }) {
+function Paragraph({ text }: Readonly<{ text: string }>) {
   return (
     <p>
       {linkify(text).map((run) =>
@@ -28,7 +28,7 @@ function Paragraph({ text }: { text: string }) {
   );
 }
 
-export function LegalArticle({ page }: { page: LegalPage }) {
+export function LegalArticle({ page }: Readonly<{ page: LegalPage }>) {
   return (
     <article className="legal">
       <h1>{page.title}</h1>

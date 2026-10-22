@@ -19,7 +19,7 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"] } },
+    { name: "desktop", use: { ...devices["Desktop Chrome"] }, grepInvert: /@phone/ },
     {
       name: "mobile",
       use: {

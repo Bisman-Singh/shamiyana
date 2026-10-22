@@ -10,11 +10,11 @@ export function Notice({
   tone = "info",
   children,
   action,
-}: {
+}: Readonly<{
   tone?: "info" | "error" | "success";
   children: ReactNode;
   action?: ReactNode;
-}) {
+}>) {
   return (
     <div className={`notice notice-${tone}`} role={tone === "error" ? "alert" : undefined}>
       <p>{children}</p>

@@ -16,7 +16,7 @@ import { SelectField, TextField } from "../ui/field";
 import { areaName, taskTitle } from "./task-title";
 import type { PlanView, Update } from "./types";
 
-function AddTask({ view, update }: { view: PlanView; update: Update }) {
+function AddTask({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict } = useLocale();
   const t = dict.timeline;
   const baseId = useId();
@@ -91,7 +91,11 @@ function AddTask({ view, update }: { view: PlanView; update: Update }) {
   );
 }
 
-function TaskRow({ item, view, update }: { item: TimelineItem; view: PlanView; update: Update }) {
+function TaskRow({
+  item,
+  view,
+  update,
+}: Readonly<{ item: TimelineItem; view: PlanView; update: Update }>) {
   const { dict, locale } = useLocale();
   const t = dict.timeline;
   const title = taskTitle(item, dict);
@@ -151,7 +155,7 @@ function TaskRow({ item, view, update }: { item: TimelineItem; view: PlanView; u
   );
 }
 
-export function TimelinePanel({ view, update }: { view: PlanView; update: Update }) {
+export function TimelinePanel({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict, locale } = useLocale();
   const t = dict.timeline;
   const { timeline, record } = view;

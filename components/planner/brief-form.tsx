@@ -40,11 +40,11 @@ function ErrorSummary({
   errors,
   idOf,
   summaryRef,
-}: {
+}: Readonly<{
   errors: Errors;
   idOf: (n: string) => string;
   summaryRef: RefObject<HTMLDivElement | null>;
-}) {
+}>) {
   const { dict, locale } = useLocale();
   const fields = DRAFT_FIELDS.flatMap((field) => {
     const code = errors[field];
@@ -65,7 +65,7 @@ function ErrorSummary({
   );
 }
 
-function Samples({ onPick }: { onPick: (type: EventType) => void }) {
+function Samples({ onPick }: Readonly<{ onPick: (type: EventType) => void }>) {
   const { dict } = useLocale();
   const headingId = useId();
   return (
@@ -97,7 +97,7 @@ export function BriefForm({
   focusOnOpen = false,
   onSubmit,
   onCancel,
-}: Props) {
+}: Readonly<Props>) {
   const { dict } = useLocale();
   const f = dict.form;
   const baseId = useId();

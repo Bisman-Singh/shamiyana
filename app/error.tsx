@@ -4,7 +4,7 @@ import { useLocale } from "@/components/locale-provider";
 import { useFocusOnMount } from "@/components/ui/announcer";
 
 /** The page-level error boundary: focus lands on what happened, with the one useful action next to it. */
-export default function ErrorPage({ reset }: { reset: () => void }) {
+export default function ErrorPage({ reset }: Readonly<{ reset: () => void }>) {
   const { dict } = useLocale();
   const headingRef = useFocusOnMount<HTMLHeadingElement>(true);
   return (

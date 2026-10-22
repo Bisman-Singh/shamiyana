@@ -114,7 +114,7 @@ export function describeEvent(
     perPlate(brief, lines),
     `Style: ${brief.style}`,
     `Food preference: ${brief.food}`,
-    `Budget lines: ${lines.map((l) => `${l.category} ${inr(l.amount)}`).join("; ")}`,
+    `Budget lines: ${lines.map((l) => l.category + " " + inr(l.amount)).join("; ")}`,
     `Already built into the budget lines above, not shifts: ${weights(preset)}`,
     brief.notes === "" ? "Notes: none" : `Notes: <user_text>${fence(brief.notes)}</user_text>`,
   ]
@@ -187,12 +187,13 @@ export function refinePrompt(input: RefineContext, lines: readonly BudgetLine[])
     const weight = input.factors[c];
     return weight === undefined ? [] : [[c, weight] as const];
   });
+  const earlier = past === "" ? "" : `Earlier conversation:\n${past}\n\n`;
   return `Current plan:
 ${describeEvent(input.facts, lines, input.today)}
 Categories that can be shifted: ${shiftableCategories(input.facts).join(", ")}
 Shifts the user has set: ${weights(set)}
 
-${past === "" ? "" : `Earlier conversation:\n${past}\n\n`}User message: <user_text>${fence(input.message)}</user_text>`;
+${earlier}User message: <user_text>${fence(input.message)}</user_text>`;
 }
 
 export function visionSystem(locale: Locale): string {

@@ -21,7 +21,7 @@ import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
 import type { PlanView, Update } from "./types";
 
-function AddGuest({ update, full }: { update: Update; full: boolean }) {
+function AddGuest({ update, full }: Readonly<{ update: Update; full: boolean }>) {
   const { dict } = useLocale();
   const g = dict.guests;
   const baseId = useId();
@@ -101,7 +101,7 @@ function AddGuest({ update, full }: { update: Update; full: boolean }) {
   );
 }
 
-function Tallies({ view, update }: { view: PlanView; update: Update }) {
+function Tallies({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict, locale } = useLocale();
   const g = dict.guests;
   const { record, guests: tally } = view;
@@ -157,7 +157,7 @@ function Tallies({ view, update }: { view: PlanView; update: Update }) {
   );
 }
 
-function GuestRow({ guest, update }: { guest: Guest; update: Update }) {
+function GuestRow({ guest, update }: Readonly<{ guest: Guest; update: Update }>) {
   const { dict, locale } = useLocale();
   const g = dict.guests;
   return (
@@ -204,7 +204,7 @@ function GuestRow({ guest, update }: { guest: Guest; update: Update }) {
 /** Rows rendered at a time; a long list grows on request instead of all at once. */
 const PAGE = 100;
 
-function GuestTable({ guests, update }: { guests: readonly Guest[]; update: Update }) {
+function GuestTable({ guests, update }: Readonly<{ guests: readonly Guest[]; update: Update }>) {
   const { dict } = useLocale();
   const g = dict.guests;
   const filterId = useId();
@@ -264,7 +264,7 @@ function GuestTable({ guests, update }: { guests: readonly Guest[]; update: Upda
   );
 }
 
-export function GuestsPanel({ view, update }: { view: PlanView; update: Update }) {
+export function GuestsPanel({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict } = useLocale();
   const g = dict.guests;
   const { record } = view;

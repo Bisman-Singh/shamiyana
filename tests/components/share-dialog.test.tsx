@@ -16,21 +16,24 @@ const encoded = vi.hoisted(() => ({
 
 vi.mock("@/lib/export/share", async (load) => ({
   ...(await load<typeof Share>()),
-  encodeShare: () =>
-    encoded.fail
-      ? new Promise<string>((_resolve, reject) => {
-          encoded.reject = () => {
-            reject(new Error("no compression"));
-          };
-        })
-      : encoded.hold
-        ? new Promise<string>((resolve) => {
-            encoded.release = (value) => {
-              resolve(value);
-              return value;
-            };
-          })
-        : Promise.resolve(encoded.value),
+  encodeShare: () => {
+    if (encoded.fail) {
+      return new Promise<string>((_resolve, reject) => {
+        encoded.reject = () => {
+          reject(new Error("no compression"));
+        };
+      });
+    }
+    if (encoded.hold) {
+      return new Promise<string>((resolve) => {
+        encoded.release = (value) => {
+          resolve(value);
+          return value;
+        };
+      });
+    }
+    return Promise.resolve(encoded.value);
+  },
 }));
 
 beforeEach(() => {

@@ -44,10 +44,10 @@ export function useIncomingShare(): [Incoming, (value: Incoming) => void] {
 export function StoreNotice({
   notice,
   onDismiss,
-}: {
+}: Readonly<{
   notice: StoreNoticeKind;
   onDismiss: () => void;
-}) {
+}>) {
   const { dict } = useLocale();
   return (
     <Notice
@@ -68,12 +68,12 @@ export function SharedImport({
   full,
   onAdd,
   onDismiss,
-}: {
+}: Readonly<{
   incoming: Incoming;
   full: boolean;
   onAdd: (plan: SharedPlan) => void;
   onDismiss: () => void;
-}) {
+}>) {
   const { dict } = useLocale();
   const headingId = useId();
   if (incoming === null) return null;
@@ -112,10 +112,10 @@ export interface Message {
 export function MessageNotice({
   message,
   onUndo,
-}: {
+}: Readonly<{
   message: Message;
   onUndo: (record: PlanRecord) => void;
-}) {
+}>) {
   const deleted = message.undo;
   return (
     <Notice
@@ -140,11 +140,11 @@ function PlanPicker({
   plans,
   initial,
   onSelect,
-}: {
+}: Readonly<{
   plans: readonly PlanRecord[];
   initial: PlanRecord;
   onSelect: (id: string) => void;
-}) {
+}>) {
   const { dict } = useLocale();
   const selectId = useId();
   const [choice, setChoice] = useState(initial.id);
@@ -185,7 +185,7 @@ export function PlansBar({
   onNew,
   onRestore,
   onDelete,
-}: {
+}: Readonly<{
   plans: readonly PlanRecord[];
   active: PlanRecord | null;
   full: boolean;
@@ -193,7 +193,7 @@ export function PlansBar({
   onNew: () => void;
   onRestore: (event: ChangeEvent<HTMLInputElement>) => void;
   onDelete: (() => void) | null;
-}) {
+}>) {
   const { dict } = useLocale();
   const limitId = useId();
   return (

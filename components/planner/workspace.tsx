@@ -1,10 +1,13 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import { downloadText } from "@/lib/client/files";
 import { fileName } from "@/lib/export/links";
+import type { Dictionary } from "@/lib/i18n/en";
 import { formatDate, formatMoney, plural } from "@/lib/i18n/format";
 import { planBudget, summariseBudget } from "@/lib/plan/budget";
+import type { Locale } from "@/lib/plan/constants";
+import type { Enrichment } from "@/lib/plan/enrichment";
 import { tallyGuests } from "@/lib/plan/guests";
 import { withEnrichment } from "@/lib/plan/record";
 import type { PlanRecord } from "@/lib/plan/schema";
@@ -49,19 +52,19 @@ function PlanHeader({
   focusOnOpen,
   onEdit,
   onShare,
-}: {
+}: Readonly<{
   titleId: string;
   view: PlanView;
   focusOnOpen: boolean;
   onEdit: () => void;
   onShare: () => void;
-}) {
+}>) {
   const { dict, locale } = useLocale();
   const titleRef = useFocusOnMount<HTMLHeadingElement>(focusOnOpen);
   const w = dict.workspace;
   const { brief } = view.record;
   const days = view.timeline.daysToGo;
-  const when = days > 0 ? plural(locale, w.daysToGo, days) : days === 0 ? w.isToday : w.isPast;
+  const when = countdown(locale, w, days);
   return (
     <header className="plan-head">
       <div>
@@ -111,7 +114,7 @@ function PlanHeader({
 }
 
 /** Shown after a removal; its button takes focus, since the removed row took the focus with it. */
-function UndoNotice({ message, onUndo }: { message: string; onUndo: () => void }) {
+function UndoNotice({ message, onUndo }: Readonly<{ message: string; onUndo: () => void }>) {
   return (
     <Notice tone="success" action={<UndoButton onUndo={onUndo} />}>
       {message}
@@ -157,6 +160,47 @@ function useUndoable(record: PlanRecord, onSave: (record: PlanRecord) => void) {
   };
 }
 
+function countdown(locale: Locale, w: Dictionary["workspace"], days: number): string {
+  if (days > 0) return plural(locale, w.daysToGo, days);
+  return days === 0 ? w.isToday : w.isPast;
+}
+
+/** One tab per panel; the AI status sits inside Ideas while that tab is open. */
+function planTabs({
+  w,
+  view,
+  ideas,
+  status,
+  update,
+}: Readonly<{
+  w: Dictionary["workspace"];
+  view: PlanView;
+  ideas: Enrichment | null;
+  status: ReactNode;
+  update: Update;
+}>): Tab<TabId>[] {
+  return [
+    { id: "overview", label: w.tabs.overview, panel: <OverviewPanel view={view} ideas={ideas} /> },
+    {
+      id: "budget",
+      label: w.tabs.budget,
+      panel: <BudgetPanel view={view} ideas={ideas} update={update} />,
+    },
+    {
+      id: "timeline",
+      label: w.tabs.timeline,
+      panel: <TimelinePanel view={view} update={update} />,
+    },
+    { id: "vendors", label: w.tabs.vendors, panel: <VendorsPanel view={view} update={update} /> },
+    { id: "guests", label: w.tabs.guests, panel: <GuestsPanel view={view} update={update} /> },
+    {
+      id: "ideas",
+      label: w.tabs.ideas,
+      panel: <IdeasPanel view={view} ideas={ideas} status={status} update={update} />,
+    },
+  ];
+}
+
 /** After an undo the restored row has no focus to return to, so focus goes to the open panel. */
 function focusOpenPanel() {
   requestAnimationFrame(() => {
@@ -164,7 +208,14 @@ function focusOpenPanel() {
   });
 }
 
-export function Workspace({ record, today, onSave, findPlan, focusOnOpen = false, onEdit }: Props) {
+export function Workspace({
+  record,
+  today,
+  onSave,
+  findPlan,
+  focusOnOpen = false,
+  onEdit,
+}: Readonly<Props>) {
   const { dict, locale } = useLocale();
   const w = dict.workspace;
   const announce = useAnnounce();
@@ -194,33 +245,7 @@ export function Workspace({ record, today, onSave, findPlan, focusOnOpen = false
     />
   );
 
-  const tabs: Tab<TabId>[] = [
-    { id: "overview", label: w.tabs.overview, panel: <OverviewPanel view={view} ideas={ideas} /> },
-    {
-      id: "budget",
-      label: w.tabs.budget,
-      panel: <BudgetPanel view={view} ideas={ideas} update={update} />,
-    },
-    {
-      id: "timeline",
-      label: w.tabs.timeline,
-      panel: <TimelinePanel view={view} update={update} />,
-    },
-    { id: "vendors", label: w.tabs.vendors, panel: <VendorsPanel view={view} update={update} /> },
-    { id: "guests", label: w.tabs.guests, panel: <GuestsPanel view={view} update={update} /> },
-    {
-      id: "ideas",
-      label: w.tabs.ideas,
-      panel: (
-        <IdeasPanel
-          view={view}
-          ideas={ideas}
-          status={tab === "ideas" ? status : null}
-          update={update}
-        />
-      ),
-    },
-  ];
+  const tabs = planTabs({ w, view, ideas, status: tab === "ideas" ? status : null, update });
 
   return (
     <article className="workspace" aria-labelledby={titleId}>

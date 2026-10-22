@@ -28,7 +28,7 @@ export function nudge(current: number, direction: 1 | -1): number {
 
 type Shift = (category: CategoryId, factor: number | null) => void;
 
-function Stepper({ row, factor, shift }: { row: Row; factor: number; shift: Shift }) {
+function Stepper({ row, factor, shift }: Readonly<{ row: Row; factor: number; shift: Shift }>) {
   const { dict } = useLocale();
   const b = dict.budget;
   return (
@@ -79,12 +79,12 @@ function BudgetLine({
   widest,
   factor,
   shift,
-}: {
+}: Readonly<{
   row: Row;
   widest: number;
   factor: number;
   shift: Shift;
-}) {
+}>) {
   const { dict, locale } = useLocale();
   const b = dict.budget;
   const money = (n: number) => formatMoney(n, locale);
@@ -119,12 +119,12 @@ function Suggestions({
   factors,
   preview,
   shift,
-}: {
+}: Readonly<{
   ideas: Enrichment;
   factors: PlanView["record"]["factors"];
   preview: ShiftPreview;
   shift: Shift;
-}) {
+}>) {
   const { dict, locale } = useLocale();
   const id = useId();
   const b = dict.budget;
@@ -172,7 +172,7 @@ function Suggestions({
   );
 }
 
-function BudgetTable({ view, shift }: { view: PlanView; shift: Shift }) {
+function BudgetTable({ view, shift }: Readonly<{ view: PlanView; shift: Shift }>) {
   const { dict, locale } = useLocale();
   const b = dict.budget;
   const { budget, record } = view;
@@ -229,11 +229,11 @@ export function BudgetPanel({
   view,
   ideas,
   update,
-}: {
+}: Readonly<{
   view: PlanView;
   ideas: Enrichment | null;
   update: Update;
-}) {
+}>) {
   const { dict, locale } = useLocale();
   const b = dict.budget;
   const { budget, record } = view;

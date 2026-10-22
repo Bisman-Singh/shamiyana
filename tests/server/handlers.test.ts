@@ -386,7 +386,7 @@ describe("GET /api/health", () => {
       string,
       unknown
     >;
-    expect(Object.keys(on).sort()).toEqual(["ai", "prompts", "status"]);
+    expect(Object.keys(on).sort((a, b) => a.localeCompare(b))).toEqual(["ai", "prompts", "status"]);
     expect(on).toMatchObject({ status: "ok", ai: "configured" });
     expect(await healthHandler(() => testDeps(null))().json()).toMatchObject({ ai: "off" });
   });

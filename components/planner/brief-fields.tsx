@@ -33,7 +33,7 @@ export function options<T extends string>(
   );
 }
 
-export function EventTypeField({ draft, set, idOf }: FieldsProps) {
+export function EventTypeField({ draft, set, idOf }: Readonly<FieldsProps>) {
   const { dict } = useLocale();
   const f = dict.form;
   return (
@@ -130,7 +130,7 @@ export function BasicFields({ draft, set, error, idOf, today }: FieldsProps & { 
 }
 
 /** The one extra question each event type asks: functions, whose birthday, or what kind of event. */
-export function VariantField({ draft, set, error, idOf }: FieldsProps) {
+export function VariantField({ draft, set, error, idOf }: Readonly<FieldsProps>) {
   const { dict } = useLocale();
   const f = dict.form;
   switch (draft.type) {
@@ -180,7 +180,7 @@ export function VariantField({ draft, set, error, idOf }: FieldsProps) {
   }
 }
 
-export function PreferenceFields({ draft, set, error, idOf }: FieldsProps) {
+export function PreferenceFields({ draft, set, error, idOf }: Readonly<FieldsProps>) {
   const { dict } = useLocale();
   const f = dict.form;
   return (

@@ -32,12 +32,12 @@ export function Tabs<T extends string>({
   tabs,
   selected,
   onSelect,
-}: {
+}: Readonly<{
   label: string;
   tabs: readonly Tab<T>[];
   selected: T;
   onSelect: (id: T) => void;
-}) {
+}>) {
   const baseId = useId();
   const tabsRef = useRef(new Map<T, HTMLButtonElement>());
 

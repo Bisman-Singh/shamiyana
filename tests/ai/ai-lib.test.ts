@@ -134,8 +134,8 @@ describe("prompts", () => {
 
   it("works out catering per plate, counting haldi and mehndi at part of the guest list", () => {
     const catering = lines.find((l) => l.category === "catering")?.amount ?? 0;
-    const plates = 250 * (0.3 + 0.5 + 0.8 + 1);
-    expect(plates).toBe(650);
+    // 250 guests at 0.3 haldi, 0.5 mehndi, 0.8 sangeet and the full wedding
+    const plates = 650;
     expect(describeEvent(weddingBrief, lines, TODAY)).toContain(
       `Catering: ${inr(catering)} for about 650 plates across 4 functions, about ${inr(Math.round(catering / plates))} a plate`,
     );
@@ -249,7 +249,9 @@ describe("AnswerCache", () => {
     cache.set("big", "x".repeat(11));
     expect(cache.size).toBe(0);
     cache.set("a", "xxxxxx");
-    cache.set("a", "xxxxxx");
+    expect(cache.size).toBe(1);
+    cache.set("a", "yyyyyy");
+    expect(cache.size).toBe(1);
     cache.set("b", "xxxxxx");
     expect(cache.get("a")).toBeNull();
     expect(cache.get("b")).toBe("xxxxxx");

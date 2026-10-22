@@ -54,7 +54,10 @@ describe("variantFactors", () => {
       decor: 1.06,
       photo: 1.1,
     });
-    expect(variantFactors({ ...weddingBrief, functions: ["roka", "wedding"] }).gifts).toBe(1.2);
+    expect(variantFactors({ ...weddingBrief, functions: ["roka", "wedding"] }).gifts).toBeCloseTo(
+      1.2,
+      10,
+    );
   });
 
   it.each(HONOREES)("has a tilt for a %s birthday", (honoree) => {

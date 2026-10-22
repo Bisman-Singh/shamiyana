@@ -103,7 +103,7 @@ describe("draft", () => {
     const result = parseDraft({ ...emptyDraft("wedding"), functions: [] }, TODAY);
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(Object.keys(result.errors).sort()).toEqual([
+      expect(Object.keys(result.errors).sort((a, b) => a.localeCompare(b))).toEqual([
         "budget",
         "city",
         "date",

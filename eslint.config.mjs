@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import eslintReact from "@eslint-react/eslint-plugin";
 import jsxA11y from "eslint-plugin-jsx-a11y-x";
 import reactHooks from "eslint-plugin-react-hooks";
+import sonarjs from "eslint-plugin-sonarjs";
 import { defineConfig, globalIgnores } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -18,6 +19,7 @@ export default defineConfig([
   js.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
+  sonarjs.configs.recommended,
   {
     languageOptions: {
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
@@ -61,7 +63,8 @@ export default defineConfig([
   },
   {
     files: ["tests/**", "e2e/**", "scripts/**"],
-    rules: { "max-lines-per-function": "off" },
+    // tests feed documentation-range addresses (RFC 5737, RFC 3849) to the client address parser
+    rules: { "max-lines-per-function": "off", "sonarjs/no-hardcoded-ip": "off" },
   },
   {
     files: ["**/*.mjs"],

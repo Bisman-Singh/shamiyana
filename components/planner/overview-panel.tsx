@@ -8,7 +8,10 @@ import { useLocale } from "../locale-provider";
 import { taskTitle } from "./task-title";
 import type { PlanView } from "./types";
 
-export function OverviewPanel({ view, ideas }: { view: PlanView; ideas: Enrichment | null }) {
+export function OverviewPanel({
+  view,
+  ideas,
+}: Readonly<{ view: PlanView; ideas: Enrichment | null }>) {
   const { dict, locale } = useLocale();
   const id = useId();
   const o = dict.overview;

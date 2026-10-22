@@ -13,14 +13,14 @@ export function AiStatus({
   onRegenerate,
   onRetry,
   onStop,
-}: {
+}: Readonly<{
   state: EnrichmentState;
   city: string;
   hasIdeas: boolean;
   onRegenerate: () => void;
   onRetry: () => void;
   onStop: () => void;
-}) {
+}>) {
   const { dict } = useLocale();
   const a = dict.ai;
 

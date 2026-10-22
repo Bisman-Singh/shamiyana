@@ -2,18 +2,24 @@ import type { Mock } from "vitest";
 
 type Handler = (body: unknown, init: RequestInit) => Response | Promise<Response>;
 
+function urlOf(input: RequestInfo | URL): string {
+  if (input instanceof Request) return input.url;
+  return input instanceof URL ? input.href : input;
+}
+
 /** Routes fetch calls by path to handlers, recording each JSON body sent. */
 export function mockFetch(
   routes: Record<string, Handler>,
 ): Mock & { bodies: Record<string, unknown[]> } {
   const bodies: Record<string, unknown[]> = {};
   const fn = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
-    const url = input instanceof Request ? input.url : input instanceof URL ? input.href : input;
-    const path = new URL(url, "https://plan.test").pathname;
+    const path = new URL(urlOf(input), "https://plan.test").pathname;
     const handler = routes[path];
     if (!handler) throw new TypeError(`unexpected fetch ${path}`);
     const body: unknown = typeof init.body === "string" ? JSON.parse(init.body) : init.body;
-    (bodies[path] ??= []).push(body);
+    const sent = bodies[path] ?? [];
+    sent.push(body);
+    bodies[path] = sent;
     return await handler(body, init);
   });
   vi.stubGlobal("fetch", fn);

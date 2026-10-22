@@ -102,7 +102,7 @@ describe("budget", () => {
   it("keeps weights inside 0.5 and 1.5", () => {
     expect(nudge(1.5, 1)).toBe(1.5);
     expect(nudge(0.5, -1)).toBe(0.5);
-    expect(nudge(1, -1)).toBe(0.9);
+    expect(nudge(1, -1)).toBeCloseTo(0.9, 10);
   });
 
   it("disables the limits and flags bookings over plan and over budget", async () => {

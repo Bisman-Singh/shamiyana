@@ -16,7 +16,7 @@ interface Described {
   id: string;
   label: ReactNode;
   hint?: ReactNode;
-  error?: string | undefined;
+  error?: string;
 }
 
 function describedBy(id: string, hint: unknown, error: unknown): string | undefined {
@@ -24,7 +24,7 @@ function describedBy(id: string, hint: unknown, error: unknown): string | undefi
   return ids.length > 0 ? ids.join(" ") : undefined;
 }
 
-function Messages({ id, hint, error }: Omit<Described, "label">) {
+function Messages({ id, hint, error }: Readonly<Omit<Described, "label">>) {
   return (
     <>
       {hint ? (
@@ -139,7 +139,7 @@ interface ChoiceProps<T extends string> {
   legend: string;
   name: string;
   options: readonly Option<T>[];
-  error?: string | undefined;
+  error?: string;
   className?: string;
 }
 
@@ -212,9 +212,7 @@ export function CheckGroup<T extends string>({
               onChange(options.map((opt) => opt.value).filter((v) => next.includes(v)));
             }}
           />
-          <span className="choice-text">
-            <span className="choice-label">{o.label}</span>
-          </span>
+          <span className="choice-text choice-label">{o.label}</span>
         </label>
       ))}
       <Messages id={id} error={error} />

@@ -200,7 +200,10 @@ describe("record helpers", () => {
 
   it("applies approved changes in order", () => {
     let n = 0;
-    const ids = () => `id${(n += 1)}`;
+    const ids = () => {
+      n += 1;
+      return `id${n}`;
+    };
     const record = applyChanges(
       recordFor(weddingBrief),
       [

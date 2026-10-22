@@ -115,8 +115,7 @@ test("without an AI key the server says so and the plan still works", async ({ p
   await expect(page.getByRole("tabpanel").getByRole("checkbox").first()).toBeVisible();
 });
 
-test("nothing scrolls sideways on a phone", async ({ page }, info) => {
-  test.skip(info.project.name !== "mobile", "phone layout only");
+test("nothing scrolls sideways on a phone", { tag: "@phone" }, async ({ page }) => {
   await mockAi(page);
   await startSamplePlan(page);
   for (const tab of ["Overview", "Budget", "Timeline", "Vendors", "Guests", "Ideas"]) {

@@ -13,11 +13,11 @@ function AiIdeas({
   ideas,
   saved,
   update,
-}: {
+}: Readonly<{
   ideas: Enrichment;
   saved: ReadonlySet<string>;
   update: Update;
-}) {
+}>) {
   const { dict } = useLocale();
   const id = useId();
   const i = dict.ideas;
@@ -82,7 +82,7 @@ function AiIdeas({
   );
 }
 
-function SavedIdeas({ view, update }: { view: PlanView; update: Update }) {
+function SavedIdeas({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict } = useLocale();
   const id = useId();
   const i = dict.ideas;
@@ -125,12 +125,12 @@ export function IdeasPanel({
   ideas,
   status,
   update,
-}: {
+}: Readonly<{
   view: PlanView;
   ideas: Enrichment | null;
   status: ReactNode;
   update: Update;
-}) {
+}>) {
   const { dict } = useLocale();
   const saved = new Set(view.record.ideas.map((s) => s.title));
   return (

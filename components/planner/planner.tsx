@@ -114,7 +114,7 @@ function PlannerNotices({
   onAdd,
   onDismissShare,
   onUndo,
-}: {
+}: Readonly<{
   store: PlanStore;
   notice: Notice | null;
   incoming: Incoming;
@@ -123,7 +123,7 @@ function PlannerNotices({
   onAdd: (plan: SharedPlan) => void;
   onDismissShare: () => void;
   onUndo: (record: PlanRecord) => void;
-}) {
+}>) {
   return (
     <>
       {notice ? (
@@ -150,14 +150,14 @@ function PlanForm({
   onCreate,
   onSave,
   onCancel,
-}: {
+}: Readonly<{
   active: PlanRecord | null;
   today: string;
   focusOnOpen: boolean;
   onCreate: (brief: Brief) => void;
   onSave: (record: PlanRecord) => void;
   onCancel: (() => void) | null;
-}) {
+}>) {
   return (
     <BriefForm
       key={active ? active.id : "new"}
@@ -200,7 +200,7 @@ function useView() {
   };
 }
 
-export function Planner({ store }: { store?: PlanStore }) {
+export function Planner({ store }: Readonly<{ store?: PlanStore }>) {
   const plans = store ?? sharedStore();
   const snapshot = useSyncExternalStore(
     plans.subscribe,

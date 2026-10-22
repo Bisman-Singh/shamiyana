@@ -8,7 +8,10 @@ import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 
 /** A modal with the share link. The native dialog traps focus and closes on Escape. */
-export function ShareDialog({ record, onClose }: { record: PlanRecord; onClose: () => void }) {
+export function ShareDialog({
+  record,
+  onClose,
+}: Readonly<{ record: PlanRecord; onClose: () => void }>) {
   const { dict } = useLocale();
   const s = dict.share;
   const baseId = useId();
