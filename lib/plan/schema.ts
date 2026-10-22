@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import {
   CATEGORY_IDS,
   COMMUNITY_KINDS,

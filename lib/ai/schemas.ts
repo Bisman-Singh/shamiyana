@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { CATEGORY_IDS, IDEA_AREAS, IDEA_COSTS, LIMITS, TASK_AREAS } from "@/lib/plan/constants";
 import { CHANGE_OPS } from "@/lib/plan/changes";
 

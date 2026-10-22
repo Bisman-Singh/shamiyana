@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { clampFactor } from "./factors";
 import {
   CATEGORY_IDS,

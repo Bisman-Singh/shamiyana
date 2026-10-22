@@ -19,6 +19,15 @@ test("the page runs with no CSP violations", async ({ page }) => {
   page.on("console", (message) => {
     if (/Content Security Policy/i.test(message.text())) violations.push(message.text());
   });
+  // a blocked eval that the page catches never reaches the console, only this event
+  await page.exposeFunction("reportViolation", (text: string) => violations.push(text));
+  await page.addInitScript(() => {
+    document.addEventListener("securitypolicyviolation", (event) => {
+      const report = (window as unknown as { reportViolation: (text: string) => Promise<void> })
+        .reportViolation;
+      void report(`${event.violatedDirective} ${event.blockedURI} ${event.sourceFile}`);
+    });
+  });
   await page.goto("/");
   await page.getByRole("button", { name: /Wedding in Jaipur/ }).click();
   await page.getByRole("button", { name: "Make my plan" }).click();

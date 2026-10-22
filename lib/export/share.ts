@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { readAtMost } from "@/lib/plan/bytes";
 import { createRecord, withCleanEnrichment } from "@/lib/plan/record";
 import { planRecordSchema, type PlanRecord } from "@/lib/plan/schema";

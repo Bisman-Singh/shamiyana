@@ -1,5 +1,5 @@
 import "server-only";
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { LIMITS, LOCALES } from "@/lib/plan/constants";
 import { daysBetween, isIsoDate } from "@/lib/plan/dates";
 import { factorsSchema, factsSchema } from "@/lib/plan/schema";
