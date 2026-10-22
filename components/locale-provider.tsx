@@ -2,6 +2,7 @@
 
 import { createContext, use, useMemo, type ReactNode } from "react";
 import type { Dictionary } from "@/lib/i18n/en";
+import { formatMoney } from "@/lib/i18n/format";
 import type { Locale } from "@/lib/plan/constants";
 
 interface LocaleValue {
@@ -21,4 +22,10 @@ export function useLocale(): LocaleValue {
   const value = use(LocaleContext);
   if (!value) throw new Error("useLocale needs a LocaleProvider");
   return value;
+}
+
+/** Formats a rupee amount in the language of the page. */
+export function useMoney(): (amount: number) => string {
+  const { locale } = useLocale();
+  return (amount) => formatMoney(amount, locale);
 }

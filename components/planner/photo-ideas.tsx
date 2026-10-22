@@ -4,12 +4,12 @@ import { useEffect, useId, useState, type ChangeEvent } from "react";
 import type { VisionResult } from "@/lib/ai/vision-result";
 import { requestVision } from "@/lib/client/api";
 import { ACCEPTED_IMAGES, prepareImage } from "@/lib/client/files";
-import { newId, saveIdea } from "@/lib/plan/record";
 import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 import type { PlanView, Update } from "./types";
+import { SaveIdeaButton } from "./save-idea-button";
 import { useRequestSignal } from "./use-request-signal";
 
 interface Photo {
@@ -66,18 +66,7 @@ function VisionResultView({
           <li key={idea.title} className="idea">
             <p className="idea-title">{idea.title}</p>
             <p>{idea.detail}</p>
-            <button
-              type="button"
-              className="btn btn-small"
-              aria-disabled={saved.has(idea.title) || undefined}
-              onClick={() => {
-                if (saved.has(idea.title)) return;
-                update((r, now) => saveIdea(r, { id: newId(), ...idea }, now));
-              }}
-            >
-              {saved.has(idea.title) ? dict.common.saved : dict.ideas.save}{" "}
-              <span className="visually-hidden">{idea.title}</span>
-            </button>
+            <SaveIdeaButton idea={idea} saved={saved.has(idea.title)} update={update} />
           </li>
         ))}
       </ul>

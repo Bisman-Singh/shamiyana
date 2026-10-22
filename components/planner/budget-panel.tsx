@@ -3,14 +3,14 @@
 import { useId } from "react";
 import { budgetRows } from "@/lib/export/sheets";
 import { downloadCsv } from "@/lib/client/files";
-import { format, formatMoney } from "@/lib/i18n/format";
+import { format } from "@/lib/i18n/format";
 import { previewShifts, type BudgetRow as Row, type ShiftPreview } from "@/lib/plan/budget";
 import { clampFactor } from "@/lib/plan/factors";
 import { LIMITS, type CategoryId } from "@/lib/plan/constants";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { setFactor } from "@/lib/plan/record";
 import { factsOf } from "@/lib/plan/schema";
-import { useLocale } from "../locale-provider";
+import { useLocale, useMoney } from "../locale-provider";
 import type { PlanView, Update } from "./types";
 
 const STEP = 0.1;
@@ -81,9 +81,9 @@ function BudgetLine({
   factor: number;
   shift: Shift;
 }>) {
-  const { dict, locale } = useLocale();
+  const { dict } = useLocale();
+  const money = useMoney();
   const b = dict.budget;
-  const money = (n: number) => formatMoney(n, locale);
   const fixed = row.category === "contingency";
   return (
     <tr>
@@ -121,7 +121,8 @@ function Suggestions({
   preview: ShiftPreview;
   shift: Shift;
 }>) {
-  const { dict, locale } = useLocale();
+  const { dict } = useLocale();
+  const money = useMoney();
   const id = useId();
   const b = dict.budget;
   return (
@@ -141,8 +142,8 @@ function Suggestions({
                   {format(b.suggestion, {
                     direction: s.factor > 1 ? b.up : b.down,
                     category: dict.categories[s.category],
-                    before: formatMoney(before, locale),
-                    after: formatMoney(after, locale),
+                    before: money(before),
+                    after: money(after),
                   })}
                 </strong>{" "}
                 {s.reason}
@@ -169,10 +170,10 @@ function Suggestions({
 }
 
 function BudgetTable({ view, shift }: Readonly<{ view: PlanView; shift: Shift }>) {
-  const { dict, locale } = useLocale();
+  const { dict } = useLocale();
+  const money = useMoney();
   const b = dict.budget;
   const { budget, record } = view;
-  const money = (n: number) => formatMoney(n, locale);
   const widest = Math.max(...budget.rows.map((r) => r.share));
   return (
     <div className="table-scroll">
@@ -230,10 +231,10 @@ export function BudgetPanel({
   ideas: Enrichment | null;
   update: Update;
 }>) {
-  const { dict, locale } = useLocale();
+  const { dict } = useLocale();
+  const money = useMoney();
   const b = dict.budget;
   const { budget, record } = view;
-  const money = (n: number) => formatMoney(n, locale);
   const shift: Shift = (category, factor) => {
     update((r, now) => setFactor(r, category, factor, now));
   };

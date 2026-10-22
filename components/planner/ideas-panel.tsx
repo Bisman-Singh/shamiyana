@@ -3,11 +3,12 @@
 import { useId, type ReactNode } from "react";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { format } from "@/lib/i18n/format";
-import { newId, removeIdea, saveIdea } from "@/lib/plan/record";
+import { removeIdea } from "@/lib/plan/record";
 import { useLocale } from "../locale-provider";
 import { PhotoIdeas } from "./photo-ideas";
 import { RefineChat } from "./refine-chat";
 import type { PlanView, Update } from "./types";
+import { SaveIdeaButton } from "./save-idea-button";
 
 function AiIdeas({
   ideas,
@@ -42,24 +43,7 @@ function AiIdeas({
                 </p>
                 <p className="idea-title">{idea.title}</p>
                 <p>{idea.detail}</p>
-                <button
-                  type="button"
-                  className="btn btn-small"
-                  aria-disabled={saved.has(idea.title) || undefined}
-                  onClick={() => {
-                    if (saved.has(idea.title)) return;
-                    update((r, now) =>
-                      saveIdea(
-                        r,
-                        { id: newId(), area: idea.area, title: idea.title, detail: idea.detail },
-                        now,
-                      ),
-                    );
-                  }}
-                >
-                  {saved.has(idea.title) ? dict.common.saved : i.save}{" "}
-                  <span className="visually-hidden">{idea.title}</span>
-                </button>
+                <SaveIdeaButton idea={idea} saved={saved.has(idea.title)} update={update} />
               </li>
             ))}
           </ul>

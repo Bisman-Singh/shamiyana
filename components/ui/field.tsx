@@ -41,6 +41,32 @@ function Messages({ id, hint, error }: Readonly<Omit<Described, "label">>) {
   );
 }
 
+/** The label, the control and its messages, tied together by the control's id. */
+function Field({
+  id,
+  label,
+  hint,
+  error,
+  children,
+}: Readonly<Described & { children: ReactNode }>) {
+  return (
+    <div className="field">
+      <label htmlFor={id}>{label}</label>
+      {children}
+      <Messages id={id} hint={hint} error={error} />
+    </div>
+  );
+}
+
+/** The attributes that point a control at its hint and error. */
+function controlProps({ id, hint, error }: Omit<Described, "label">) {
+  return {
+    id,
+    "aria-invalid": error ? true : undefined,
+    "aria-describedby": describedBy(id, hint, error),
+  };
+}
+
 export function TextField({
   id,
   label,
@@ -49,16 +75,9 @@ export function TextField({
   ...input
 }: Described & InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <div className="field">
-      <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy(id, hint, error)}
-        {...input}
-      />
-      <Messages id={id} hint={hint} error={error} />
-    </div>
+    <Field id={id} label={label} hint={hint} error={error}>
+      <input {...controlProps({ id, hint, error })} {...input} />
+    </Field>
   );
 }
 
@@ -70,16 +89,9 @@ export function TextArea({
   ...input
 }: Described & TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
-    <div className="field">
-      <label htmlFor={id}>{label}</label>
-      <textarea
-        id={id}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy(id, hint, error)}
-        {...input}
-      />
-      <Messages id={id} hint={hint} error={error} />
-    </div>
+    <Field id={id} label={label} hint={hint} error={error}>
+      <textarea {...controlProps({ id, hint, error })} {...input} />
+    </Field>
   );
 }
 
@@ -107,12 +119,9 @@ export function SelectField<T extends string>({
   ...select
 }: SelectProps<T>) {
   return (
-    <div className="field">
-      <label htmlFor={id}>{label}</label>
+    <Field id={id} label={label} hint={hint} error={error}>
       <select
-        id={id}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy(id, hint, error)}
+        {...controlProps({ id, hint, error })}
         value={value}
         onChange={(e) => {
           const chosen = oneOf(
@@ -129,8 +138,7 @@ export function SelectField<T extends string>({
           </option>
         ))}
       </select>
-      <Messages id={id} hint={hint} error={error} />
-    </div>
+    </Field>
   );
 }
 
