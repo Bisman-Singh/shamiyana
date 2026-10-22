@@ -1,5 +1,5 @@
 import "server-only";
-import { z } from "@/lib/zod";
+import { z } from "zod";
 
 /**
  * Server configuration, validated once at boot by `instrumentation.ts` so a

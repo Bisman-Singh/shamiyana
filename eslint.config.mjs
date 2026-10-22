@@ -48,18 +48,6 @@ export default defineConfig([
       "max-depth": ["error", 3],
       "max-lines-per-function": ["error", { max: 90, skipBlankLines: true, skipComments: true }],
       "no-console": ["error", { allow: ["warn", "error"] }],
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            {
-              name: "zod",
-              message: "Import z from @/lib/zod, which stops Zod probing for eval under the CSP.",
-              allowTypeImports: true,
-            },
-          ],
-        },
-      ],
       "no-restricted-syntax": [
         "error",
         {
@@ -68,10 +56,6 @@ export default defineConfig([
         },
       ],
     },
-  },
-  {
-    files: ["lib/zod.ts"],
-    rules: { "no-restricted-imports": "off" },
   },
   {
     files: ["lib/server/log.ts"],

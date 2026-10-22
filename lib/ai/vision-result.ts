@@ -1,4 +1,4 @@
-import { z } from "@/lib/zod";
+import { z } from "zod";
 import { IDEA_AREAS, LIMITS } from "@/lib/plan/constants";
 import { isRecord, oneOf, records, texts, uniqueBy } from "@/lib/plan/loose";
 import { clip } from "@/lib/plan/text";
