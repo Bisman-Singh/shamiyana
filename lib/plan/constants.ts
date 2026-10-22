@@ -63,7 +63,6 @@ export const IDEA_AREAS = [
 export type IdeaArea = (typeof IDEA_AREAS)[number];
 
 export const IDEA_COSTS = ["low", "medium", "high"] as const;
-export type IdeaCost = (typeof IDEA_COSTS)[number];
 
 export const VENDOR_STATUSES = ["todo", "shortlisted", "booked", "paid"] as const;
 export type VendorStatus = (typeof VENDOR_STATUSES)[number];

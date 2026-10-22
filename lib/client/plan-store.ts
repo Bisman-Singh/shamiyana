@@ -21,7 +21,7 @@ export interface Snapshot {
 }
 
 export const EMPTY_STORE: Store = { version: 1, activeId: null, plans: [] };
-export const SERVER_SNAPSHOT: Snapshot = { ready: false, data: EMPTY_STORE, notice: null };
+const SERVER_SNAPSHOT: Snapshot = { ready: false, data: EMPTY_STORE, notice: null };
 
 export function readStore(storage: Storage | null): { data: Store; notice: Notice | null } {
   if (!storage) return { data: EMPTY_STORE, notice: "blocked" };

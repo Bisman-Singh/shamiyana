@@ -23,7 +23,7 @@ export interface FieldsProps {
   idOf: (name: string) => string;
 }
 
-export function options<T extends string>(
+function options<T extends string>(
   values: readonly T[],
   labels: Record<T, string>,
   hints?: Record<T, string>,

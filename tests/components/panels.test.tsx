@@ -9,6 +9,7 @@ import type { Brief, PlanRecord } from "@/lib/plan/schema";
 import {
   NOW,
   birthdayBrief,
+  birthdayFacts,
   communityBrief,
   recordFor,
   sampleEnrichment,
@@ -73,7 +74,7 @@ describe("overview", () => {
     renderWorkspace({
       ...base,
       done: tasksFor(birthdayBrief).map((t) => t.id),
-      enrichedFor: { facts: factsOf(birthdayBrief), locale: "en" },
+      enrichedFor: { facts: birthdayFacts, locale: "en" },
     });
     expect(panel().getByText("Every task is done. Enjoy the day.")).toBeInTheDocument();
   });
@@ -312,7 +313,7 @@ describe("ideas", () => {
 
   it("has an empty saved list and no AI sections without ideas", async () => {
     renderWorkspace(
-      recordFor(birthdayBrief, { enrichedFor: { facts: factsOf(birthdayBrief), locale: "en" } }),
+      recordFor(birthdayBrief, { enrichedFor: { facts: birthdayFacts, locale: "en" } }),
     );
     await openTab("Ideas");
     expect(panel().getByText(/Ideas you save from the AI/)).toBeInTheDocument();

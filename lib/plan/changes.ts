@@ -1,4 +1,4 @@
-import { clampFactor } from "./budget";
+import { clampFactor } from "./factors";
 import {
   CATEGORY_IDS,
   IDEA_AREAS,

@@ -48,7 +48,6 @@ export const communityBrief: Extract<Brief, { type: "community" }> = {
 
 export const weddingFacts = factsOf(weddingBrief);
 export const birthdayFacts = factsOf(birthdayBrief);
-export const communityFacts = factsOf(communityBrief);
 
 export function recordFor(brief: Brief, patch: Partial<PlanRecord> = {}): PlanRecord {
   return { ...createRecord(brief, "plan-1", NOW), ...patch };

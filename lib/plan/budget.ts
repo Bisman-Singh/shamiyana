@@ -1,7 +1,8 @@
 import { BASE_SHARES, variantFactors } from "./catalog";
-import { LIMITS, type CategoryId, type VendorStatus } from "./constants";
+import type { CategoryId, VendorStatus } from "./constants";
+import { clampFactor } from "./factors";
 import type { EventFacts, PlanRecord } from "./schema";
-import { isSecured } from "./vendors";
+import { isSecured } from "./vendor-status";
 
 export interface BudgetLine {
   category: CategoryId;
@@ -53,11 +54,6 @@ export function allocate(
     others.reduce((max, l) => (l.amount > max.amount ? l : max), first);
   sink.amount += rest;
   return lines;
-}
-
-/** A budget line's weight kept inside its bounds, to two decimals. */
-export function clampFactor(value: number): number {
-  return Math.round(Math.min(LIMITS.factorMax, Math.max(LIMITS.factorMin, value)) * 100) / 100;
 }
 
 /** The plan's categories with their weights after event details and user shifts. */

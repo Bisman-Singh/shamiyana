@@ -45,13 +45,13 @@ export interface AiDeps {
 }
 
 /** Request body caps. The photo route's text part is capped on its own. */
-export const BODY_LIMITS = {
+const BODY_LIMITS = {
   plan: 8_192,
   refine: 16_384,
   visionFields: 16_384,
 } as const;
 
-export function createDeps(env = readEnv()): AiDeps {
+function createDeps(env = readEnv()): AiDeps {
   return {
     chain: buildChain(env),
     cache: new AnswerCache(),

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { clampFactor } from "./budget";
+import { clampFactor } from "./factors";
 import {
   CATEGORY_IDS,
   IDEA_AREAS,
@@ -17,7 +17,7 @@ import { clip } from "./text";
  * passing through `sanitizeEnrichment` first.
  */
 
-export const ENRICHMENT_LIMITS = {
+const ENRICHMENT_LIMITS = {
   ideas: 8,
   menu: 6,
   dishes: 8,

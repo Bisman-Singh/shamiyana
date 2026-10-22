@@ -11,7 +11,7 @@ import { isRecord } from "@/lib/plan/loose";
  * the model.
  */
 
-export const API_ERRORS = [
+const API_ERRORS = [
   "ai_unavailable",
   "rate_limited",
   "daily_cap",

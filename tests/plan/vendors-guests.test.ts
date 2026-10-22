@@ -1,7 +1,8 @@
 import { planBudget } from "@/lib/plan/budget";
 import { tallyGuests } from "@/lib/plan/guests";
 import type { Guest } from "@/lib/plan/schema";
-import { EMPTY_PROGRESS, buildVendors, isSecured, vendorTally } from "@/lib/plan/vendors";
+import { isSecured } from "@/lib/plan/vendor-status";
+import { EMPTY_PROGRESS, buildVendors, vendorTally } from "@/lib/plan/vendors";
 import { birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
 
 describe("buildVendors", () => {

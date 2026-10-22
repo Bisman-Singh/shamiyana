@@ -94,7 +94,7 @@ export const customTaskSchema = z.strictObject({
 });
 export type CustomTask = z.infer<typeof customTaskSchema>;
 
-export const savedIdeaSchema = z.strictObject({
+const savedIdeaSchema = z.strictObject({
   id,
   area: z.enum(IDEA_AREAS),
   title: line(1, LIMITS.ideaTitleMax),
@@ -110,7 +110,7 @@ export const factorsSchema = z.partialRecord(
   z.number().min(LIMITS.factorMin).max(LIMITS.factorMax),
 );
 
-export const vendorProgressSchema = z.strictObject({
+const vendorProgressSchema = z.strictObject({
   status: z.enum(VENDOR_STATUSES),
   quote: rupees,
   paid: rupees,

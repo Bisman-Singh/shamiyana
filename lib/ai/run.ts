@@ -38,7 +38,7 @@ import { sanitizeVision, type VisionResult } from "./vision-result";
  * Output caps, deadlines and temperature per route: the model can't run long
  * or write a novel on our key. Ideas get room to vary; changes stay literal.
  */
-export const AI_LIMITS = {
+const AI_LIMITS = {
   plan: { maxOutputTokens: 4_000, totalMs: 50_000, firstChunkMs: 15_000, temperature: 0.8 },
   refine: { maxOutputTokens: 1_500, totalMs: 30_000, temperature: 0.4 },
   vision: { maxOutputTokens: 1_500, totalMs: 40_000, temperature: 0.5 },

@@ -4,12 +4,8 @@ import { useId } from "react";
 import { budgetRows } from "@/lib/export/sheets";
 import { downloadCsv } from "@/lib/client/files";
 import { format, formatMoney } from "@/lib/i18n/format";
-import {
-  clampFactor,
-  previewShifts,
-  type BudgetRow as Row,
-  type ShiftPreview,
-} from "@/lib/plan/budget";
+import { previewShifts, type BudgetRow as Row, type ShiftPreview } from "@/lib/plan/budget";
+import { clampFactor } from "@/lib/plan/factors";
 import { LIMITS, type CategoryId } from "@/lib/plan/constants";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { setFactor } from "@/lib/plan/record";

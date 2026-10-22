@@ -6,7 +6,7 @@ import { addDays, compactDate, daysBetween } from "@/lib/plan/dates";
  * on today so they show up where the user looks.
  */
 
-export interface CalendarTask {
+interface CalendarTask {
   id: string;
   title: string;
   due: string;

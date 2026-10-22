@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
 
-export const ENRICHMENT = {
+const ENRICHMENT = {
   theme: { name: "Marigold courtyard", summary: "Warm Rajasthani colours with live folk music." },
   ideas: [
     { area: "decor", title: "Marigold canopy", detail: "Strings over the mandap.", cost: "medium" },
