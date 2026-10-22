@@ -36,6 +36,14 @@ describe("dictionaries", () => {
     }
   });
 
+  it("have the same keys in both languages", () => {
+    const keys = (dict: unknown) =>
+      [...new Set(leaves(dict).map(([path]) => path.replace(/\[\d+\]/g, "[]")))].sort((a, b) =>
+        a.localeCompare(b),
+      );
+    expect(keys(hi)).toEqual(keys(en));
+  });
+
   it("use the same placeholders in Hindi as in English", () => {
     const hiMap = new Map(leaves(hi));
     for (const [path, text] of leaves(en)) {

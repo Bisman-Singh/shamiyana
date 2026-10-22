@@ -30,6 +30,7 @@ export default defineConfig({
         "components/**/*.{ts,tsx}",
         "lib/**/*.ts",
         "proxy.ts",
+        "instrumentation.ts",
         "next.config.ts",
       ],
       exclude: ["**/*.d.ts"],
