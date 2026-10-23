@@ -91,6 +91,12 @@ describe("static headers", () => {
         "Permissions-Policy",
       ]),
     );
+    const policy = securityHeaders.find((h) => h.key === "Permissions-Policy")?.value ?? "";
+    for (const feature of ["camera", "microphone", "geolocation", "payment", "browsing-topics"]) {
+      expect(policy).toContain(`${feature}=()`);
+    }
+    // the share dialog copies the link and opens the share sheet
+    expect(policy).not.toMatch(/clipboard-write|web-share/);
     const rules = (await nextConfig.headers?.()) ?? [];
     expect(rules.find((r) => r.source === "/api/:path*")?.headers).toEqual([
       { key: "Cache-Control", value: "no-store" },
