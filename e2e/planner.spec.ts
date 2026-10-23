@@ -21,7 +21,9 @@ test(
 
     await page.getByRole("tab", { name: "Timeline" }).click();
     await expect(
-      page.getByRole("tabpanel").getByText("Book a tent backup for rain", { exact: true }),
+      page
+        .getByRole("tabpanel")
+        .getByRole("checkbox", { name: "Done: Book a tent backup for rain" }),
     ).toBeVisible();
     await page.getByRole("checkbox", { name: "Done: Visit and book the main venue" }).check();
 
