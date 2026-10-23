@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { factsOf } from "@/lib/plan/schema";
 import { screen } from "@testing-library/react";
-import { tasksFor } from "@/lib/plan/catalog";
+import { tasksFor } from "@/lib/plan/task-templates";
 import { withEnrichment } from "@/lib/plan/record";
 import type { Brief, PlanRecord } from "@/lib/plan/schema";
 import {

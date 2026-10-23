@@ -11,7 +11,7 @@ import {
   weeksLeft,
 } from "@/lib/ai/prompts";
 import { planBudget } from "@/lib/plan/budget";
-import { shiftableCategories } from "@/lib/plan/catalog";
+import { shiftableCategories } from "@/lib/plan/shares";
 import { TODAY, birthdayBrief, communityBrief, weddingBrief } from "../helpers/fixtures";
 
 describe("prompts", () => {

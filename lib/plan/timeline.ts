@@ -1,4 +1,4 @@
-import { tasksFor } from "./catalog";
+import { tasksFor } from "./task-templates";
 import type { TaskArea } from "./constants";
 import { addDays, daysBetween, isIsoDate } from "./dates";
 import { customTaskSchema, type PlanRecord } from "./schema";

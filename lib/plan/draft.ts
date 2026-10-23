@@ -1,6 +1,6 @@
 import { oneOf } from "@/lib/shared/untrusted";
 import { readAmount } from "./amounts";
-import { TASKS } from "./catalog";
+import { TASKS } from "./task-templates";
 import {
   LIMITS,
   type CommunityKind,

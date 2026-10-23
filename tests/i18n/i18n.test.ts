@@ -1,4 +1,4 @@
-import { TASK_IDS } from "@/lib/plan/catalog";
+import { TASK_IDS } from "@/lib/plan/task-templates";
 import { CATEGORY_IDS } from "@/lib/plan/constants";
 import { en } from "@/lib/i18n/en";
 import { hi } from "@/lib/i18n/hi";

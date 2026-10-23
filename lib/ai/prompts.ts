@@ -1,12 +1,8 @@
 import "server-only";
 import { en } from "@/lib/i18n/en";
 import { messageOr } from "@/lib/i18n/messages";
-import {
-  FUNCTION_HEADCOUNT,
-  shiftableCategories,
-  tasksFor,
-  variantFactors,
-} from "@/lib/plan/catalog";
+import { FUNCTION_HEADCOUNT, shiftableCategories, variantFactors } from "@/lib/plan/shares";
+import { tasksFor } from "@/lib/plan/task-templates";
 import { LIMITS, type CategoryId, type Locale, type TurnRole } from "@/lib/plan/constants";
 import type { BudgetLine } from "@/lib/plan/budget";
 import { daysBetween, wholeWeeks } from "@/lib/plan/dates";

@@ -1,7 +1,7 @@
 import type { Change } from "./changes";
 import { LIMITS, type CategoryId, type TaskArea } from "./constants";
 import { sanitizeEnrichment, type Enrichment } from "./enrichment";
-import { shiftableCategories } from "./catalog";
+import { shiftableCategories } from "./shares";
 import {
   factsOf,
   type Brief,

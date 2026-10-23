@@ -1,7 +1,7 @@
 import "server-only";
 import { Output, streamText, toTextStream, type TextStreamPart, type ToolSet } from "ai";
 import { planBudget } from "@/lib/plan/budget";
-import { shiftableCategories } from "@/lib/plan/catalog";
+import { shiftableCategories } from "@/lib/plan/shares";
 import type { Locale } from "@/lib/plan/constants";
 import { isEmptyEnrichment, sanitizeEnrichment } from "@/lib/plan/enrichment";
 import type { EventFacts } from "@/lib/plan/schema";
