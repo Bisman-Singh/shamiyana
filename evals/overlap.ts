@@ -33,16 +33,16 @@ export function contentWords(title: string): Set<string> {
     title
       .toLowerCase()
       .split(/[^a-z]+/)
-      .filter((w) => w.length >= 2 && !IGNORED.has(w))
-      .map((w) => w.slice(0, 5)),
+      .filter((word) => word.length >= 2 && !IGNORED.has(word))
+      .map((word) => word.slice(0, 5)),
   );
 }
 
 export function isRewording(task: string, item: string): boolean {
-  const a = contentWords(task);
-  const b = contentWords(item);
-  const shared = [...a].filter((w) => b.has(w)).length;
-  return shared >= 2 && shared * 3 >= Math.max(a.size, b.size) * 2;
+  const taskWords = contentWords(task);
+  const itemWords = contentWords(item);
+  const shared = [...taskWords].filter((word) => itemWords.has(word)).length;
+  return shared >= 2 && shared * 3 >= Math.max(taskWords.size, itemWords.size) * 2;
 }
 
 export interface Rewording {

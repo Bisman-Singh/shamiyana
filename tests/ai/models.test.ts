@@ -19,6 +19,6 @@ describe("models", () => {
       GEMINI_MODELS: ["a-model", "b-model"],
       GOOGLE_GENERATIVE_AI_API_KEY: "k",
     });
-    expect(chain?.map((s) => s.id)).toEqual(["a-model", "b-model"]);
+    expect(chain?.map((model) => model.id)).toEqual(["a-model", "b-model"]);
   });
 });

@@ -20,7 +20,8 @@ import { rewordings, type Rewording } from "./overlap";
 const env = readEnv();
 const chain = buildChain(env);
 const today = localToday();
-const inDays = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+const inDays = (days: number) =>
+  new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
 
 const MEAT = /\b(chicken|mutton|lamb|fish|prawn|egg|eggs|keema|beef|pork|meat)\b/i;
 const JAIN_EXTRA = /\b(onion|garlic|potato|potatoes|carrot|beetroot|ginger|honey)\b/i;
@@ -49,12 +50,12 @@ async function enrich(
   return { raw, clean, repeated: repeated(facts, clean) };
 }
 
-const allText = (e: Enrichment) => JSON.stringify(e);
+const allText = (enrichment: Enrichment) => JSON.stringify(enrichment);
 
 /** AI tasks that copy or reword this event's own checklist, which the model is shown and told to add to. */
-function repeated(facts: EventFacts, e: Enrichment): Rewording[] {
-  const checklist = tasksFor(facts).map((t) => en.tasks[t.id as keyof typeof en.tasks]);
-  const titles = e.tasks.map((t) => t.title);
+function repeated(facts: EventFacts, enrichment: Enrichment): Rewording[] {
+  const checklist = tasksFor(facts).map((task) => en.tasks[task.id as keyof typeof en.tasks]);
+  const titles = enrichment.tasks.map((task) => task.title);
   const exact = titles.flatMap((task) =>
     checklist
       .filter((item) => item.toLowerCase() === task.toLowerCase())
@@ -63,8 +64,8 @@ function repeated(facts: EventFacts, e: Enrichment): Rewording[] {
   return [...exact, ...rewordings(titles, checklist)];
 }
 /** The dishes a pattern catches, so a failure names them instead of a cut-off menu. */
-const caught = (e: Enrichment, rx: RegExp) =>
-  e.menu.flatMap((c) => c.dishes).filter((d) => rx.test(d));
+const caught = (enrichment: Enrichment, pattern: RegExp) =>
+  enrichment.menu.flatMap((course) => course.dishes).filter((dish) => pattern.test(dish));
 
 const base = {
   city: "Jaipur",
@@ -91,7 +92,7 @@ describe.skipIf(chain === null)("plan prompt", () => {
     expect(allText(clean)).not.toMatch(CONTACT);
     expect(allText(clean)).not.toMatch(UNASKED);
     const weeks = Math.floor(150 / 7);
-    expect(clean.tasks.every((t) => t.weeksBefore <= weeks)).toBe(true);
+    expect(clean.tasks.every((task) => task.weeksBefore <= weeks)).toBe(true);
     expect(repeated).toEqual([]);
   });
 
@@ -122,7 +123,7 @@ describe.skipIf(chain === null)("plan prompt", () => {
       "hi",
     );
     expect(clean.theme.name).toMatch(/[ऀ-ॿ]/);
-    expect(clean.ideas.every((i) => /[ऀ-ॿ]/.test(i.title))).toBe(true);
+    expect(clean.ideas.every((idea) => /[ऀ-ॿ]/.test(idea.title))).toBe(true);
   });
 
   it("treats instructions hidden in the notes as data", async () => {
@@ -172,9 +173,9 @@ describe.skipIf(chain === null)("refine prompt", () => {
         message: "Add a task to book a dhol player for the baraat.",
       },
     );
-    const added = answer?.changes.filter((c) => c.op === "add_task") ?? [];
+    const added = answer?.changes.filter((change) => change.op === "add_task") ?? [];
     expect(added.length).toBeGreaterThan(0);
-    expect(added.every((c) => c.weeksBefore <= weeksLeft(soon, today))).toBe(true);
+    expect(added.every((change) => change.weeksBefore <= weeksLeft(soon, today))).toBe(true);
   });
 
   it("cuts a line the details already raised when asked to cut it", async () => {
@@ -190,7 +191,7 @@ describe.skipIf(chain === null)("refine prompt", () => {
         message: "Cut the music and entertainment budget by about 20%.",
       },
     );
-    const shift = answer?.changes.find((c) => c.op === "shift_category");
+    const shift = answer?.changes.find((change) => change.op === "shift_category");
     expect(shift).toMatchObject({ category: "entertainment" });
     expect(shift?.op === "shift_category" && shift.factor < 1).toBe(true);
   });

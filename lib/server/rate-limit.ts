@@ -58,7 +58,7 @@ export class RateLimiter implements RequestLimiter {
 
   check(key: string): RateResult {
     const now = this.now();
-    const recent = (this.hits.get(key) ?? []).filter((t) => now - t < this.windowMs);
+    const recent = (this.hits.get(key) ?? []).filter((hitAt) => now - hitAt < this.windowMs);
     if (recent.length >= this.limit) {
       this.hits.set(key, recent);
       const oldest = recent[0] ?? now;

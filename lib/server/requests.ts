@@ -17,7 +17,7 @@ function dated(serverNow: Date) {
   return z
     .string()
     .refine(isIsoDate, { message: "invalid_date", abort: true })
-    .refine((d) => Math.abs(daysBetween(utc, d)) <= 1, { message: "clock_skew" });
+    .refine((date) => Math.abs(daysBetween(utc, date)) <= 1, { message: "clock_skew" });
 }
 
 function withEventInRange(value: { today: string; facts: { date: string } }, ctx: z.RefinementCtx) {
@@ -43,7 +43,7 @@ const turn = z.strictObject({
   role: z.enum(TURN_ROLES),
   text: z
     .string()
-    .transform((v) => cleanText(v))
+    .transform((text) => cleanText(text))
     .pipe(z.string().min(1).max(LIMITS.replyMax)),
 });
 
@@ -58,7 +58,7 @@ export function refineRequestSchema(serverNow: Date) {
       history: z.array(turn).max(LIMITS.chatHistoryMax),
       message: z
         .string()
-        .transform((v) => cleanText(v))
+        .transform((text) => cleanText(text))
         .pipe(z.string().min(1).max(LIMITS.chatMessageMax)),
     })
     .superRefine(withEventInRange);
@@ -79,10 +79,10 @@ export const IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 
 /** The real image type from its first bytes; the declared type is never trusted. */
 export function sniffImage(bytes: Uint8Array): "image/jpeg" | "image/png" | "image/webp" | null {
-  const b = (i: number) => bytes[i] ?? -1;
-  if (b(0) === 0xff && b(1) === 0xd8 && b(2) === 0xff) return "image/jpeg";
+  const byteAt = (index: number) => bytes[index] ?? -1;
+  if (byteAt(0) === 0xff && byteAt(1) === 0xd8 && byteAt(2) === 0xff) return "image/jpeg";
   const png = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
-  if (png.every((v, i) => b(i) === v)) return "image/png";
+  if (png.every((expected, index) => byteAt(index) === expected)) return "image/png";
   const ascii = (from: number, to: number) => String.fromCharCode(...bytes.subarray(from, to));
   if (bytes.length >= 12 && ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return "image/webp";
   return null;

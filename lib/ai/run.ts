@@ -49,7 +49,7 @@ interface Generation<T> {
 /** One structured answer from the first model whose reply reads as usable. */
 export async function generateSanitized<T>(
   ctx: RunContext,
-  g: Generation<T>,
+  generation: Generation<T>,
 ): Promise<(T & { model: string }) | null> {
   const result = await firstSuccess(
     ctx.chain.map((spec) => ({
@@ -59,17 +59,17 @@ export async function generateSanitized<T>(
           generateText({
             model: spec.model,
             providerOptions: spec.providerOptions,
-            output: g.output,
-            instructions: g.instructions,
-            ...g.input,
-            maxOutputTokens: g.limits.maxOutputTokens,
-            temperature: g.limits.temperature,
+            output: generation.output,
+            instructions: generation.instructions,
+            ...generation.input,
+            maxOutputTokens: generation.limits.maxOutputTokens,
+            temperature: generation.limits.temperature,
             maxRetries: 0,
             abortSignal: ctx.signal,
-            timeout: g.limits.totalMs,
+            timeout: generation.limits.totalMs,
           }),
         );
-        return g.read(parseObject(text));
+        return generation.read(parseObject(text));
       },
     })),
     ctx.onFail,

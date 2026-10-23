@@ -30,7 +30,7 @@ export async function runRefine(ctx: RunContext, input: RefineInput): Promise<Re
     read: (raw) => {
       const reply = clip(raw.reply, LIMITS.replyMax);
       if (reply === "") throw new Error("empty_reply");
-      const categories = lines.map((l) => l.category);
+      const categories = lines.map((line) => line.category);
       return { reply, changes: parseChanges(raw.changes, categories, input.today) };
     },
   });

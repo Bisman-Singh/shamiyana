@@ -113,8 +113,8 @@ export async function streamPlan(
   const opened = await firstWorking<Part>(
     attempts,
     {
-      isContent: (p) => p.type === "text-delta",
-      isError: (p) => p.type === "error" || p.type === "abort",
+      isContent: (part) => part.type === "text-delta",
+      isError: (part) => part.type === "error" || part.type === "abort",
     },
     ctx.onFail,
   );

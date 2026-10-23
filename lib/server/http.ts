@@ -83,7 +83,7 @@ export function addressBucket(address: string): string {
   const groups = [...left, ...Array<string>(Math.max(0, gap)).fill("0"), ...right];
   return `${groups
     .slice(0, 4)
-    .map((g) => g.replace(/^0+(?=.)/, ""))
+    .map((group) => group.replace(/^0+(?=.)/, ""))
     .join(":")}::/64`;
 }
 

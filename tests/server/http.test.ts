@@ -87,10 +87,10 @@ describe("readCapped", () => {
 
   it("refuses a body that grows past the cap while streaming", async () => {
     const stream = new ReadableStream({
-      start(c) {
-        c.enqueue(new Uint8Array(6));
-        c.enqueue(new Uint8Array(6));
-        c.close();
+      start(controller) {
+        controller.enqueue(new Uint8Array(6));
+        controller.enqueue(new Uint8Array(6));
+        controller.close();
       },
     });
     const streamed = new Request("https://plan.test", {

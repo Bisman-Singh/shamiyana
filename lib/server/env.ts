@@ -15,17 +15,17 @@ const optionalText = z
   .string()
   .trim()
   .optional()
-  .transform((v) => (v === "" ? undefined : v));
+  .transform((value) => (value === "" ? undefined : value));
 
 const fields = z.object({
   GOOGLE_GENERATIVE_AI_API_KEY: optionalText,
   GEMINI_MODELS: z
     .string()
     .default("gemini-3.5-flash-lite,gemini-3.5-flash,gemini-3.6-flash,gemini-3.8-flash")
-    .transform((v) =>
-      v
+    .transform((list) =>
+      list
         .split(",")
-        .map((s) => s.trim())
+        .map((id) => id.trim())
         .filter(Boolean),
     )
     .pipe(z.array(z.string().regex(MODEL_ID)).min(1).max(4)),
@@ -61,7 +61,7 @@ export class EnvError extends Error {
 export function readEnv(source: Record<string, string | undefined> = process.env): ServerEnv {
   const parsed = schema.safeParse(source);
   if (!parsed.success) {
-    const keys = [...new Set(parsed.error.issues.map((i) => i.path.join(".")))].join(", ");
+    const keys = [...new Set(parsed.error.issues.map((issue) => issue.path.join(".")))].join(", ");
     throw new EnvError(`Invalid server environment: ${keys}`);
   }
   return parsed.data;

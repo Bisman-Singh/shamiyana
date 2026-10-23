@@ -103,7 +103,7 @@ describe("POST /api/refine", () => {
     const started = Date.now();
     const response = await refineHandler(() =>
       testDeps(
-        models.map((m, i) => spec(m, `slow-${String(i)}`)),
+        models.map((model, index) => spec(model, `slow-${String(index)}`)),
         { deadlineMs: 50 },
       ),
     )(jsonPost(body));

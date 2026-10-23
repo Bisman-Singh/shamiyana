@@ -70,8 +70,8 @@ describe("content security policy", () => {
   it("sets a fresh nonce on the request and the response", () => {
     const first = proxy(new NextRequest("https://plan.test/"));
     const second = proxy(new NextRequest("https://plan.test/"));
-    const nonce = (r: Response) =>
-      /nonce-([^']+)/.exec(r.headers.get("content-security-policy") ?? "")?.[1];
+    const nonce = (response: Response) =>
+      /nonce-([^']+)/.exec(response.headers.get("content-security-policy") ?? "")?.[1];
     expect(nonce(first)).toBeTruthy();
     expect(nonce(first)).not.toBe(nonce(second));
     expect(first.headers.get("x-middleware-request-x-nonce")).toBe(nonce(first));
@@ -81,7 +81,7 @@ describe("content security policy", () => {
 
 describe("static headers", () => {
   it("sends HSTS, nosniff, frame and referrer policies everywhere, and no-store and a deny-all CSP on the API", async () => {
-    const keys = securityHeaders.map((h) => h.key);
+    const keys = securityHeaders.map((header) => header.key);
     expect(keys).toEqual(
       expect.arrayContaining([
         "Strict-Transport-Security",
@@ -91,14 +91,15 @@ describe("static headers", () => {
         "Permissions-Policy",
       ]),
     );
-    const policy = securityHeaders.find((h) => h.key === "Permissions-Policy")?.value ?? "";
+    const policy =
+      securityHeaders.find((header) => header.key === "Permissions-Policy")?.value ?? "";
     for (const feature of ["camera", "microphone", "geolocation", "payment", "browsing-topics"]) {
       expect(policy).toContain(`${feature}=()`);
     }
     // the share dialog copies the link and opens the share sheet
     expect(policy).not.toMatch(/clipboard-write|web-share/);
     const rules = (await nextConfig.headers?.()) ?? [];
-    expect(rules.find((r) => r.source === "/api/:path*")?.headers).toEqual([
+    expect(rules.find((rule) => rule.source === "/api/:path*")?.headers).toEqual([
       { key: "Cache-Control", value: "no-store" },
       { key: "Content-Security-Policy", value: "default-src 'none'; frame-ancestors 'none'" },
     ]);
@@ -130,10 +131,10 @@ describe("route files", () => {
     const refine = await import("@/app/api/refine/route");
     const vision = await import("@/app/api/vision/route");
     const health = await import("@/app/api/health/route");
-    const res = await plan.POST(
+    const planned = await plan.POST(
       post({ facts: weddingFacts, locale: "en", today: new Date().toISOString().slice(0, 10) }),
     );
-    expect(res.status).toBe(503);
+    expect(planned.status).toBe(503);
     const refined = await refine.POST(
       post({
         facts: weddingFacts,
@@ -156,7 +157,7 @@ describe("route files", () => {
     vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "test-key");
     const { liveDeps } = await import("@/lib/server/deps");
     expect(liveDeps()).toBe(liveDeps());
-    expect(liveDeps().chain?.map((m) => m.id)).toEqual([
+    expect(liveDeps().chain?.map((model) => model.id)).toEqual([
       "gemini-3.5-flash-lite",
       "gemini-3.5-flash",
       "gemini-3.6-flash",
@@ -171,9 +172,9 @@ describe("instrumentation", () => {
     vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
     const { register } = await import("@/instrumentation");
     await register();
-    expect(vi.mocked(console.warn).mock.calls.some((c) => String(c[0]).includes("ai_off"))).toBe(
-      true,
-    );
+    expect(
+      vi.mocked(console.warn).mock.calls.some(([line]) => String(line).includes("ai_off")),
+    ).toBe(true);
   });
 
   it("stays quiet with a key, skips the edge runtime and fails fast on bad config", async () => {

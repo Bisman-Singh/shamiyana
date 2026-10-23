@@ -7,8 +7,8 @@ describe("fallback", () => {
     () =>
       simulateReadableStream({ chunks: values });
   const probe = {
-    isContent: (p: string) => p.startsWith("text"),
-    isError: (p: string) => p === "error",
+    isContent: (part: string) => part.startsWith("text"),
+    isError: (part: string) => part === "error",
   };
 
   async function drain(stream: ReadableStream<string>) {

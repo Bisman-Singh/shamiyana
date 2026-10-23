@@ -37,7 +37,7 @@ describe("every route", () => {
     };
     await planHandler(typeError)(jsonPost({}));
     await refineHandler(notAnError)(jsonPost({}));
-    const lines = vi.mocked(console.error).mock.calls.map((call) => String(call[0]));
+    const lines = vi.mocked(console.error).mock.calls.map(([line]) => String(line));
     expect(lines).toHaveLength(2);
     expect(lines[0]).toContain('"route":"plan","ms":');
     expect(lines[0]).toContain('"outcome":"internal","status":500,"errorType":"TypeError"');
@@ -59,11 +59,11 @@ describe("every route", () => {
       message: "hi",
     };
     vi.stubEnv("VERCEL", "1");
-    const as = (ip: string) => jsonPost(body, { "x-vercel-forwarded-for": ip });
-    expect((await refineHandler(() => deps)(as("198.51.100.1"))).status).toBe(200);
-    expect(await (await refineHandler(() => deps)(as("198.51.100.1"))).json()).toEqual({
+    const asClient = (ip: string) => jsonPost(body, { "x-vercel-forwarded-for": ip });
+    expect((await refineHandler(() => deps)(asClient("198.51.100.1"))).status).toBe(200);
+    expect(await (await refineHandler(() => deps)(asClient("198.51.100.1"))).json()).toEqual({
       error: "daily_cap",
     });
-    expect((await refineHandler(() => deps)(as("198.51.100.2"))).status).toBe(200);
+    expect((await refineHandler(() => deps)(asClient("198.51.100.2"))).status).toBe(200);
   });
 });
