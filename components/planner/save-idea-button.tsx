@@ -1,5 +1,6 @@
 "use client";
 
+import { langOf } from "@/lib/i18n/lang";
 import type { IdeaArea } from "@/lib/plan/constants";
 import { isIdeaSaved, newId, saveIdea } from "@/lib/plan/record";
 import type { PlanRecord } from "@/lib/plan/schema";
@@ -14,7 +15,7 @@ interface SaveIdeaButtonProps {
 
 /** Saves an idea to the plan once; after that it reads Saved and does nothing. */
 export function SaveIdeaButton({ idea, record, update }: Readonly<SaveIdeaButtonProps>) {
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
   const saved = isIdeaSaved(record, idea);
   return (
     <button
@@ -28,7 +29,9 @@ export function SaveIdeaButton({ idea, record, update }: Readonly<SaveIdeaButton
       }}
     >
       {saved ? dict.common.saved : dict.ideas.save}{" "}
-      <span className="visually-hidden">{idea.title}</span>
+      <span className="visually-hidden" lang={langOf(idea.title, locale)}>
+        {idea.title}
+      </span>
     </button>
   );
 }

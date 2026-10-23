@@ -102,7 +102,10 @@ function SavedIdeas({ view, update }: Readonly<PanelProps>) {
                   );
                 }}
               >
-                {dict.common.remove} <span className="visually-hidden">{idea.title}</span>
+                {dict.common.remove}{" "}
+                <span className="visually-hidden" lang={langOf(idea.title, locale)}>
+                  {idea.title}
+                </span>
               </button>
             </li>
           ))}

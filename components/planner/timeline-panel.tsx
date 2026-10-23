@@ -16,6 +16,7 @@ import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
 import { focusAfterRender, focusOpenPanel } from "../ui/focus";
+import { Template } from "../ui/template";
 import { areaName, taskTitle } from "./task-title";
 import type { PanelProps, PlanView, Update } from "./types";
 
@@ -154,18 +155,26 @@ function TaskRow({ item, view, update }: Readonly<TaskRowProps>) {
         >
           {t.calendar}{" "}
           <span className="visually-hidden">
-            {title} {dict.common.opensNewTab}
+            <span lang={langOf(title, locale)}>{title}</span> {dict.common.opensNewTab}
           </span>
         </a>
         <button
           type="button"
           className="btn btn-small btn-quiet"
-          aria-label={format(t.remove, { title })}
           onClick={() => {
             update((r, now) => removeTask(r, item.id, now), format(t.removed, { title }));
           }}
         >
-          {dict.common.remove}
+          <Template
+            text={t.remove}
+            values={{
+              title: (
+                <span className="visually-hidden" lang={langOf(title, locale)}>
+                  {title}
+                </span>
+              ),
+            }}
+          />
         </button>
       </div>
     </li>
