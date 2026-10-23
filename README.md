@@ -112,7 +112,7 @@ only. The key is never sent to the browser.
   models return 429 or 503 under load often enough that one model is not
   enough. A stream that fails before its first token falls back to the next
   model (`lib/ai/fallback.ts`). One that fails midway is logged as `cut_off`
-  and the page keeps what arrived (`components/planner/use-enrichment.ts`).
+  and the page keeps what arrived (`components/planner/workspace/use-enrichment.ts`).
 - A live eval set checks the prompts against the real model. Veg and Jain
   menus must stay within their rules, nothing may suggest alcohol or fireworks
   unasked, new tasks must fit the weeks left and not repeat the checklist, Hindi
@@ -217,7 +217,7 @@ vendor checklists, and personalized ideas".
 
 | Asked for                             | Where                                                                                        |
 | ------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Weddings, birthdays, community events | Three event types with their own functions, honorees and kinds (`lib/plan/catalog.ts`)       |
+| Weddings, birthdays, community events | Three event types with their own functions, honorees and kinds (`lib/plan/shares.ts`)        |
 | Budgets                               | Exact split, shifts, agreed and paid tracking (`lib/plan/budget.ts`)                         |
 | Timelines                             | Back-scheduled tasks by phase, calendar export (`lib/plan/timeline.ts`, `lib/export/ics.ts`) |
 | Vendor checklists                     | Per-vendor status, questions and Maps search (`lib/plan/vendors.ts`)                         |

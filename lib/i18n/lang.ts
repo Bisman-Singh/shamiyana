@@ -1,5 +1,8 @@
 import type { Locale } from "@/lib/plan/constants";
 
+/** The cookie that keeps the language the user chose, read on the server for the first render. */
+export const LOCALE_COOKIE = "lang";
+
 const DEVANAGARI = /\p{Script=Devanagari}/u;
 const LETTER = /\p{L}/u;
 

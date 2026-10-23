@@ -33,7 +33,7 @@ local storage ◄── sanitized answer ◄──────────  stre
    `lib/ai/fallback.ts`).
 5. The answer streams back as JSON text. The page shows it as it arrives,
    sanitized on every chunk, and saves the final sanitized version with the
-   facts and language it was made for (`components/planner/use-enrichment.ts`,
+   facts and language it was made for (`components/planner/workspace/use-enrichment.ts`,
    `lib/plan/enrichment.ts`).
 6. Every edit after that is a function from one record to the next
    (`lib/plan/record.ts`), saved to local storage, which is what makes Undo a

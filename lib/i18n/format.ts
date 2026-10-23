@@ -7,8 +7,6 @@ import type { Dictionary } from "./en";
  * the server as a prop.
  */
 
-export const LOCALE_COOKIE = "lang";
-
 /** The Intl locale for a language, Indian conventions in both. */
 export function intlLocale(locale: Locale): string {
   return locale === "hi" ? "hi-IN" : "en-IN";

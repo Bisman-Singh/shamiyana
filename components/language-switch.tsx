@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { LOCALE_COOKIE } from "@/lib/i18n/format";
+import { LOCALE_COOKIE } from "@/lib/i18n/lang";
 import { useLocale } from "./locale-provider";
 
 /** Switches language by cookie and re-renders on the server, so the page arrives translated. */
