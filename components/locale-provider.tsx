@@ -18,6 +18,7 @@ export function LocaleProvider({ locale, dict, children }: LocaleValue & { child
   return <LocaleContext value={value}>{children}</LocaleContext>;
 }
 
+/** The language and dictionary chosen on the server, for any client component. */
 export function useLocale(): LocaleValue {
   const value = use(LocaleContext);
   if (!value) throw new Error("useLocale needs a LocaleProvider");

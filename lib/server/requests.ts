@@ -27,6 +27,7 @@ function withEventInRange(value: { today: string; facts: { date: string } }, ctx
   }
 }
 
+/** The plan request: facts, language and the device's date within a day of the server's. */
 export function planRequestSchema(serverNow: Date) {
   return z
     .strictObject({
@@ -46,6 +47,7 @@ const turn = z.strictObject({
     .pipe(z.string().min(1).max(LIMITS.replyMax)),
 });
 
+/** The refine request: facts, weights, recent turns and the message, all bounded. */
 export function refineRequestSchema(serverNow: Date) {
   return z
     .strictObject({
@@ -62,6 +64,7 @@ export function refineRequestSchema(serverNow: Date) {
     .superRefine(withEventInRange);
 }
 
+/** The text part of a photo request. */
 export function visionFieldsSchema(serverNow: Date) {
   return z
     .strictObject({

@@ -23,6 +23,7 @@ export interface Snapshot {
 export const EMPTY_STORE: Store = { version: 1, activeId: null, plans: [] };
 const SERVER_SNAPSHOT: Snapshot = { ready: false, data: EMPTY_STORE, notice: null };
 
+/** Reads saved plans; anything unreadable is set aside, not lost. */
 export function readStore(storage: Storage | null): { data: Store; notice: Notice | null } {
   if (!storage) return { data: EMPTY_STORE, notice: "blocked" };
   const raw = storage.getItem(STORE_KEY);
@@ -42,6 +43,7 @@ export function readStore(storage: Storage | null): { data: Store; notice: Notic
   return { data: EMPTY_STORE, notice: "recovered" };
 }
 
+/** Saves plans and reports when the browser refuses. */
 export function writeStore(storage: Storage | null, data: Store): Notice | null {
   if (!storage) return "blocked";
   try {
@@ -65,6 +67,7 @@ export function browserStorage(): Storage | null {
   }
 }
 
+/** The saved plans as an external store for useSyncExternalStore. */
 export class PlanStore {
   private snapshot: Snapshot = SERVER_SNAPSHOT;
   private readonly listeners = new Set<() => void>();
@@ -111,6 +114,7 @@ export class PlanStore {
   }
 }
 
+/** The plan that is open, if any. */
 export function activePlan(data: Store): PlanRecord | null {
   return data.plans.find((p) => p.id === data.activeId) ?? null;
 }
@@ -124,22 +128,26 @@ export function putPlan(data: Store, record: PlanRecord): Store {
   return { ...data, activeId: record.id, plans };
 }
 
+/** Whether another plan fits under the limit. */
 export function canAddPlan(data: Store): boolean {
   return data.plans.length < LIMITS.plansMax;
 }
 
+/** The store without a plan; if it was open, the last plan in the list opens instead. */
 export function removePlan(data: Store, id: string): Store {
   const plans = data.plans.filter((p) => p.id !== id);
   const activeId = data.activeId === id ? (plans.at(-1)?.id ?? null) : data.activeId;
   return { ...data, plans, activeId };
 }
 
+/** Opens a plan by id, or none when the id is unknown. */
 export function selectPlan(data: Store, id: string | null): Store {
   return { ...data, activeId: id !== null && data.plans.some((p) => p.id === id) ? id : null };
 }
 
 let shared: PlanStore | null = null;
 
+/** The one store this browser tab uses. */
 export function sharedStore(): PlanStore {
   shared ??= new PlanStore(browserStorage);
   return shared;

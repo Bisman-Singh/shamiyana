@@ -33,6 +33,7 @@ function options<T extends string>(
   );
 }
 
+/** The event type choice, which decides the extra fields below it. */
 export function EventTypeField({ draft, set, idOf }: Readonly<FieldsProps>) {
   const { dict } = useLocale();
   const f = dict.form;
@@ -51,6 +52,7 @@ export function EventTypeField({ draft, set, idOf }: Readonly<FieldsProps>) {
   );
 }
 
+/** Name, date, city, guests and budget, with the type's own field. */
 export function BasicFields({ draft, set, error, idOf, today }: FieldsProps & { today: string }) {
   const { dict, locale } = useLocale();
   const f = dict.form;
@@ -180,6 +182,7 @@ export function VariantField({ draft, set, error, idOf }: Readonly<FieldsProps>)
   }
 }
 
+/** Style, food preference and free notes for the AI. */
 export function PreferenceFields({ draft, set, error, idOf }: Readonly<FieldsProps>) {
   const { dict } = useLocale();
   const f = dict.form;

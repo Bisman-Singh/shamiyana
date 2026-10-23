@@ -182,6 +182,7 @@ export function fitTasks(e: Enrichment, weeksLeft: number): Enrichment {
   };
 }
 
+/** Whether an answer has nothing worth keeping. */
 export function isEmptyEnrichment(e: Enrichment): boolean {
   return (
     e.theme.name === "" &&

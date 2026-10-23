@@ -70,6 +70,7 @@ export const briefSchema = z.discriminatedUnion("type", [
 ]);
 export type Brief = z.infer<typeof briefSchema>;
 
+/** The brief without its title: what the AI routes are allowed to see. */
 export function factsOf(brief: Brief): EventFacts {
   const { title, ...facts } = brief;
   return facts;

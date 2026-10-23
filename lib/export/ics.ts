@@ -85,6 +85,7 @@ function event(
   ];
 }
 
+/** An iCalendar file with one all-day event per task given, overdue ones moved to today, plus the event day. */
 export function buildIcs(input: CalendarInput): string {
   const dtstamp = stamp(input.now);
   const lines = [

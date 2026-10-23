@@ -61,6 +61,7 @@ function inflate(bytes: Uint8Array, max: number): Promise<Uint8Array | null> {
   return readAtMost(through(new DecompressionStream("deflate-raw"), bytes), max);
 }
 
+/** The plan, without guests and vendor notes, compressed and base64url-encoded for a link. */
 export async function encodeShare(record: PlanRecord): Promise<string> {
   const vendors = Object.fromEntries(
     Object.entries(record.vendors).map(([category, progress]) => [
@@ -106,10 +107,12 @@ export async function decodeShare(encoded: string): Promise<SharedPlan | null> {
   }
 }
 
+/** A new plan of your own from a shared one, its AI text cleaned again. */
 export function recordFromShare(shared: SharedPlan, id: string, now: string): PlanRecord {
   return withCleanEnrichment({ ...createRecord(shared.brief, id, now), ...shared, guests: [] });
 }
 
+/** The share link; the plan rides in the fragment, which browsers never send. */
 export function shareUrl(origin: string, encoded: string): string {
   return `${origin}/#${SHARE_KEY}=${encoded}`;
 }

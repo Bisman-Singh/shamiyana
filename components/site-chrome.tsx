@@ -3,6 +3,7 @@ import type { Dictionary } from "@/lib/i18n/en";
 import { BrandMark, ScallopRule } from "./brand-mark";
 import { LanguageSwitch } from "./language-switch";
 
+/** Brand and the language switch. */
 export function SiteHeader({ dict }: Readonly<{ dict: Dictionary }>) {
   return (
     <header className="site-header">
@@ -21,6 +22,7 @@ export function SiteHeader({ dict }: Readonly<{ dict: Dictionary }>) {
   );
 }
 
+/** The AI and storage notes, and links to the policies. */
 export function SiteFooter({ dict }: Readonly<{ dict: Dictionary }>) {
   return (
     <footer className="site-footer">

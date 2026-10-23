@@ -26,6 +26,7 @@ const PREFIX = "shamiyana";
 const TIMEOUT_MS = 1_000;
 const DAY_SECONDS = 86_400;
 
+/** An Upstash client that gives up after one retry or a second, and sends no telemetry. */
 export function connectRedis(config: { url: string; token: string }): Redis {
   return new Redis({
     ...config,
@@ -45,6 +46,7 @@ export interface WindowClient {
   limit(identifier: string): Promise<{ success: boolean; reset: number; reason?: string }>;
 }
 
+/** The per-minute limit held in Redis for every instance, with this instance's memory as the fallback. */
 export class SharedRateLimiter implements RequestLimiter {
   constructor(
     private readonly window: WindowClient,
@@ -102,6 +104,7 @@ export interface ScriptClient {
   eval(script: string, keys: string[], args: number[]): Promise<unknown>;
 }
 
+/** The daily caps held in Redis for every instance, with this instance's memory as the fallback. */
 export class SharedDailyCap implements DailyAllowance {
   constructor(
     private readonly redis: ScriptClient,

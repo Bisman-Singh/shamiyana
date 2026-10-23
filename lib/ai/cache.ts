@@ -52,6 +52,7 @@ export class AnswerCache {
   }
 }
 
+/** A SHA-256 key for an answer, from everything that shapes it. */
 export async function cacheKey(parts: unknown): Promise<string> {
   const data = new TextEncoder().encode(JSON.stringify(parts));
   const digest = await crypto.subtle.digest("SHA-256", data);

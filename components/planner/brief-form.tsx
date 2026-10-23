@@ -90,6 +90,7 @@ function Samples({ onPick }: Readonly<{ onPick: (type: EventType) => void }>) {
   );
 }
 
+/** The brief form for a new plan or an edit, with an error summary that takes focus. */
 export function BriefForm({
   initial,
   today,

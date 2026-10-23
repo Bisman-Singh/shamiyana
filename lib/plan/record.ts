@@ -32,6 +32,7 @@ export function stableId(prefix: string, text: string): string {
   return `${prefix}-${hash.toString(36)}`;
 }
 
+/** A new plan from a brief, with nothing done yet. */
 export function createRecord(brief: Brief, id: string, now: string): PlanRecord {
   return {
     id,
@@ -100,10 +101,12 @@ export function withCleanEnrichment(record: PlanRecord): PlanRecord {
   };
 }
 
+/** The plan with a new brief. */
 export function updateBrief(record: PlanRecord, brief: Brief, now: string): PlanRecord {
   return touch(record, now, { brief });
 }
 
+/** The plan with a task ticked or unticked. */
 export function toggleTask(record: PlanRecord, taskId: string, now: string): PlanRecord {
   const done = record.done.includes(taskId)
     ? record.done.filter((id) => id !== taskId)
@@ -120,6 +123,7 @@ export function removeTask(record: PlanRecord, taskId: string, now: string): Pla
   return touch(record, now, { hidden: [...new Set([...record.hidden, taskId])], done });
 }
 
+/** The plan with every removed task back. */
 export function restoreHiddenTasks(record: PlanRecord, now: string): PlanRecord {
   return touch(record, now, { hidden: [] });
 }
@@ -130,11 +134,13 @@ export interface NewTask {
   leadDays: number;
 }
 
+/** The plan with a task of the user's own, unless the limit is reached. */
 export function addTask(record: PlanRecord, task: NewTask, id: string, now: string): PlanRecord {
   if (record.tasks.length >= LIMITS.customTasksMax) return record;
   return touch(record, now, { tasks: [...record.tasks, { id, ...task, source: "custom" }] });
 }
 
+/** The plan with a vendor's progress set. */
 export function setVendor(
   record: PlanRecord,
   category: CategoryId,
@@ -158,6 +164,7 @@ export function setFactor(
   return touch(record, now, { factors });
 }
 
+/** The plan with a guest added or changed, unless the list is full. */
 export function upsertGuest(record: PlanRecord, guest: Guest, now: string): PlanRecord {
   const exists = record.guests.some((g) => g.id === guest.id);
   if (!exists && record.guests.length >= LIMITS.guestListMax) return record;
@@ -167,16 +174,19 @@ export function upsertGuest(record: PlanRecord, guest: Guest, now: string): Plan
   return touch(record, now, { guests });
 }
 
+/** The plan without a guest. */
 export function removeGuest(record: PlanRecord, guestId: string, now: string): PlanRecord {
   return touch(record, now, { guests: record.guests.filter((g) => g.id !== guestId) });
 }
 
+/** The plan with an idea saved, unless it is saved already or the list is full. */
 export function saveIdea(record: PlanRecord, idea: SavedIdea, now: string): PlanRecord {
   const duplicate = record.ideas.some((i) => i.title === idea.title && i.area === idea.area);
   if (duplicate || record.ideas.length >= LIMITS.savedIdeasMax) return record;
   return touch(record, now, { ideas: [...record.ideas, idea] });
 }
 
+/** The plan without a saved idea. */
 export function removeIdea(record: PlanRecord, ideaId: string, now: string): PlanRecord {
   return touch(record, now, { ideas: record.ideas.filter((i) => i.id !== ideaId) });
 }

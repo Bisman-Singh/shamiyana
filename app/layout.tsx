@@ -6,6 +6,7 @@ import { AnnouncerProvider } from "@/components/ui/announcer";
 import { requestLocale } from "@/lib/server/locale";
 import "./globals.css";
 
+/** The site title in the visitor's language, with each page's title in front. */
 export async function generateMetadata(): Promise<Metadata> {
   const { dict } = await requestLocale();
   return {
@@ -24,6 +25,7 @@ export const viewport: Viewport = {
   ],
 };
 
+/** The page shell: html lang, skip link, header, main and footer in the visitor's language. */
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   const { locale, dict } = await requestLocale();
   return (

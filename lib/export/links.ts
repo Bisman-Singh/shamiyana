@@ -15,6 +15,7 @@ export function googleCalendarUrl(title: string, date: string, details: string):
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
+/** A Google Maps search for a kind of vendor in the event's city. */
 export function mapsSearchUrl(phrase: string, city: string): string {
   const params = new URLSearchParams({ api: "1", query: `${phrase} in ${city}` });
   return `https://www.google.com/maps/search/?${params.toString()}`;

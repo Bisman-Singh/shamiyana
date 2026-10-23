@@ -49,6 +49,7 @@ function focusHeading(): void {
   });
 }
 
+/** Says when the browser blocks or fills storage, or when saved data had to be recovered. */
 export function StoreNotice({
   notice,
   onDismiss,
@@ -78,6 +79,7 @@ export function StoreNotice({
   );
 }
 
+/** Offers to open a plan that arrived in a share link. */
 export function SharedImport({
   incoming,
   full,
@@ -131,6 +133,7 @@ export interface Message {
   undo?: PlanRecord;
 }
 
+/** A one-off message, with Undo when it reports a deleted plan. */
 export function MessageNotice({
   message,
   onUndo,
@@ -199,6 +202,7 @@ function PlanPicker({
   );
 }
 
+/** Pick, start, restore or delete a saved plan. */
 export function PlansBar({
   plans,
   active,
@@ -260,6 +264,7 @@ export function PlansBar({
   );
 }
 
+/** What the server renders until the saved plans are read from the browser. */
 export function PlannerSkeleton() {
   const { dict } = useLocale();
   return (

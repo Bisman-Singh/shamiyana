@@ -52,6 +52,7 @@ const schema = fields.transform(
 
 export type ServerEnv = z.output<typeof schema>;
 
+/** A configuration error; its message names the variables, never their values. */
 export class EnvError extends Error {
   override name = "EnvError";
 }

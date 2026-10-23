@@ -213,6 +213,7 @@ function planTabs({
   ];
 }
 
+/** One open plan: its header, the AI status, Undo, the tabs and the share dialog. */
 export function Workspace({
   record,
   today,

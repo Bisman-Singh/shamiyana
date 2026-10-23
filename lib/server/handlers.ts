@@ -195,6 +195,7 @@ function answered(log: Log, result: { model: string } | null): Response {
   return log.ok(Response.json(rest, { headers: JSON_HEADERS }), model);
 }
 
+/** POST /api/plan: checks the request, then streams ideas or serves them from the cache. */
 export function planHandler(deps: () => AiDeps) {
   return route("plan", deps, async (request, d, log) => {
     const input = await readJson(
@@ -223,6 +224,7 @@ export function planHandler(deps: () => AiDeps) {
   });
 }
 
+/** POST /api/refine: checks the request, screens the message, then returns a reply and proposed changes. */
 export function refineHandler(deps: () => AiDeps) {
   return route("refine", deps, async (request, d, log) => {
     const input = await readJson(
@@ -276,6 +278,7 @@ async function readUpload(request: Request, d: AiDeps): Promise<Upload> {
   return { ok: true, data: { image: bytes, mediaType, fields: parsedFields } };
 }
 
+/** POST /api/vision: checks the upload's real type and size, then returns ideas from the photo. */
 export function visionHandler(deps: () => AiDeps) {
   return route("vision", deps, async (request, d, log) => {
     const upload = await readUpload(request, d);

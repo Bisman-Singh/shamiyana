@@ -22,6 +22,7 @@ type Announce = (message: string) => void;
 
 const AnnouncerContext = createContext<Announce>(() => undefined);
 
+/** Holds the one polite live region and lets any component speak through it. */
 export function AnnouncerProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [message, setMessage] = useState("");
   const announce = useCallback((next: string) => {
@@ -41,6 +42,7 @@ export function AnnouncerProvider({ children }: Readonly<{ children: ReactNode }
   );
 }
 
+/** Says a message through the live region. */
 export function useAnnounce(): Announce {
   return use(AnnouncerContext);
 }

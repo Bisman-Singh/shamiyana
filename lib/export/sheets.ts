@@ -7,6 +7,7 @@ import type { VendorCard } from "@/lib/plan/vendors";
 
 type Row = (string | number)[];
 
+/** Budget rows for the CSV export, headed in the chosen language. */
 export function budgetRows(summary: BudgetSummary, dict: Dictionary): Row[] {
   const b = dict.budget;
   return [
@@ -23,6 +24,7 @@ export function budgetRows(summary: BudgetSummary, dict: Dictionary): Row[] {
   ];
 }
 
+/** Vendor checklist rows for the CSV export. */
 export function checklistRows(cards: readonly VendorCard[], dict: Dictionary): Row[] {
   const v = dict.vendors;
   return [
@@ -47,6 +49,7 @@ export function checklistRows(cards: readonly VendorCard[], dict: Dictionary): R
   ];
 }
 
+/** Guest list rows for the CSV export. */
 export function guestRows(guests: readonly Guest[], dict: Dictionary): Row[] {
   const g = dict.guests;
   return [

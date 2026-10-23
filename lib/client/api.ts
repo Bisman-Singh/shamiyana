@@ -64,6 +64,7 @@ export interface RefineReply {
   changes: Change[];
 }
 
+/** Sends a refine message and returns the reply with only the changes this plan allows. */
 export async function requestRefine(
   body: unknown,
   categories: readonly CategoryId[],
@@ -88,6 +89,7 @@ export async function requestRefine(
   };
 }
 
+/** Sends a photo for ideas and returns them sanitized. */
 export async function requestVision(
   form: FormData,
   signal?: AbortSignal,

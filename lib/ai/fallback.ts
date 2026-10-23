@@ -47,6 +47,7 @@ export interface Attempt<T> {
   run: () => T;
 }
 
+/** The first model whose stream yields a chunk in time; a model that fails before then hands over to the next. */
 export async function firstWorking<T>(
   attempts: readonly Attempt<ReadableStream<T>>[],
   probe: Probe<T>,

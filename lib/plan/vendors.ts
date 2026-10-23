@@ -53,6 +53,7 @@ export function buildVendors(record: PlanRecord, lines: readonly BudgetLine[]): 
     }));
 }
 
+/** How many vendors are at each status. */
 export function vendorTally(cards: readonly VendorCard[]): Record<VendorStatus, number> {
   const tally: Record<VendorStatus, number> = { todo: 0, shortlisted: 0, booked: 0, paid: 0 };
   for (const card of cards) tally[card.progress.status] += 1;

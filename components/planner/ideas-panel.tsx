@@ -111,6 +111,7 @@ function SavedIdeas({ view, update }: Readonly<{ view: PlanView; update: Update 
   );
 }
 
+/** AI ideas and menu, saved ideas, the refine chat and photo ideas. */
 export function IdeasPanel({
   view,
   ideas,

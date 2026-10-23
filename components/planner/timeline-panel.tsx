@@ -170,6 +170,7 @@ function TaskRow({
   );
 }
 
+/** Tasks by phase with due dates, calendar export, removed tasks and a form to add one. */
 export function TimelinePanel({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict, locale } = useLocale();
   const t = dict.timeline;

@@ -40,10 +40,12 @@ export function texts(value: unknown, max: number, count: number): string[] {
   return uniqueBy(lines, (text) => text).slice(0, count);
 }
 
+/** The value when it is one of the allowed strings, else null. */
 export function oneOf<T extends string>(value: unknown, allowed: readonly T[]): T | null {
   return allowed.find((option) => option === value) ?? null;
 }
 
+/** The value when it is a finite number, else null. */
 export function finite(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }

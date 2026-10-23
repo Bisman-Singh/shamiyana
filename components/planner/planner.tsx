@@ -253,6 +253,7 @@ function PlanOrForm({
   );
 }
 
+/** The whole planner: saved plans, notices, and the open plan or its form. */
 export function Planner({ store }: Readonly<{ store?: PlanStore }>) {
   const plans = store ?? sharedStore();
   const snapshot = useSyncExternalStore(

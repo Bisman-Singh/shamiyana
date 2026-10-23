@@ -9,6 +9,7 @@ import type { Dictionary } from "./en";
 
 export const LOCALE_COOKIE = "lang";
 
+/** The Intl locale for a language, Indian conventions in both. */
 export function intlLocale(locale: Locale): string {
   return locale === "hi" ? "hi-IN" : "en-IN";
 }
@@ -25,6 +26,7 @@ export interface PluralForms {
   other: string;
 }
 
+/** The singular or plural message for a count. */
 export function plural(
   locale: Locale,
   forms: PluralForms,
@@ -36,10 +38,12 @@ export function plural(
   return format(form, { n: formatNumber(n, locale), ...values });
 }
 
+/** A whole number with Indian grouping. */
 export function formatNumber(n: number, locale: Locale): string {
   return new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits: 0 }).format(n);
 }
 
+/** Rupees with Indian grouping and no paise. */
 export function formatMoney(amount: number, locale: Locale): string {
   return new Intl.NumberFormat(intlLocale(locale), {
     style: "currency",

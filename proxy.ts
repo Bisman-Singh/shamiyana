@@ -25,6 +25,7 @@ export function buildCsp(nonce: string, isDev: boolean): string {
   ].join("; ");
 }
 
+/** Sets a fresh nonce and the CSP on every page request. */
 export function proxy(request: NextRequest): NextResponse {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const csp = buildCsp(nonce, process.env.NODE_ENV === "development");

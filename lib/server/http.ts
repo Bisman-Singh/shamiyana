@@ -34,6 +34,7 @@ const STATUS: Record<ErrorCode, number> = {
   internal: 500,
 };
 
+/** A bare JSON error with the code's status, never cached. */
 export function errorResponse(code: ErrorCode, headers: Record<string, string> = {}): Response {
   return Response.json(
     { error: code },
@@ -41,6 +42,7 @@ export function errorResponse(code: ErrorCode, headers: Record<string, string> =
   );
 }
 
+/** The HTTP status for an error code. */
 export function statusOf(code: ErrorCode): number {
   return STATUS[code];
 }
@@ -104,6 +106,7 @@ export type Guarded =
   | { ok: true; bytes: Uint8Array; contentType: string }
   | { ok: false; code: ErrorCode; headers?: Record<string, string> };
 
+/** Same origin, content type, rate limit and body cap, in that order, before anything is parsed. */
 export async function guard(request: Request, options: GuardOptions): Promise<Guarded> {
   if (!isSameOrigin(request)) return { ok: false, code: "forbidden" };
   const contentType = request.headers.get("content-type") ?? "";

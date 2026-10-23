@@ -67,6 +67,7 @@ function controlProps({ id, hint, error }: Omit<Described, "label">) {
   };
 }
 
+/** A labelled text input with its hint and error. */
 export function TextField({
   id,
   label,
@@ -81,6 +82,7 @@ export function TextField({
   );
 }
 
+/** A labelled text area with its hint and error. */
 export function TextArea({
   id,
   label,
@@ -108,6 +110,7 @@ type SelectProps<T extends string> = Described & {
   onValueChange: (value: T) => void;
 } & Omit<SelectHTMLAttributes<HTMLSelectElement>, "value" | "defaultValue" | "onChange">;
 
+/** A labelled select that only reports values from its own options. */
 export function SelectField<T extends string>({
   id,
   label,

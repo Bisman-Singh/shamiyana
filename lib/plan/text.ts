@@ -9,6 +9,7 @@
 const CONTROLS = /[^\P{Cc}\n]|[\u202A-\u202E\u2066-\u2069]/gu;
 const CONTROLS_AND_NEWLINES = /[\p{Cc}\u202A-\u202E\u2066-\u2069]/gu;
 
+/** Text with control and bidi characters replaced, lines trimmed and NFC applied. */
 export function cleanText(value: string, keepNewlines = false): string {
   return value
     .normalize("NFC")

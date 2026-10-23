@@ -37,6 +37,7 @@ export function focusOpenPanel(): void {
   });
 }
 
+/** WAI-ARIA tabs with roving focus, arrow keys, Home and End. */
 export function Tabs<T extends string>({
   label,
   tabs,

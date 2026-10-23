@@ -21,10 +21,12 @@ export function toDayNumber(iso: string): number | null {
   return ms / DAY_MS;
 }
 
+/** Whether a string is a real calendar date in YYYY-MM-DD form. */
 export function isIsoDate(value: string): boolean {
   return toDayNumber(value) !== null;
 }
 
+/** The ISO date for a day number counted from 1970-01-01. */
 export function fromDayNumber(day: number): string {
   return new Date(day * DAY_MS).toISOString().slice(0, 10);
 }
@@ -35,6 +37,7 @@ function dayOf(iso: string): number {
   return day;
 }
 
+/** A date some days later, or earlier for a negative count. */
 export function addDays(iso: string, days: number): string {
   return fromDayNumber(dayOf(iso) + days);
 }

@@ -129,6 +129,7 @@ async function generateSanitized<T>(
   return result ? { ...result.value, model: result.id } : null;
 }
 
+/** A stream with one chunk, for answers served from the cache. */
 export function textStream(text: string): ReadableStream<string> {
   return new ReadableStream<string>({
     start(controller) {
@@ -178,6 +179,7 @@ export async function lookupPlan(
   return { key, hit: input.fresh ? null : cache.get(key) };
 }
 
+/** Streams a plan answer from the first working model and caches it once it is complete and usable. */
 export async function streamPlan(
   ctx: RunContext,
   cache: AnswerCache,
@@ -237,6 +239,7 @@ export interface RefineAnswer {
   model: string;
 }
 
+/** One refine answer: a reply and the changes that pass validation. */
 export async function runRefine(ctx: RunContext, input: RefineInput): Promise<RefineAnswer | null> {
   const lines = planBudget(input.facts, input.factors);
   return generateSanitized(ctx, {
@@ -261,6 +264,7 @@ export interface VisionInput {
   mediaType: string;
 }
 
+/** One photo answer, sanitized. */
 export async function runVision(
   ctx: RunContext,
   input: VisionInput,

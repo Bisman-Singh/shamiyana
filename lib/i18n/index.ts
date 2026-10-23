@@ -7,10 +7,12 @@ export * from "./format";
 
 const DICTIONARIES: Record<Locale, Dictionary> = { en, hi };
 
+/** The dictionary for a language. */
 export function getDictionary(locale: Locale): Dictionary {
   return DICTIONARIES[locale];
 }
 
+/** Whether a value is a supported language. */
 export function isLocale(value: unknown): value is Locale {
   return LOCALES.some((l) => l === value);
 }

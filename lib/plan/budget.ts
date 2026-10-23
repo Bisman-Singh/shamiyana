@@ -75,6 +75,7 @@ export function weightsFor(
   return raw.map(([c, w]) => [c, c === "contingency" ? reserve : (w / rest) * (1 - reserve)]);
 }
 
+/** The budget split for an event, weighted by its details and the user's shifts, in round hundreds. */
 export function planBudget(brief: EventFacts, factors: PlanRecord["factors"]): BudgetLine[] {
   return allocate(brief.budget, weightsFor(brief, factors));
 }
@@ -119,6 +120,7 @@ export interface BudgetSummary {
   overCategories: CategoryId[];
 }
 
+/** Budget lines with vendor status, quotes and payments, and the totals the panel shows. */
 export function summariseBudget(
   lines: readonly BudgetLine[],
   brief: EventFacts,

@@ -44,6 +44,7 @@ function hex(value: unknown): string | null {
   return match?.[1] ? `#${match[1].toLowerCase()}` : null;
 }
 
+/** A photo answer cut to size: an unknown kind reads as other, an unknown area as decor, and bad colours are dropped. */
 export function sanitizeVision(raw: unknown): VisionResult {
   const value = isRecord(raw) ? raw : {};
   return {

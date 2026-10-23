@@ -13,6 +13,7 @@ export const PHASES = [
 ] as const;
 export type Phase = (typeof PHASES)[number];
 
+/** The checklist phase for a task due this many days before the event. */
 export function phaseOf(leadDays: number): Phase {
   if (leadDays >= 180) return "six_months";
   if (leadDays >= 90) return "three_months";

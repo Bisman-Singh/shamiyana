@@ -7,6 +7,7 @@ export function taskTitle(item: Pick<TimelineItem, "id" | "title">, dict: Dictio
   return item.title ?? (dict.tasks as Record<string, string>)[item.id] ?? item.id;
 }
 
+/** A task area's name: planning, or the vendor category it belongs to. */
 export function areaName(area: TaskArea, dict: Dictionary): string {
   return area === "planning" ? dict.areas.planning : dict.categories[area];
 }

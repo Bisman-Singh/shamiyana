@@ -28,6 +28,7 @@ function Paragraph({ text }: Readonly<{ text: string }>) {
   );
 }
 
+/** A policy page: its title, last change and sections. */
 export function LegalArticle({ page }: Readonly<{ page: LegalPage }>) {
   return (
     <article className="legal">

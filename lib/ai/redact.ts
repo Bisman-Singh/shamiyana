@@ -28,6 +28,7 @@ const PATTERNS: readonly RegExp[] = [
 
 export const REDACTED = "[removed]";
 
+/** Removes email addresses, phone numbers and ID numbers in their common formats. */
 export function redact(text: string): string {
   return PATTERNS.reduce((acc, pattern) => acc.replace(pattern, REDACTED), asciiDigits(text));
 }

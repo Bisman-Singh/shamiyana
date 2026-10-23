@@ -125,6 +125,7 @@ function Card({
   );
 }
 
+/** One card per vendor with status, price, payments, notes and questions to ask. */
 export function VendorsPanel({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict } = useLocale();
   const v = dict.vendors;

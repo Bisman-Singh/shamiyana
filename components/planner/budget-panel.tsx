@@ -228,6 +228,7 @@ function BudgetTable({ view, shift }: Readonly<{ view: PlanView; shift: Shift }>
   );
 }
 
+/** The budget split with weights to adjust, AI shifts to apply, and a CSV export. */
 export function BudgetPanel({
   view,
   ideas,

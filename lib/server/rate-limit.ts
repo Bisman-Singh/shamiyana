@@ -32,6 +32,7 @@ export interface RateLimiterOptions {
   now?: () => number;
 }
 
+/** A sliding window per client key, held in this instance's memory. */
 export class RateLimiter implements RequestLimiter {
   private readonly hits = new Map<string, number[]>();
   private readonly limit: number;

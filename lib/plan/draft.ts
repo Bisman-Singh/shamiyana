@@ -53,6 +53,7 @@ export const DRAFT_FIELDS: readonly DraftField[] = [
   "notes",
 ];
 
+/** A blank draft for an event type. */
 export function emptyDraft(type: EventType = "wedding"): Draft {
   return {
     type,
@@ -70,6 +71,7 @@ export function emptyDraft(type: EventType = "wedding"): Draft {
   };
 }
 
+/** A draft filled from a saved brief, for editing. */
 export function draftFromBrief(brief: Brief): Draft {
   const base = emptyDraft(brief.type);
   return {

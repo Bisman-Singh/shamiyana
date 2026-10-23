@@ -263,6 +263,7 @@ function GuestTable({ guests, update }: Readonly<{ guests: readonly Guest[]; upd
   );
 }
 
+/** Households, replies and food counts, with a CSV export. */
 export function GuestsPanel({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict } = useLocale();
   const g = dict.guests;
