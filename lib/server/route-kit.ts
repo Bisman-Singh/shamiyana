@@ -25,53 +25,66 @@ export const BODY_LIMITS = {
   visionFields: 16_384,
 } as const;
 
-/** Logs one line per outcome for a request, each with the route and the time since it started. */
-function reporter(route: AiRoute) {
+/** One log line per outcome of a request, each with the route and the time since it started. */
+export interface RouteLog {
+  fail: (code: ErrorCode, headers?: Record<string, string>) => Response;
+  ok: (response: Response, model: string, cached?: boolean) => Response;
+  modelFailed: (model: string) => void;
+  screened: (response: Response) => Response;
+  cutOff: (model: string) => void;
+}
+
+function startRouteLog(route: AiRoute): RouteLog {
   const started = Date.now();
   const emit = (fields: Omit<LogFields, "route" | "ms">) => {
     logEvent({ route, ms: Date.now() - started, ...fields });
   };
   return {
-    fail: (code: ErrorCode, headers?: Record<string, string>): Response => {
+    fail: (code, headers) => {
       const response = errorResponse(code, headers);
       emit({ outcome: code, status: response.status });
       return response;
     },
-    ok: (response: Response, model: string, cached = false): Response => {
+    ok: (response, model, cached = false) => {
       emit({ outcome: "ok", status: response.status, model, cached });
       return response;
     },
-    modelFailed: (model: string): void => {
+    modelFailed: (model) => {
       emit({ outcome: "model_failed", status: 502, model });
     },
-    screened: (response: Response): Response => {
+    screened: (response) => {
       emit({ outcome: "screened", status: response.status });
       return response;
     },
-    cutOff: (model: string): void => {
+    cutOff: (model) => {
       emit({ outcome: "cut_off", status: 200, model });
     },
   };
 }
 
-export type Log = ReturnType<typeof reporter>;
+/** A request handler as a route file exports it. */
+export type RouteHandler = (request: Request) => Promise<Response>;
 
-/** Runs a route; anything unexpected becomes a logged 500 with no details, never a stack in the response. */
-export function route(
-  name: AiRoute,
-  deps: () => AiDeps,
-  run: (request: Request, d: AiDeps, log: Log) => Promise<Response>,
-) {
-  return async (request: Request): Promise<Response> => {
-    const log = reporter(name);
+/** One route's own steps, given the request, its dependencies and its log. */
+export type RouteSteps = (request: Request, deps: AiDeps, log: RouteLog) => Promise<Response>;
+
+/**
+ * Runs a route's steps with a fresh log and the dependencies looked up per
+ * request. Anything unexpected becomes a logged 500 with no details, never a
+ * stack in the response.
+ */
+export function aiRoute(name: AiRoute, getDeps: () => AiDeps, steps: RouteSteps): RouteHandler {
+  return async (request) => {
+    const log = startRouteLog(name);
     try {
-      return await run(request, deps(), log);
+      return await steps(request, getDeps(), log);
     } catch {
       return log.fail("internal");
     }
   };
 }
 
+/** A read body, or the error code and headers to answer with instead. */
 export type Checked<T> =
   { ok: true; data: T } | { ok: false; code: ErrorCode; headers?: Record<string, string> };
 
@@ -92,25 +105,26 @@ export async function readJson<T>(
 /** The model chain and today's allowance for this client, or the reason there is none. */
 export async function admit(
   request: Request,
-  d: AiDeps,
-  log: Log,
+  deps: AiDeps,
+  log: RouteLog,
 ): Promise<{ ctx: RunContext } | { refused: ErrorCode }> {
-  if (!d.chain) return { refused: "ai_unavailable" };
-  if (!(await d.daily.take(clientKey(request)))) return { refused: "daily_cap" };
+  if (!deps.chain) return { refused: "ai_unavailable" };
+  if (!(await deps.daily.take(clientKey(request)))) return { refused: "daily_cap" };
   return {
     ctx: {
-      chain: d.chain,
-      signal: AbortSignal.any([request.signal, AbortSignal.timeout(d.deadlineMs)]),
+      chain: deps.chain,
+      signal: AbortSignal.any([request.signal, AbortSignal.timeout(deps.deadlineMs)]),
       onFail: log.modelFailed,
       onCutOff: log.cutOff,
     },
   };
 }
 
+/** Set here as well as for all of /api in next.config.ts, so a handler's answer is right on its own. */
 export const JSON_HEADERS = { "Cache-Control": "no-store" };
 
 /** A finished answer as JSON, logged with the model that wrote it. */
-export function answered(log: Log, result: { model: string } | null): Response {
+export function answered(log: RouteLog, result: { model: string } | null): Response {
   if (!result) return log.fail("ai_failed");
   const { model, ...rest } = result;
   return log.ok(Response.json(rest, { headers: JSON_HEADERS }), model);

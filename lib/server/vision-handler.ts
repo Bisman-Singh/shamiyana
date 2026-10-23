@@ -3,7 +3,15 @@ import { runVision } from "@/lib/ai/vision";
 import type { AiDeps } from "./deps";
 import { guard, parseJson } from "./http";
 import { IMAGE_MAX_BYTES, sniffImage, visionFieldsSchema } from "./requests";
-import { admit, answered, BODY_LIMITS, route, type Checked } from "./route-kit";
+import {
+  admit,
+  aiRoute,
+  answered,
+  BODY_LIMITS,
+  type Checked,
+  type RouteHandler,
+  type RouteLog,
+} from "./route-kit";
 
 async function readForm(bytes: Uint8Array, contentType: string): Promise<FormData | null> {
   try {
@@ -18,9 +26,9 @@ async function readForm(bytes: Uint8Array, contentType: string): Promise<FormDat
 type Upload = Checked<{ image: Uint8Array; mediaType: string; fields: unknown }>;
 
 /** The guarded multipart body: one image whose bytes are a real JPEG, PNG or WebP, plus a small JSON part. */
-async function readUpload(request: Request, d: AiDeps): Promise<Upload> {
+async function readUpload(request: Request, deps: AiDeps): Promise<Upload> {
   const guarded = await guard(request, {
-    limiter: d.limiters.vision,
+    limiter: deps.limiters.vision,
     maxBytes: IMAGE_MAX_BYTES + BODY_LIMITS.visionFields,
     type: "multipart/form-data",
   });
@@ -40,16 +48,19 @@ async function readUpload(request: Request, d: AiDeps): Promise<Upload> {
   return { ok: true, data: { image: bytes, mediaType, fields: parsedFields } };
 }
 
+/** The upload is checked before the allowance is taken, so a file that is refused costs nothing. */
+async function handleVision(request: Request, deps: AiDeps, log: RouteLog): Promise<Response> {
+  const upload = await readUpload(request, deps);
+  if (!upload.ok) return log.fail(upload.code, upload.headers);
+  const parsed = visionFieldsSchema(deps.now()).safeParse(upload.data.fields);
+  if (!parsed.success) return log.fail("invalid");
+  const gate = await admit(request, deps, log);
+  if ("refused" in gate) return log.fail(gate.refused);
+  const { image, mediaType } = upload.data;
+  return answered(log, await runVision(gate.ctx, { ...parsed.data, image, mediaType }));
+}
+
 /** POST /api/vision: checks the upload's real type and size, then returns ideas from the photo. */
-export function visionHandler(deps: () => AiDeps) {
-  return route("vision", deps, async (request, d, log) => {
-    const upload = await readUpload(request, d);
-    if (!upload.ok) return log.fail(upload.code, upload.headers);
-    const parsed = visionFieldsSchema(d.now()).safeParse(upload.data.fields);
-    if (!parsed.success) return log.fail("invalid");
-    const gate = await admit(request, d, log);
-    if ("refused" in gate) return log.fail(gate.refused);
-    const { image, mediaType } = upload.data;
-    return answered(log, await runVision(gate.ctx, { ...parsed.data, image, mediaType }));
-  });
+export function visionHandler(getDeps: () => AiDeps): RouteHandler {
+  return aiRoute("vision", getDeps, handleVision);
 }

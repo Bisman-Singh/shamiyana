@@ -3,23 +3,35 @@ import { isInjectionAttempt, SCREENED_REPLY } from "@/lib/ai/guard";
 import { runRefine } from "@/lib/ai/refine";
 import type { AiDeps } from "./deps";
 import { refineRequestSchema } from "./requests";
-import { admit, answered, BODY_LIMITS, JSON_HEADERS, readJson, route } from "./route-kit";
+import {
+  admit,
+  aiRoute,
+  answered,
+  BODY_LIMITS,
+  JSON_HEADERS,
+  readJson,
+  type RouteHandler,
+  type RouteLog,
+} from "./route-kit";
+
+/** The message is screened before the allowance is taken, so an attempt to re-instruct the assistant costs nothing. */
+async function handleRefine(request: Request, deps: AiDeps, log: RouteLog): Promise<Response> {
+  const input = await readJson(
+    request,
+    { limiter: deps.limiters.refine, maxBytes: BODY_LIMITS.refine },
+    refineRequestSchema(deps.now()),
+  );
+  if (!input.ok) return log.fail(input.code, input.headers);
+  if (isInjectionAttempt(input.data.message)) {
+    const reply = SCREENED_REPLY[input.data.locale];
+    return log.screened(Response.json({ reply, changes: [] }, { headers: JSON_HEADERS }));
+  }
+  const gate = await admit(request, deps, log);
+  if ("refused" in gate) return log.fail(gate.refused);
+  return answered(log, await runRefine(gate.ctx, input.data));
+}
 
 /** POST /api/refine: checks the request, screens the message, then returns a reply and proposed changes. */
-export function refineHandler(deps: () => AiDeps) {
-  return route("refine", deps, async (request, d, log) => {
-    const input = await readJson(
-      request,
-      { limiter: d.limiters.refine, maxBytes: BODY_LIMITS.refine },
-      refineRequestSchema(d.now()),
-    );
-    if (!input.ok) return log.fail(input.code, input.headers);
-    if (isInjectionAttempt(input.data.message)) {
-      const reply = SCREENED_REPLY[input.data.locale];
-      return log.screened(Response.json({ reply, changes: [] }, { headers: JSON_HEADERS }));
-    }
-    const gate = await admit(request, d, log);
-    if ("refused" in gate) return log.fail(gate.refused);
-    return answered(log, await runRefine(gate.ctx, input.data));
-  });
+export function refineHandler(getDeps: () => AiDeps): RouteHandler {
+  return aiRoute("refine", getDeps, handleRefine);
 }
