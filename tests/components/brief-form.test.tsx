@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { BriefForm } from "@/components/planner/brief-form";
+import { BriefForm } from "@/components/planner/brief/brief-form";
 import { draftFromBrief } from "@/lib/plan/draft";
 import { TODAY, birthdayBrief, weddingBrief } from "../helpers/fixtures";
 import { expectAccessible, renderIn } from "../helpers/render";

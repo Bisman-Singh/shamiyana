@@ -13,8 +13,8 @@ import {
   type DraftField,
 } from "@/lib/plan/draft";
 import type { Brief } from "@/lib/plan/schema";
-import { useLocale } from "../locale-provider";
-import { useFocusOnMount } from "../ui/focus";
+import { useLocale } from "@/components/locale-provider";
+import { useFocusOnMount } from "@/components/ui/focus";
 import {
   BasicFields,
   EventTypeField,

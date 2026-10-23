@@ -3,7 +3,7 @@
 import { draftFromBrief } from "@/lib/plan/draft";
 import { updateBrief } from "@/lib/plan/record";
 import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { BriefForm } from "./brief-form";
+import { BriefForm } from "@/components/planner/brief/brief-form";
 import type { PlanActions } from "./use-plan-actions";
 import type { Mode } from "./use-planner-view";
 import { Workspace } from "./workspace/workspace";

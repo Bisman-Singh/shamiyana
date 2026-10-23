@@ -14,8 +14,12 @@ import {
 import { addDays } from "@/lib/plan/dates";
 import { readAmount } from "@/lib/plan/amounts";
 import type { Draft, DraftField } from "@/lib/plan/draft";
-import { useLocale } from "../locale-provider";
-import { CheckGroup, RadioGroup, TextArea, TextField, type Option } from "../ui/field";
+import { useLocale } from "@/components/locale-provider";
+import type { Option } from "@/components/ui/field";
+import { CheckGroup } from "@/components/ui/check-group";
+import { RadioGroup } from "@/components/ui/radio-group";
+import { TextArea } from "@/components/ui/text-area";
+import { TextField } from "@/components/ui/text-field";
 
 export interface FieldsProps {
   draft: Draft;
@@ -45,7 +49,7 @@ export function EventTypeField({ draft, set, idOf }: Readonly<FieldsProps>) {
       legend={f.typeLegend}
       options={options(EVENT_TYPES, f.types, f.typeHints)}
       value={draft.type}
-      onChange={(v) => {
+      onValueChange={(v) => {
         set("type", v);
       }}
       className="choices-stacked"
@@ -146,7 +150,7 @@ export function VariantField({ draft, set, error, idOf }: Readonly<FieldsProps>)
           options={options(WEDDING_FUNCTIONS, f.functions)}
           value={draft.functions}
           error={error("functions")}
-          onChange={(v) => {
+          onValueChange={(v) => {
             set("functions", v);
           }}
           className="choices-wrap"
@@ -160,7 +164,7 @@ export function VariantField({ draft, set, error, idOf }: Readonly<FieldsProps>)
           legend={f.honoreeLegend}
           options={options(HONOREES, f.honorees)}
           value={draft.honoree}
-          onChange={(v) => {
+          onValueChange={(v) => {
             set("honoree", v);
           }}
           className="choices-wrap"
@@ -174,7 +178,7 @@ export function VariantField({ draft, set, error, idOf }: Readonly<FieldsProps>)
           legend={f.kindLegend}
           options={options(COMMUNITY_KINDS, f.kinds)}
           value={draft.kind}
-          onChange={(v) => {
+          onValueChange={(v) => {
             set("kind", v);
           }}
           className="choices-wrap"
@@ -195,7 +199,7 @@ export function PreferenceFields({ draft, set, error, idOf }: Readonly<FieldsPro
         legend={f.styleLegend}
         options={options(STYLES, f.styles)}
         value={draft.style}
-        onChange={(v) => {
+        onValueChange={(v) => {
           set("style", v);
         }}
         className="choices-wrap"
@@ -206,7 +210,7 @@ export function PreferenceFields({ draft, set, error, idOf }: Readonly<FieldsPro
         legend={f.foodLegend}
         options={options(FOOD_PREFS, f.foods)}
         value={draft.food}
-        onChange={(v) => {
+        onValueChange={(v) => {
           set("food", v);
         }}
         className="choices-wrap"

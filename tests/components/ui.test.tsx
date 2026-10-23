@@ -3,7 +3,11 @@ import { act, fireEvent, render, renderHook, screen } from "@testing-library/rea
 import { useLocale } from "@/components/locale-provider";
 import { useToday } from "@/components/planner/use-today";
 import { taskTitle } from "@/components/planner/task-title";
-import { CheckGroup, RadioGroup, SelectField, TextArea, TextField } from "@/components/ui/field";
+import { CheckGroup } from "@/components/ui/check-group";
+import { RadioGroup } from "@/components/ui/radio-group";
+import { SelectField } from "@/components/ui/select-field";
+import { TextArea } from "@/components/ui/text-area";
+import { TextField } from "@/components/ui/text-field";
 import { nextTabIndex } from "@/components/ui/tabs";
 import { getDictionary } from "@/lib/i18n";
 import { draftFromBrief } from "@/lib/plan/draft";
@@ -103,7 +107,7 @@ describe("form controls", () => {
           name="e"
           legend="Size"
           value="s"
-          onChange={vi.fn()}
+          onValueChange={vi.fn()}
           options={[{ value: "s", label: "Small", hint: "Under 50" }]}
         />
         <CheckGroup
@@ -111,7 +115,7 @@ describe("form controls", () => {
           name="f"
           legend="Extras"
           value={[]}
-          onChange={vi.fn()}
+          onValueChange={vi.fn()}
           options={[{ value: "z", label: "Z" }]}
         />
       </form>,

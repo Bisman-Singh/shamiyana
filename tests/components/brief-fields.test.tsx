@@ -12,7 +12,7 @@ afterEach(() => {
 describe("brief form fields", () => {
   it("accepts typed values in every field and every choice", async () => {
     const onSubmit = vi.fn();
-    const { BriefForm } = await import("@/components/planner/brief-form");
+    const { BriefForm } = await import("@/components/planner/brief/brief-form");
     renderIn(<BriefForm today="2026-10-21" editing={false} onSubmit={onSubmit} />);
     await userEvent.type(screen.getByLabelText("Event name"), "Mela");
     fireEvent.change(screen.getByLabelText("Date"), { target: { value: "2026-12-01" } });

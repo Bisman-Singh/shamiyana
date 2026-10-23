@@ -8,7 +8,8 @@ import { newId, upsertGuest } from "@/lib/plan/record";
 import type { Guest } from "@/lib/plan/schema";
 import { useLocale } from "@/components/locale-provider";
 import { useAnnounce } from "@/components/ui/announcer";
-import { SelectField, TextField } from "@/components/ui/field";
+import { SelectField } from "@/components/ui/select-field";
+import { TextField } from "@/components/ui/text-field";
 import { focusAfterRender } from "@/components/ui/focus";
 import type { Update } from "@/components/planner/types";
 
