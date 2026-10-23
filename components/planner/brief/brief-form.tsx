@@ -1,29 +1,25 @@
 "use client";
 
-import { useId, useRef, useState, type RefObject, type SubmitEvent } from "react";
-import { plural } from "@/lib/i18n/format";
-import { EVENT_TYPES, type EventType } from "@/lib/plan/constants";
+import { useId, useRef, useState, type SubmitEvent } from "react";
 import {
-  DRAFT_FIELDS,
   emptyDraft,
   parseDraft,
   sampleDraft,
   type Draft,
-  type DraftError,
-  type DraftField,
+  type DraftErrors,
 } from "@/lib/plan/draft";
 import type { Brief } from "@/lib/plan/schema";
 import { useLocale } from "@/components/locale-provider";
 import { useFocusOnMount } from "@/components/ui/focus";
-import {
-  BasicFields,
-  EventTypeField,
-  PreferenceFields,
-  VariantField,
-  type FieldsProps,
-} from "./brief-fields";
+import { BasicFields } from "./basic-fields";
+import { ErrorSummary } from "./error-summary";
+import { EventTypeField } from "./event-type-field";
+import type { FieldsProps } from "./fields-props";
+import { PreferenceFields } from "./preference-fields";
+import { SamplePicker } from "./sample-picker";
+import { VariantField } from "./variant-field";
 
-interface Props {
+interface BriefFormProps {
   initial?: Draft;
   today: string;
   editing: boolean;
@@ -31,67 +27,6 @@ interface Props {
   focusOnOpen?: boolean;
   onSubmit: (brief: Brief) => void;
   onCancel?: () => void;
-}
-
-type Errors = Partial<Record<DraftField, DraftError>>;
-
-interface ErrorSummaryProps {
-  errors: Errors;
-  idOf: (n: string) => string;
-  summaryRef: RefObject<HTMLDivElement | null>;
-}
-
-/** A focusable list of what to fix, each item linking to its field. */
-function ErrorSummary({ errors, idOf, summaryRef }: Readonly<ErrorSummaryProps>) {
-  const { dict, locale } = useLocale();
-  const fields = DRAFT_FIELDS.flatMap((field) => {
-    const code = errors[field];
-    return code ? [{ field, code }] : [];
-  });
-  if (fields.length === 0) return null;
-  return (
-    <div className="error-summary" role="alert" tabIndex={-1} ref={summaryRef}>
-      <h2 className="error-summary-title">
-        {plural(locale, dict.form.errorSummary, fields.length)}
-      </h2>
-      <ul>
-        {fields.map(({ field, code }) => (
-          <li key={field}>
-            <a href={`#${idOf(field)}`}>{dict.form.errors[code]}</a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-interface SamplesProps {
-  onPick: (type: EventType) => void;
-}
-
-function Samples({ onPick }: Readonly<SamplesProps>) {
-  const { dict } = useLocale();
-  const headingId = useId();
-  return (
-    <div className="samples">
-      <p id={headingId}>{dict.form.samplesLabel}</p>
-      <ul className="inline-list" aria-labelledby={headingId}>
-        {EVENT_TYPES.map((type) => (
-          <li key={type}>
-            <button
-              type="button"
-              className="btn btn-quiet"
-              onClick={() => {
-                onPick(type);
-              }}
-            >
-              {dict.form.samples[type]}
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
 }
 
 /** The brief form for a new plan or an edit, with an error summary that takes focus. */
@@ -102,12 +37,11 @@ export function BriefForm({
   focusOnOpen = false,
   onSubmit,
   onCancel,
-}: Readonly<Props>) {
+}: Readonly<BriefFormProps>) {
   const { dict } = useLocale();
-  const f = dict.form;
   const baseId = useId();
   const [draft, setDraft] = useState<Draft>(() => initial ?? emptyDraft());
-  const [errors, setErrors] = useState<Errors>({});
+  const [errors, setErrors] = useState<DraftErrors>({});
   const summaryRef = useRef<HTMLDivElement>(null);
   const headingRef = useFocusOnMount<HTMLHeadingElement>(focusOnOpen);
   const idOf = (name: string) => `${baseId}-${name}`;
@@ -115,11 +49,11 @@ export function BriefForm({
   const fields: FieldsProps = {
     draft,
     set: (key, value) => {
-      setDraft((d) => ({ ...d, [key]: value }));
+      setDraft((current) => ({ ...current, [key]: value }));
     },
     error: (field) => {
       const code = errors[field];
-      return code ? f.errors[code] : undefined;
+      return code ? dict.form.errors[code] : undefined;
     },
     idOf,
   };
@@ -139,19 +73,19 @@ export function BriefForm({
   return (
     <form className="brief-form" onSubmit={submit} noValidate aria-labelledby={idOf("heading")}>
       <h1 id={idOf("heading")} ref={headingRef} tabIndex={-1}>
-        {editing ? f.headingEdit : f.headingNew}
+        {editing ? dict.form.headingEdit : dict.form.headingNew}
       </h1>
-      {editing ? null : <p className="lede">{f.intro}</p>}
-      <p className="hint">{f.required}</p>
+      {editing ? null : <p className="lede">{dict.form.intro}</p>}
+      <p className="hint">{dict.form.required}</p>
       <ErrorSummary errors={errors} idOf={idOf} summaryRef={summaryRef} />
       {editing ? null : (
-        <Samples
+        <SamplePicker
           onPick={(type) => {
             setDraft(
               sampleDraft(type, today, {
-                title: f.sampleTitles[type],
-                city: f.sampleCities[type],
-                notes: f.sampleNotes[type],
+                title: dict.form.sampleTitles[type],
+                city: dict.form.sampleCities[type],
+                notes: dict.form.sampleNotes[type],
               }),
             );
             setErrors({});
@@ -164,7 +98,7 @@ export function BriefForm({
       <PreferenceFields {...fields} />
       <div className="actions">
         <button type="submit" className="btn btn-primary">
-          {editing ? f.submitEdit : f.submitNew}
+          {editing ? dict.form.submitEdit : dict.form.submitNew}
         </button>
         {onCancel ? (
           <button type="button" className="btn" onClick={onCancel}>

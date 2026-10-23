@@ -197,7 +197,10 @@ function candidate(draft: Draft): unknown {
   }
 }
 
-const ISSUE_FIELD: Partial<Record<DraftField, DraftError>> = {
+/** What to fix in a draft, field by field. */
+export type DraftErrors = Partial<Record<DraftField, DraftError>>;
+
+const ISSUE_FIELD: DraftErrors = {
   title: "title",
   city: "city",
   guests: "guests",
@@ -206,12 +209,11 @@ const ISSUE_FIELD: Partial<Record<DraftField, DraftError>> = {
   notes: "notes",
 };
 
-export type DraftResult =
-  { ok: true; brief: Brief } | { ok: false; errors: Partial<Record<DraftField, DraftError>> };
+export type DraftResult = { ok: true; brief: Brief } | { ok: false; errors: DraftErrors };
 
 /** Validates with the same schema the server uses, plus the date window from the user's today. */
 export function parseDraft(draft: Draft, today: string): DraftResult {
-  const errors: Partial<Record<DraftField, DraftError>> = {};
+  const errors: DraftErrors = {};
   const parsed = briefSchema.safeParse(candidate(draft));
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
