@@ -7,7 +7,8 @@ import type { ErrorCode } from "./http";
  * and addresses are never logged.
  */
 
-export type LogRoute = "plan" | "refine" | "vision";
+/** The AI routes, by the names their limits and log lines use. */
+export type AiRoute = "plan" | "refine" | "vision";
 
 /**
  * `cut_off`: a streamed answer stopped partway while the client was still there.
@@ -16,7 +17,7 @@ export type LogRoute = "plan" | "refine" | "vision";
 export type LogOutcome = "ok" | "model_failed" | "cut_off" | "screened" | ErrorCode;
 
 export interface LogFields {
-  route: LogRoute;
+  route: AiRoute;
   outcome: LogOutcome;
   status: number;
   ms?: number;

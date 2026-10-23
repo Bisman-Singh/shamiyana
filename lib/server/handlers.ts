@@ -21,7 +21,7 @@ import {
   type ErrorCode,
   type GuardOptions,
 } from "./http";
-import { logEvent, type LogFields, type LogRoute } from "./log";
+import { logEvent, type AiRoute, type LogFields } from "./log";
 import {
   DailyCap,
   RATE_WINDOW_MS,
@@ -52,7 +52,7 @@ import {
 export interface AiDeps {
   chain: readonly ModelSpec[] | null;
   cache: AnswerCache;
-  limiters: Record<LimitedRoute, RequestLimiter>;
+  limiters: Record<AiRoute, RequestLimiter>;
   daily: DailyAllowance;
   now: () => Date;
   /** Time every model attempt of one request shares, so the reply beats the route's own limit. */
@@ -69,17 +69,15 @@ const BODY_LIMITS = {
   visionFields: 16_384,
 } as const;
 
-type LimitedRoute = "plan" | "refine" | "vision";
-
 /** Requests per client per minute on each AI route. */
-const PER_MINUTE: Record<LimitedRoute, number> = { plan: 8, refine: 20, vision: 6 };
+const PER_MINUTE: Record<AiRoute, number> = { plan: 8, refine: 20, vision: 6 };
 
 /**
  * Each route's limit and the daily caps: in Redis when it and the AI key are
  * set, with memory as the fallback. Without a key the AI routes refuse anyway.
  */
 function limitsFor(env: ServerEnv): Pick<AiDeps, "limiters" | "daily"> {
-  const memory = (route: LimitedRoute) =>
+  const memory = (route: AiRoute) =>
     new RateLimiter({ limit: PER_MINUTE[route], windowMs: RATE_WINDOW_MS });
   const daily = new DailyCap({ cap: env.AI_DAILY_REQUEST_CAP, clientCap: env.AI_DAILY_CLIENT_CAP });
   const apiKey = env.GOOGLE_GENERATIVE_AI_API_KEY;
@@ -91,7 +89,7 @@ function limitsFor(env: ServerEnv): Pick<AiDeps, "limiters" | "daily"> {
   }
   const redis = connectRedis(env.redis);
   const secret = pseudonymKey(apiKey);
-  const shared = (route: LimitedRoute) =>
+  const shared = (route: AiRoute) =>
     new SharedRateLimiter({
       window: sharedWindow(redis, route, PER_MINUTE[route]),
       fallback: memory(route),
@@ -127,7 +125,7 @@ export function liveDeps(): AiDeps {
 }
 
 /** Logs one line per outcome for a request, each with the route and the time since it started. */
-function reporter(route: LogRoute) {
+function reporter(route: AiRoute) {
   const started = Date.now();
   const emit = (fields: Omit<LogFields, "route" | "ms">) => {
     logEvent({ route, ms: Date.now() - started, ...fields });
@@ -159,7 +157,7 @@ type Log = ReturnType<typeof reporter>;
 
 /** Runs a route; anything unexpected becomes a logged 500 with no details, never a stack in the response. */
 function route(
-  name: LogRoute,
+  name: AiRoute,
   deps: () => AiDeps,
   run: (request: Request, d: AiDeps, log: Log) => Promise<Response>,
 ) {
