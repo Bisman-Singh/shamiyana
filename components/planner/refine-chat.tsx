@@ -10,7 +10,7 @@ import { fitChanges, type Change } from "@/lib/plan/changes";
 import { wholeWeeks } from "@/lib/plan/dates";
 import { LIMITS, type Locale } from "@/lib/plan/constants";
 import { applyChanges, newId } from "@/lib/plan/record";
-import { cleanText } from "@/lib/plan/text";
+import { cleanText } from "@/lib/shared/plain-text";
 import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";

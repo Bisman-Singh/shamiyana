@@ -1,4 +1,4 @@
-import { clip } from "./text";
+import { clip } from "./plain-text";
 
 /**
  * Readers for untrusted values: model output, imported files, request

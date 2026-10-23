@@ -2,7 +2,7 @@ import { z } from "zod";
 import { visionResultSchema, type VisionResult } from "@/lib/ai/vision-result";
 import { parseChanges, type Change } from "@/lib/plan/changes";
 import { LIMITS, type CategoryId } from "@/lib/plan/constants";
-import { isRecord } from "@/lib/plan/loose";
+import { isRecord } from "@/lib/shared/untrusted";
 
 /**
  * Browser calls to the AI routes. Every failure becomes one of the error

@@ -4,7 +4,7 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from "react";
-import { oneOf } from "@/lib/plan/loose";
+import { oneOf } from "@/lib/shared/untrusted";
 
 /**
  * Labelled form controls. Hint and error are tied to the control with

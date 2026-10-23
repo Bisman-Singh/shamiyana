@@ -89,6 +89,7 @@ as they stream.
 | `components/planner` | the planner, the workspace and one file per panel                     |
 | `components/ui`      | fields, tabs, notices and the live region                             |
 | `lib/plan`           | the domain: schemas, budget, timeline, vendors, guests, record edits  |
+| `lib/shared`         | readers for untrusted values, plain-text hygiene, capped byte streams |
 | `lib/ai`             | prompts, output schemas, the guard, model chain, fallback and cache   |
 | `lib/server`         | env, request guard, rate limits, shared limits, logging, handlers     |
 | `lib/client`         | API calls, local storage and file handling in the browser             |

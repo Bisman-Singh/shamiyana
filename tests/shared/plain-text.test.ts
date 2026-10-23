@@ -1,4 +1,4 @@
-import { cleanText, clip } from "@/lib/plan/text";
+import { cleanText, clip } from "@/lib/shared/plain-text";
 
 describe("cleanText", () => {
   it("removes control characters and bidi overrides", () => {

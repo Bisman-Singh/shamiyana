@@ -13,7 +13,7 @@ import {
   type GuestGroup,
   type RsvpStatus,
 } from "@/lib/plan/constants";
-import { oneOf } from "@/lib/plan/loose";
+import { oneOf } from "@/lib/shared/untrusted";
 import { newId, removeGuest, updateBrief, upsertGuest } from "@/lib/plan/record";
 import { guestSchema, type Guest } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { LIMITS, LOCALES } from "@/lib/plan/constants";
 import { daysBetween, isIsoDate } from "@/lib/plan/dates";
 import { factorsSchema, factsSchema } from "@/lib/plan/schema";
-import { cleanText } from "@/lib/plan/text";
+import { cleanText } from "@/lib/shared/plain-text";
 
 /**
  * Request bodies, strict: unknown keys are rejected, every string bounded.

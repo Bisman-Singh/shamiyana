@@ -9,8 +9,8 @@ import {
   type TaskArea,
 } from "./constants";
 import { daysBetween, isIsoDate } from "./dates";
-import { finite, int, oneOf, records, type Loose } from "./loose";
-import { clip } from "./text";
+import { finite, int, oneOf, records, type Loose } from "@/lib/shared/untrusted";
+import { clip } from "@/lib/shared/plain-text";
 
 /**
  * A change the refine assistant proposes. The model only proposes; nothing

@@ -8,8 +8,8 @@ import {
   TASK_AREAS,
   type CategoryId,
 } from "./constants";
-import { clamp, finite, isRecord, oneOf, records, texts, uniqueBy } from "./loose";
-import { clip } from "./text";
+import { clamp, finite, isRecord, oneOf, records, texts, uniqueBy } from "@/lib/shared/untrusted";
+import { clip } from "@/lib/shared/plain-text";
 
 /**
  * The AI enrichment as a plan stores it: every list and string bounded, every

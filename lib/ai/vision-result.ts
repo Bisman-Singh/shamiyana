@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { IDEA_AREAS, LIMITS } from "@/lib/plan/constants";
-import { isRecord, oneOf, records, texts, uniqueBy } from "@/lib/plan/loose";
-import { clip } from "@/lib/plan/text";
+import { isRecord, oneOf, records, texts, uniqueBy } from "@/lib/shared/untrusted";
+import { clip } from "@/lib/shared/plain-text";
 import { redact } from "./redact";
 import { VISION_KINDS } from "./schemas";
 

@@ -1,5 +1,5 @@
 import "server-only";
-import { readAtMost } from "@/lib/plan/bytes";
+import { readAtMost } from "@/lib/shared/byte-stream";
 import type { RequestLimiter } from "./rate-limit";
 
 /**

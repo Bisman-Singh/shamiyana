@@ -242,6 +242,7 @@ app/                 pages, API routes, styles split by area
 components/planner/  the planner, workspace and its panels
 components/ui/       fields, tabs, notices
 lib/plan/            budget, timeline, vendors, guests, schemas, record edits
+lib/shared/          readers for untrusted values, plain-text hygiene, capped byte streams
 lib/ai/              prompts, output schemas, injection guard, model chain, fallback, cache
 lib/server/          env, request guard, rate limits shared through Redis, route handlers
 lib/client/          API calls, local storage and files in the browser
