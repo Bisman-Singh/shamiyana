@@ -55,11 +55,12 @@ const FORMAT_CHARACTERS = /\p{Cf}/gu;
 
 /**
  * Whether the text tries to change the assistant's instructions rather than
- * describe the event. NFC matches the patterns, which are written in NFC, so a
- * precomposed nukta letter such as ज़ is still recognised.
+ * describe the event. NFKC matches the patterns, which are written in NFC: a
+ * precomposed nukta letter such as ज़ is still recognised, and full-width or
+ * styled letters such as ｉｇｎｏｒｅ read as plain ones.
  */
 export function isInjectionAttempt(text: string): boolean {
-  const plain = text.normalize("NFC").replace(FORMAT_CHARACTERS, "").replace(/\s+/g, " ");
+  const plain = text.normalize("NFKC").replace(FORMAT_CHARACTERS, "").replace(/\s+/g, " ");
   return INJECTION_PATTERNS.some((pattern) => pattern.test(plain));
 }
 
