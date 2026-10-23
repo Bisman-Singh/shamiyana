@@ -1,7 +1,7 @@
 import type { BudgetLine } from "./budget";
-import { vendorSearch } from "./vendor-search";
 import type { CategoryId, VendorStatus } from "./constants";
 import type { PlanRecord, VendorProgress } from "./schema";
+import { vendorSearch } from "./vendor-search";
 
 export interface VendorCard {
   category: CategoryId;

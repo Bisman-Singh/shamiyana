@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffectEvent, useLayoutEffect } from "react";
-import { useLocale } from "../locale-provider";
+import { useLocale } from "@/components/locale-provider";
 import { useFocusOnMount } from "./focus";
 
 interface UndoButtonProps {

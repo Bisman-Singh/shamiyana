@@ -7,12 +7,12 @@ import { plural } from "@/lib/i18n/format";
 import { applyChanges, fitChanges, type Change } from "@/lib/plan/changes";
 import { LIMITS, type Locale } from "@/lib/plan/constants";
 import { wholeWeeks } from "@/lib/plan/dates";
-import { newId } from "@/lib/shared/ids";
 import { factsOf } from "@/lib/plan/schema";
+import { newId } from "@/lib/shared/ids";
 import { cleanText } from "@/lib/shared/plain-text";
 import { useLocale } from "@/components/locale-provider";
-import { useAnnounce } from "@/components/ui/announcer";
 import type { PlanView, Update } from "@/components/planner/types";
+import { useAnnounce } from "@/components/ui/announcer";
 import { useRequestSignal } from "./use-request-signal";
 
 /** A turn on screen: the model's view of it plus a key for the list. */

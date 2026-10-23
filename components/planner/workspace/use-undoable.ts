@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import type { PlanRecord } from "@/lib/plan/schema";
-import { useAnnounce } from "@/components/ui/announcer";
 import type { Update } from "@/components/planner/types";
+import { useAnnounce } from "@/components/ui/announcer";
 
 /** An edit that can still be undone: the plan before it, the plan it made and what to say. */
 export interface UndoOffer {

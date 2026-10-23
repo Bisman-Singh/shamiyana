@@ -7,8 +7,8 @@ import { formatDate, plural } from "@/lib/i18n/format";
 import { langOf } from "@/lib/i18n/lang";
 import type { Locale } from "@/lib/plan/constants";
 import { useLocale, useMoney } from "@/components/locale-provider";
-import { useFocusOnMount } from "@/components/ui/focus";
 import type { PlanView } from "@/components/planner/types";
+import { useFocusOnMount } from "@/components/ui/focus";
 
 interface PlanHeaderProps {
   titleId: string;

@@ -1,7 +1,7 @@
-import { tasksFor } from "./task-templates";
 import type { TaskArea } from "./constants";
 import { addDays, daysBetween, isIsoDate } from "./dates";
 import { customTaskSchema, type PlanRecord } from "./schema";
+import { tasksFor } from "./task-templates";
 
 export const PHASES = [
   "six_months",

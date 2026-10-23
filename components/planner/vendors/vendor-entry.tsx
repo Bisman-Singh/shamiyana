@@ -8,10 +8,10 @@ import { setVendor } from "@/lib/plan/record";
 import type { VendorProgress } from "@/lib/plan/schema";
 import type { VendorCard } from "@/lib/plan/vendors";
 import { useLocale, useMoney } from "@/components/locale-provider";
-import { SelectField } from "@/components/ui/select-field";
-import { TextArea } from "@/components/ui/text-area";
-import { Template } from "@/components/ui/template";
 import type { Update } from "@/components/planner/types";
+import { SelectField } from "@/components/ui/select-field";
+import { Template } from "@/components/ui/template";
+import { TextArea } from "@/components/ui/text-area";
 import { VendorAmountField } from "./vendor-amount-field";
 
 interface QuestionsProps {

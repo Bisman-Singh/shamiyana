@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { clampFactor } from "./factors";
+import { clip } from "@/lib/shared/plain-text";
+import { clamp, finite, isRecord, oneOf, records, texts, uniqueBy } from "@/lib/shared/untrusted";
 import {
   CATEGORY_IDS,
   IDEA_AREAS,
@@ -8,8 +9,7 @@ import {
   TASK_AREAS,
   type CategoryId,
 } from "./constants";
-import { clamp, finite, isRecord, oneOf, records, texts, uniqueBy } from "@/lib/shared/untrusted";
-import { clip } from "@/lib/shared/plain-text";
+import { clampFactor } from "./factors";
 
 /**
  * The AI enrichment as a plan stores it: every list and string bounded, every

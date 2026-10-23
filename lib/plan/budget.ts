@@ -1,8 +1,8 @@
 import type { Factors } from "@/lib/plan/schema";
-import { BASE_SHARES, variantFactors } from "./shares";
 import type { CategoryId, VendorStatus } from "./constants";
 import { clampFactor } from "./factors";
 import type { EventFacts, PlanRecord } from "./schema";
+import { BASE_SHARES, variantFactors } from "./shares";
 import { isSecured } from "./vendor-status";
 
 export interface BudgetLine {

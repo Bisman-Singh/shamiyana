@@ -15,8 +15,8 @@ import { PlanHeader } from "./plan-header";
 import { planTabs, type TabId } from "./plan-tabs";
 import { ShareDialog } from "./share-dialog";
 import { useEnrichment } from "./use-enrichment";
-import { useStatusAnnouncements } from "./use-status-announcements";
 import { usePlanView } from "./use-plan-view";
+import { useStatusAnnouncements } from "./use-status-announcements";
 import { useUndoable } from "./use-undoable";
 
 interface UndoNoticeProps {

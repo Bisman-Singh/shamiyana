@@ -7,9 +7,9 @@ import { langOf } from "@/lib/i18n/lang";
 import { removeTask, toggleTask } from "@/lib/plan/record";
 import type { TimelineItem } from "@/lib/plan/timeline";
 import { useLocale } from "@/components/locale-provider";
-import { Template } from "@/components/ui/template";
 import { areaName, taskTitle } from "@/components/planner/task-title";
 import type { PlanView, Update } from "@/components/planner/types";
+import { Template } from "@/components/ui/template";
 
 interface TaskRowProps {
   item: TimelineItem;

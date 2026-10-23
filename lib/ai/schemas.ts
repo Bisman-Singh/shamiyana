@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { CATEGORY_IDS, IDEA_AREAS, IDEA_COSTS, LIMITS, TASK_AREAS } from "@/lib/plan/constants";
 import { CHANGE_OPS } from "@/lib/plan/changes";
+import { CATEGORY_IDS, IDEA_AREAS, IDEA_COSTS, LIMITS, TASK_AREAS } from "@/lib/plan/constants";
 
 /**
  * Response schemas sent to Gemini as structured-output contracts. They are

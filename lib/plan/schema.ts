@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cleanText } from "@/lib/shared/plain-text";
 import {
   CATEGORY_IDS,
   COMMUNITY_KINDS,
@@ -17,7 +18,6 @@ import {
 } from "./constants";
 import { isIsoDate } from "./dates";
 import { enrichmentSchema } from "./enrichment";
-import { cleanText } from "@/lib/shared/plain-text";
 
 const line = (min: number, max: number) =>
   z

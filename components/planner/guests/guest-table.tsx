@@ -7,8 +7,8 @@ import { removeGuest, upsertGuest } from "@/lib/plan/record";
 import type { Guest } from "@/lib/plan/schema";
 import { oneOf } from "@/lib/shared/untrusted";
 import { useLocale } from "@/components/locale-provider";
-import { SelectField } from "@/components/ui/select-field";
 import type { Update } from "@/components/planner/types";
+import { SelectField } from "@/components/ui/select-field";
 
 interface GuestRowProps {
   guest: Guest;

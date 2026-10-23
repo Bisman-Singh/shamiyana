@@ -1,10 +1,10 @@
+import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { requestLocale } from "@/lib/server/locale";
 import { LocaleProvider } from "@/components/locale-provider";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { AnnouncerProvider } from "@/components/ui/announcer";
-import { requestLocale } from "@/lib/server/locale";
-import "./globals.css";
 
 /** The site title in the visitor's language, with each page's title in front. */
 export async function generateMetadata(): Promise<Metadata> {

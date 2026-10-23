@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale } from "../locale-provider";
+import { useLocale } from "@/components/locale-provider";
 
 /** What the server renders until the saved plans are read from the browser. */
 export function PlannerSkeleton() {

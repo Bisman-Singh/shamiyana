@@ -1,5 +1,5 @@
-import { clampFactor } from "./factors";
-import { addTask, saveIdea, setFactor, updateBrief } from "./record";
+import { clip } from "@/lib/shared/plain-text";
+import { finite, int, oneOf, records, type Loose } from "@/lib/shared/untrusted";
 import {
   CATEGORY_IDS,
   IDEA_AREAS,
@@ -10,9 +10,9 @@ import {
   type TaskArea,
 } from "./constants";
 import { daysBetween, isIsoDate } from "./dates";
+import { clampFactor } from "./factors";
+import { addTask, saveIdea, setFactor, updateBrief } from "./record";
 import type { PlanRecord } from "./schema";
-import { finite, int, oneOf, records, type Loose } from "@/lib/shared/untrusted";
-import { clip } from "@/lib/shared/plain-text";
 
 /**
  * A change the refine assistant proposes. The model only proposes; nothing

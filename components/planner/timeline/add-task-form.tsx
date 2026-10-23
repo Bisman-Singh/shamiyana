@@ -4,15 +4,15 @@ import { useId, useState, type SubmitEvent } from "react";
 import { format } from "@/lib/i18n/format";
 import { LIMITS, TASK_AREAS, type TaskArea } from "@/lib/plan/constants";
 import { addTask } from "@/lib/plan/record";
-import { newId } from "@/lib/shared/ids";
 import { parseNewTask } from "@/lib/plan/timeline";
+import { newId } from "@/lib/shared/ids";
 import { useLocale } from "@/components/locale-provider";
-import { useAnnounce } from "@/components/ui/announcer";
-import { SelectField } from "@/components/ui/select-field";
-import { TextField } from "@/components/ui/text-field";
-import { focusAfterRender } from "@/components/ui/focus";
 import { areaName } from "@/components/planner/task-title";
 import type { PanelProps } from "@/components/planner/types";
+import { useAnnounce } from "@/components/ui/announcer";
+import { focusAfterRender } from "@/components/ui/focus";
+import { SelectField } from "@/components/ui/select-field";
+import { TextField } from "@/components/ui/text-field";
 
 /** Adds a task of the user's own; a field that needs fixing says so and takes focus. */
 export function AddTaskForm({ view, update }: Readonly<PanelProps>) {

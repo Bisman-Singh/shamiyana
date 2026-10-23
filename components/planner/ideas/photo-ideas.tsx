@@ -5,8 +5,8 @@ import { ACCEPTED_IMAGES } from "@/lib/client/files";
 import type { Dictionary } from "@/lib/i18n/en";
 import { format } from "@/lib/i18n/format";
 import { useLocale } from "@/components/locale-provider";
-import { Notice } from "@/components/ui/notice";
 import type { PanelProps } from "@/components/planner/types";
+import { Notice } from "@/components/ui/notice";
 import { usePhotoIdeas, type PhotoFailure, type PhotoState } from "./use-photo-ideas";
 import { VisionResultView } from "./vision-result-view";
 

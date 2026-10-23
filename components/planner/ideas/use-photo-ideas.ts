@@ -6,8 +6,8 @@ import { requestVision, type ApiError } from "@/lib/client/api";
 import { prepareImage, UnsupportedImageError } from "@/lib/client/files";
 import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "@/components/locale-provider";
-import { useAnnounce } from "@/components/ui/announcer";
 import type { PlanView } from "@/components/planner/types";
+import { useAnnounce } from "@/components/ui/announcer";
 import { useRequestSignal } from "./use-request-signal";
 
 export interface Photo {

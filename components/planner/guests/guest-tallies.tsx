@@ -4,10 +4,10 @@ import { format, formatNumber } from "@/lib/i18n/format";
 import { DIETS, LIMITS, RSVP_STATUSES } from "@/lib/plan/constants";
 import { updateBrief } from "@/lib/plan/record";
 import { useLocale } from "@/components/locale-provider";
+import type { PanelProps } from "@/components/planner/types";
 import { useAnnounce } from "@/components/ui/announcer";
 import { focusOpenPanel } from "@/components/ui/focus";
 import { Notice } from "@/components/ui/notice";
-import type { PanelProps } from "@/components/planner/types";
 
 /** Head counts by reply and food, and an offer to use the list's count when it differs from the plan's. */
 export function GuestTallies({ view, update }: Readonly<PanelProps>) {

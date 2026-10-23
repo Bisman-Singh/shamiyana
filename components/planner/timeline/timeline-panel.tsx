@@ -8,10 +8,10 @@ import { format, formatDate, plural } from "@/lib/i18n/format";
 import { restoreHiddenTasks } from "@/lib/plan/record";
 import { PHASES } from "@/lib/plan/timeline";
 import { useLocale } from "@/components/locale-provider";
-import { useAnnounce } from "@/components/ui/announcer";
-import { focusOpenPanel } from "@/components/ui/focus";
 import { taskTitle } from "@/components/planner/task-title";
 import type { PanelProps } from "@/components/planner/types";
+import { useAnnounce } from "@/components/ui/announcer";
+import { focusOpenPanel } from "@/components/ui/focus";
 import { AddTaskForm } from "./add-task-form";
 import { TaskRow } from "./task-row";
 

@@ -5,7 +5,7 @@ import { format } from "@/lib/i18n/format";
 import { langOf } from "@/lib/i18n/lang";
 import { LIMITS } from "@/lib/plan/constants";
 import type { PlanRecord } from "@/lib/plan/schema";
-import { useLocale } from "../locale-provider";
+import { useLocale } from "@/components/locale-provider";
 
 interface PlanPickerProps {
   plans: readonly PlanRecord[];

@@ -3,8 +3,8 @@
 import { langOf } from "@/lib/i18n/lang";
 import type { IdeaArea } from "@/lib/plan/constants";
 import { isIdeaSaved, saveIdea } from "@/lib/plan/record";
-import { newId } from "@/lib/shared/ids";
 import type { PlanRecord } from "@/lib/plan/schema";
+import { newId } from "@/lib/shared/ids";
 import { useLocale } from "@/components/locale-provider";
 import type { Update } from "@/components/planner/types";
 

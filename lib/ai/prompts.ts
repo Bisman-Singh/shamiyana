@@ -1,12 +1,12 @@
 import "server-only";
 import { en } from "@/lib/i18n/en";
 import { messageOr } from "@/lib/i18n/messages";
-import { FUNCTION_HEADCOUNT, shiftableCategories, variantFactors } from "@/lib/plan/shares";
-import { tasksFor } from "@/lib/plan/task-templates";
-import { LIMITS, type CategoryId, type Locale, type TurnRole } from "@/lib/plan/constants";
 import type { BudgetLine } from "@/lib/plan/budget";
+import { LIMITS, type CategoryId, type Locale, type TurnRole } from "@/lib/plan/constants";
 import { daysBetween, wholeWeeks } from "@/lib/plan/dates";
 import type { EventFacts, Factors } from "@/lib/plan/schema";
+import { FUNCTION_HEADCOUNT, shiftableCategories, variantFactors } from "@/lib/plan/shares";
+import { tasksFor } from "@/lib/plan/task-templates";
 import { dropInjections } from "./guard";
 import { redact } from "./redact";
 

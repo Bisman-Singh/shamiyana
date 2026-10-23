@@ -5,9 +5,9 @@ import { format, formatDate, formatNumber } from "@/lib/i18n/format";
 import { langOf } from "@/lib/i18n/lang";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { vendorTally } from "@/lib/plan/vendors";
-import { ThemeSummary } from "@/components/planner/theme-summary";
 import { useLocale, useMoney } from "@/components/locale-provider";
 import { taskTitle } from "@/components/planner/task-title";
+import { ThemeSummary } from "@/components/planner/theme-summary";
 import type { PlanView } from "@/components/planner/types";
 
 /** Tasks shown under "Next up". */

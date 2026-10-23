@@ -1,7 +1,6 @@
+import { stableId } from "@/lib/shared/ids";
 import { LIMITS, type CategoryId, type TaskArea } from "./constants";
 import { sanitizeEnrichment, type Enrichment } from "./enrichment";
-import { stableId } from "@/lib/shared/ids";
-import { shiftableCategories } from "./shares";
 import {
   factsOf,
   type Brief,
@@ -11,6 +10,7 @@ import {
   type SavedIdea,
   type VendorProgress,
 } from "./schema";
+import { shiftableCategories } from "./shares";
 
 /**
  * Every edit to a plan is a pure function from one record to the next, which

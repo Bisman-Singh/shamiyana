@@ -8,8 +8,8 @@ import type { Enrichment } from "@/lib/plan/enrichment";
 import { setFactor } from "@/lib/plan/record";
 import { factsOf } from "@/lib/plan/schema";
 import { useLocale, useMoney } from "@/components/locale-provider";
-import { useAnnounce } from "@/components/ui/announcer";
 import type { PlanView, Shift, Update } from "@/components/planner/types";
+import { useAnnounce } from "@/components/ui/announcer";
 import { BudgetSuggestions } from "./budget-suggestions";
 import { BudgetTable } from "./budget-table";
 

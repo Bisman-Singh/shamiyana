@@ -5,14 +5,14 @@ import { format } from "@/lib/i18n/format";
 import { DIETS, GUEST_GROUPS, LIMITS, type Diet, type GuestGroup } from "@/lib/plan/constants";
 import { parseNewGuest } from "@/lib/plan/guests";
 import { upsertGuest } from "@/lib/plan/record";
-import { newId } from "@/lib/shared/ids";
 import type { Guest } from "@/lib/plan/schema";
+import { newId } from "@/lib/shared/ids";
 import { useLocale } from "@/components/locale-provider";
+import type { Update } from "@/components/planner/types";
 import { useAnnounce } from "@/components/ui/announcer";
+import { focusAfterRender } from "@/components/ui/focus";
 import { SelectField } from "@/components/ui/select-field";
 import { TextField } from "@/components/ui/text-field";
-import { focusAfterRender } from "@/components/ui/focus";
-import type { Update } from "@/components/planner/types";
 
 interface AddGuestFormProps {
   update: Update;
