@@ -2,7 +2,7 @@
 
 import { useObject } from "@ai-sdk/react";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { enrichmentOutputSchema } from "@/lib/ai/schemas";
+import { enrichmentOutputSchema } from "@/lib/api/output-schemas";
 import { errorFromMessage, type ApiError } from "@/lib/client/api";
 import type { CategoryId, Locale } from "@/lib/plan/constants";
 import { wholeWeeks } from "@/lib/plan/dates";

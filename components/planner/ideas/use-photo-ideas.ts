@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ChangeEvent } from "react";
-import type { VisionResult } from "@/lib/ai/vision-result";
+import type { VisionResult } from "@/lib/api/vision-result";
 import { requestVision, type ApiError } from "@/lib/client/api";
 import { prepareImage, UnsupportedImageError } from "@/lib/client/image";
 import { factsOf } from "@/lib/plan/schema";

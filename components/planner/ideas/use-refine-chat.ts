@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type SubmitEvent } from "react";
-import type { Turn as ChatTurn } from "@/lib/api/contracts";
+import type { Turn } from "@/lib/api/contracts";
 import { requestRefine, type ApiError } from "@/lib/client/api";
 import { plural } from "@/lib/i18n/format";
 import { applyChanges, fitChanges, type Change } from "@/lib/plan/changes";
@@ -16,7 +16,7 @@ import { useAnnounce } from "@/components/ui/announcer";
 import { useRequestSignal } from "./use-request-signal";
 
 /** A turn on screen: the model's view of it plus a key for the list. */
-export interface Turn extends ChatTurn {
+export interface ShownTurn extends Turn {
   id: string;
 }
 
@@ -26,7 +26,7 @@ export interface Proposal {
 }
 
 /** What the refine route needs: the event facts, never its title or guest list, and the last few turns. */
-function refineBody(view: PlanView, locale: Locale, turns: readonly Turn[], message: string) {
+function refineBody(view: PlanView, locale: Locale, turns: readonly ShownTurn[], message: string) {
   return {
     facts: factsOf(view.record.brief),
     factors: view.record.factors,
@@ -47,7 +47,7 @@ const TURNS_KEPT = 12;
 export function useRefineChat(view: PlanView, update: Update) {
   const { dict, locale } = useLocale();
   const [message, setMessage] = useState("");
-  const [turns, setTurns] = useState<Turn[]>([]);
+  const [turns, setTurns] = useState<ShownTurn[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [proposal, setProposal] = useState<Proposal | null>(null);

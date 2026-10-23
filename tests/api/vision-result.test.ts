@@ -1,5 +1,5 @@
 import { REDACTED } from "@/lib/ai/redact";
-import { sanitizeVision, visionResultSchema } from "@/lib/ai/vision-result";
+import { sanitizeVision, visionResultSchema } from "@/lib/api/vision-result";
 
 describe("vision results", () => {
   it("keeps only real hex colours and bounded text", () => {

@@ -1,6 +1,6 @@
 import "server-only";
 import { utcDay } from "@/lib/plan/dates";
-import { BoundedMap } from "./bounded-map";
+import { BoundedMap } from "@/lib/shared/bounded-map";
 
 /**
  * Sliding-window rate limiting held in memory, one window per client key.

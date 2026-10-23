@@ -2,8 +2,8 @@ import { z } from "zod";
 import { IDEA_AREAS, LIMITS } from "@/lib/plan/constants";
 import { clip } from "@/lib/shared/plain-text";
 import { isRecord, oneOf, records, texts, uniqueBy } from "@/lib/shared/untrusted";
-import { redact } from "./redact";
-import { VISION_KINDS } from "./schemas";
+import { redact } from "@/lib/ai/redact";
+import { VISION_KINDS } from "./output-schemas";
 
 const VISION_LIMITS = { mood: 200, colourName: 30, colours: 5, ideas: 5, note: 200, notes: 3 };
 

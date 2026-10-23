@@ -3,7 +3,7 @@ import { runVision } from "@/lib/ai/vision";
 import type { AiDeps } from "./deps";
 import { guard, parseJson } from "./http";
 import { visionFieldsSchema } from "@/lib/api/contracts";
-import { IMAGE_MAX_BYTES, sniffImage } from "./requests";
+import { IMAGE_MAX_BYTES, sniffImage } from "./images";
 import {
   admit,
   aiRoute,

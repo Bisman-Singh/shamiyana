@@ -1,6 +1,6 @@
 "use client";
 
-import type { VisionResult } from "@/lib/ai/vision-result";
+import type { VisionResult } from "@/lib/api/vision-result";
 import { langOf } from "@/lib/i18n/lang";
 import type { PlanRecord } from "@/lib/plan/schema";
 import { useLocale } from "@/components/locale-provider";

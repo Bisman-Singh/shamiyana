@@ -91,7 +91,7 @@ export function buildTimeline(record: PlanRecord, today: string): Timeline {
 }
 
 /** A task as typed into the add form, before it gets an id and an area. */
-export type NewTask =
+export type ParsedTask =
   | { ok: true; task: { title: string; leadDays: number } }
   | { ok: false; invalid: ("title" | "date")[] };
 
@@ -101,7 +101,7 @@ export function parseNewTask(
   date: string,
   today: string,
   eventDate: string,
-): NewTask {
+): ParsedTask {
   const named = customTaskSchema.shape.title.safeParse(title);
   const leadDays = isIsoDate(date) ? daysBetween(date, eventDate) : -1;
   const dated = leadDays >= 0 && daysBetween(today, date) >= 0;

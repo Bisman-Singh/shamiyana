@@ -1,5 +1,5 @@
 import "server-only";
-import { BoundedMap } from "@/lib/server/bounded-map";
+import { BoundedMap } from "@/lib/shared/bounded-map";
 
 /** Every bound has a default; `now` lets tests expire answers. */
 export interface AnswerCacheOptions {

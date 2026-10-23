@@ -9,10 +9,10 @@ import type { PanelProps } from "@/components/planner/types";
 import { Notice } from "@/components/ui/notice";
 import { ChatForm } from "./chat-form";
 import { ProposalForm } from "./proposal-form";
-import { useRefineChat, type Turn } from "./use-refine-chat";
+import { useRefineChat, type ShownTurn } from "./use-refine-chat";
 
 interface ChatLogProps {
-  turns: readonly Turn[];
+  turns: readonly ShownTurn[];
 }
 
 /** The conversation so far, each turn in the language it was written in. */

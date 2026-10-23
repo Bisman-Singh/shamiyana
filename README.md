@@ -85,18 +85,18 @@ Everything except the AI works without an API key.
 All model calls go through Google Gemini via the Vercel AI SDK, on the server
 only. The key is never sent to the browser.
 
-| Feature            | Route              | Call                                | Output contract                              |
-| ------------------ | ------------------ | ----------------------------------- | -------------------------------------------- |
-| Personalised plan  | `POST /api/plan`   | `streamText` with `Output.object`   | `lib/ai/schemas.ts` `enrichmentOutputSchema` |
-| Ask for changes    | `POST /api/refine` | `generateText` with `Output.object` | `refineOutputSchema`, six allowed operations |
-| Ideas from a photo | `POST /api/vision` | `generateText` with an image part   | `visionOutputSchema`                         |
+| Feature            | Route              | Call                                | Output contract                                      |
+| ------------------ | ------------------ | ----------------------------------- | ---------------------------------------------------- |
+| Personalised plan  | `POST /api/plan`   | `streamText` with `Output.object`   | `lib/api/output-schemas.ts` `enrichmentOutputSchema` |
+| Ask for changes    | `POST /api/refine` | `generateText` with `Output.object` | `refineOutputSchema`, six allowed operations         |
+| Ideas from a photo | `POST /api/vision` | `generateText` with an image part   | `visionOutputSchema`                                 |
 
 - The model gets facts, not freedom. Code computes the budget lines, the per
   guest figure and the days left, and passes them in (`lib/ai/prompts.ts`).
 - Every answer is sanitized before it is stored or shown. Strings are cut on
   grapheme boundaries, lists capped, budget factors clamped to 0.5 to 1.5,
   categories the plan doesn't have dropped, colours checked as hex codes
-  (`lib/plan/enrichment.ts`, `lib/plan/changes.ts`, `lib/ai/vision-result.ts`).
+  (`lib/plan/enrichment.ts`, `lib/plan/changes.ts`, `lib/api/vision-result.ts`).
 - The event name is never sent, because it often holds a person's name. Emails,
   UPI IDs, phone and card numbers, PAN, GSTIN, Aadhaar, voter ID and passport numbers are removed from notes and chat
   first (`lib/ai/redact.ts`).

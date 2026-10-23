@@ -5,8 +5,8 @@ import type { Locale } from "@/lib/plan/constants";
 import type { EventFacts } from "@/lib/plan/schema";
 import { visionPrompt, visionSystem } from "./prompts";
 import { AI_LIMITS, generateSanitized, type RunContext } from "./run";
-import { visionOutputSchema } from "./schemas";
-import { sanitizeVision, type VisionResult } from "./vision-result";
+import { visionOutputSchema } from "@/lib/api/output-schemas";
+import { sanitizeVision, type VisionResult } from "@/lib/api/vision-result";
 
 /** `mediaType` is sniffed from the bytes, never the type the browser declared. */
 export interface VisionInput {

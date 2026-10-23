@@ -1,5 +1,5 @@
-import { sniffImage } from "@/lib/server/requests";
-import { JPEG, PNG, WEBP } from "../helpers/ai";
+import { sniffImage } from "@/lib/server/images";
+import { JPEG, PNG, WEBP } from "@/tests/helpers/ai";
 
 describe("sniffImage", () => {
   it("recognises JPEG, PNG and WebP by their bytes", () => {

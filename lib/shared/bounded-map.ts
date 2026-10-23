@@ -1,5 +1,3 @@
-import "server-only";
-
 /** A second bound on a BoundedMap: the total weight of its values, such as their length. */
 export interface WeightLimit<V> {
   max: number;

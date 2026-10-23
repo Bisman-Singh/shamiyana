@@ -10,7 +10,7 @@ import { cacheKey, type AnswerCache } from "./cache";
 import { firstWorking } from "./fallback";
 import { PROMPT_VERSION, planPrompt, planSystem } from "./prompts";
 import { AI_LIMITS, type RunContext } from "./run";
-import { enrichmentOutputSchema } from "./schemas";
+import { enrichmentOutputSchema } from "@/lib/api/output-schemas";
 
 type Part = TextStreamPart<ToolSet>;
 

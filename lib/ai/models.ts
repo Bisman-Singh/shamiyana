@@ -1,7 +1,6 @@
 import "server-only";
 import { createGoogle } from "@ai-sdk/google";
 import type { LanguageModel, streamText } from "ai";
-import type { ServerEnv } from "@/lib/server/env";
 
 type ProviderOptions = NonNullable<Parameters<typeof streamText>[0]["providerOptions"]>;
 
@@ -20,10 +19,14 @@ export function providerOptionsFor(id: string): ProviderOptions {
   return id.startsWith("gemini-2.5") ? { google: { thinkingConfig: { thinkingBudget: 0 } } } : {};
 }
 
+/** The two settings the chain is built from, as the server's validated config names them. */
+export interface ChainConfig {
+  GOOGLE_GENERATIVE_AI_API_KEY?: string;
+  GEMINI_MODELS: readonly string[];
+}
+
 /** The fallback chain from config, or null when no key is set and AI is off. */
-export function buildChain(
-  env: Pick<ServerEnv, "GOOGLE_GENERATIVE_AI_API_KEY" | "GEMINI_MODELS">,
-): ModelSpec[] | null {
+export function buildChain(env: ChainConfig): ModelSpec[] | null {
   const apiKey = env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (apiKey === undefined) return null;
   const google = createGoogle({ apiKey });

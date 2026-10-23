@@ -1,4 +1,4 @@
-import { BoundedMap } from "@/lib/server/bounded-map";
+import { BoundedMap } from "@/lib/shared/bounded-map";
 
 describe("BoundedMap", () => {
   it("drops the oldest written keys past its limit", () => {
