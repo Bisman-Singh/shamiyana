@@ -1,20 +1,8 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { withEnrichment } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { NOW, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { readyPlan } from "../helpers/fixtures";
 import { renderWorkspace } from "../helpers/workspace";
-
-function ready(brief: Brief = weddingBrief): PlanRecord {
-  return withEnrichment(
-    recordFor(brief),
-    sampleEnrichment,
-    { facts: factsOf(brief), locale: "en" },
-    NOW,
-  );
-}
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -33,7 +21,7 @@ describe("share dialog", () => {
     const share = vi.fn(() => Promise.reject(new Error("cancelled")));
     Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
     Object.defineProperty(navigator, "share", { value: share, configurable: true });
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     await userEvent.click(screen.getByRole("button", { name: "Share" }));
     const dialog = await screen.findByRole("dialog", { name: "Share this plan" });
     const link = await within(dialog).findByLabelText("Share link");
@@ -58,7 +46,7 @@ describe("share dialog", () => {
       configurable: true,
     });
     Reflect.deleteProperty(navigator, "share");
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     await userEvent.click(screen.getByRole("button", { name: "Share" }));
     const dialog = await screen.findByRole("dialog");
     await userEvent.click(await within(dialog).findByRole("button", { name: "Copy link" }));

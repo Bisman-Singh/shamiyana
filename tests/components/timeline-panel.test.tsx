@@ -1,31 +1,11 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { withEnrichment } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import {
-  NOW,
-  communityBrief,
-  recordFor,
-  sampleEnrichment,
-  weddingBrief,
-} from "../helpers/fixtures";
+import { communityBrief, readyPlan } from "../helpers/fixtures";
 import { stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
-
-/** A plan with AI ideas already in it, built the way the app builds it. */
-function ready(brief: Brief = weddingBrief, patch: Partial<PlanRecord> = {}): PlanRecord {
-  const base = withEnrichment(
-    recordFor(brief),
-    sampleEnrichment,
-    { facts: factsOf(brief), locale: "en" },
-    NOW,
-  );
-  return { ...base, ...patch };
-}
 
 const downloads: { name: string; text: string }[] = [];
 
@@ -55,7 +35,7 @@ async function settles(focused: () => HTMLElement, said: string | RegExp) {
 
 describe("timeline", () => {
   it("ticks off, removes with undo, restores and exports a calendar", async () => {
-    const { saved, container } = renderWorkspace(ready());
+    const { saved, container } = renderWorkspace(readyPlan());
     await openTab("Timeline");
     await expectAccessible(container);
     const p = panel();
@@ -80,7 +60,7 @@ describe("timeline", () => {
   });
 
   it("adds a task with checks on its title and date", async () => {
-    const { saved } = renderWorkspace(ready(communityBrief));
+    const { saved } = renderWorkspace(readyPlan(communityBrief));
     await openTab("Timeline");
     const p = panel();
     await userEvent.click(p.getByRole("button", { name: "Add task" }));
@@ -108,7 +88,7 @@ describe("timeline", () => {
       leadDays: 1,
       source: "custom" as const,
     }));
-    renderWorkspace(ready(communityBrief, { tasks }));
+    renderWorkspace(readyPlan(communityBrief, { tasks }));
     await openTab("Timeline");
     expect(panel().getByText("You've added the most tasks a plan can hold.")).toBeInTheDocument();
   });

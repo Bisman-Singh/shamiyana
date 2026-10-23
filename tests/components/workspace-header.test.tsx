@@ -1,24 +1,10 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { withEnrichment } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { NOW, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { readyPlan } from "../helpers/fixtures";
 import { stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { renderWorkspace } from "../helpers/workspace";
-
-/** A plan with AI ideas already in it, built the way the app builds it. */
-function ready(brief: Brief = weddingBrief, patch: Partial<PlanRecord> = {}): PlanRecord {
-  const base = withEnrichment(
-    recordFor(brief),
-    sampleEnrichment,
-    { facts: factsOf(brief), locale: "en" },
-    NOW,
-  );
-  return { ...base, ...patch };
-}
 
 const downloads: { name: string; text: string }[] = [];
 
@@ -42,7 +28,7 @@ describe("header actions", () => {
   it("edits, downloads a backup and prints", async () => {
     const print = vi.fn();
     vi.stubGlobal("print", print);
-    const { onEdit } = renderWorkspace(ready());
+    const { onEdit } = renderWorkspace(readyPlan());
     await userEvent.click(screen.getByRole("button", { name: "Edit details" }));
     expect(onEdit).toHaveBeenCalled();
     await userEvent.click(screen.getByRole("button", { name: "Full backup (JSON)" }));

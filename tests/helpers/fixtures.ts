@@ -1,5 +1,5 @@
 import type { Enrichment } from "@/lib/plan/enrichment";
-import { createRecord } from "@/lib/plan/record";
+import { createRecord, withEnrichment } from "@/lib/plan/record";
 import { factsOf, type Brief, type PlanRecord } from "@/lib/plan/schema";
 
 /** Synthetic data only: relation words and places, never real people. */
@@ -76,4 +76,18 @@ export function seeded(seed: number): () => number {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+/** A plan with AI ideas already in it, built the way the app builds it. */
+export function readyPlan(
+  brief: Brief = weddingBrief,
+  patch: Partial<PlanRecord> = {},
+): PlanRecord {
+  const base = withEnrichment(
+    recordFor(brief),
+    sampleEnrichment,
+    { facts: factsOf(brief), locale: "en" },
+    NOW,
+  );
+  return { ...base, ...patch };
 }

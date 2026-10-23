@@ -1,24 +1,10 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import userEvent from "@testing-library/user-event";
-import { withEnrichment } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { NOW, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { readyPlan } from "../helpers/fixtures";
 import { stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
-
-/** A plan with AI ideas already in it, built the way the app builds it. */
-function ready(brief: Brief = weddingBrief, patch: Partial<PlanRecord> = {}): PlanRecord {
-  const base = withEnrichment(
-    recordFor(brief),
-    sampleEnrichment,
-    { facts: factsOf(brief), locale: "en" },
-    NOW,
-  );
-  return { ...base, ...patch };
-}
 
 const downloads: { name: string; text: string }[] = [];
 
@@ -40,7 +26,7 @@ afterEach(() => {
 
 describe("vendors", () => {
   it("tracks status, price, payments and notes per vendor", async () => {
-    const { saved, container } = renderWorkspace(ready());
+    const { saved, container } = renderWorkspace(readyPlan());
     await openTab("Vendors");
     const p = panel();
     await userEvent.click(p.getByText("Food and catering"));
@@ -72,14 +58,14 @@ describe("vendors", () => {
   });
 
   it("marks the English search phrase inside a Hindi sentence", async () => {
-    renderWorkspace(ready(), vi.fn(), "hi");
+    renderWorkspace(readyPlan(), vi.fn(), "hi");
     await openTab("वेंडर");
     const link = panel().getAllByRole("link", { name: /^Maps पर Jaipur में .+ खोजें/ })[0];
     expect(link?.querySelector('[lang="en"]')?.textContent).toMatch(/^[a-z ]+$/);
   });
 
   it("keeps what is typed in an amount, saves only a real amount and says what to fix", async () => {
-    const { saved } = renderWorkspace(ready());
+    const { saved } = renderWorkspace(readyPlan());
     await openTab("Vendors");
     const p = panel();
     await userEvent.click(p.getByText("Food and catering"));

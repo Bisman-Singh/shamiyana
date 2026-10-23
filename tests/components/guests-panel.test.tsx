@@ -1,25 +1,11 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { withEnrichment } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { NOW, birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { birthdayBrief, readyPlan } from "../helpers/fixtures";
 import { stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
-
-/** A plan with AI ideas already in it, built the way the app builds it. */
-function ready(brief: Brief = weddingBrief, patch: Partial<PlanRecord> = {}): PlanRecord {
-  const base = withEnrichment(
-    recordFor(brief),
-    sampleEnrichment,
-    { facts: factsOf(brief), locale: "en" },
-    NOW,
-  );
-  return { ...base, ...patch };
-}
 
 const downloads: { name: string; text: string }[] = [];
 
@@ -49,7 +35,7 @@ async function settles(focused: () => HTMLElement, said: string | RegExp) {
 
 describe("guests", () => {
   it("adds households, tracks replies and offers the expected count", async () => {
-    const { saved, container } = renderWorkspace(ready());
+    const { saved, container } = renderWorkspace(readyPlan());
     await openTab("Guests");
     const p = panel();
     expect(p.getByText(/No guests yet/)).toBeInTheDocument();
@@ -92,7 +78,7 @@ describe("guests", () => {
   });
 
   it("refuses a missing or too large party size with an error on that field, saving nothing", async () => {
-    const { saved } = renderWorkspace(ready());
+    const { saved } = renderWorkspace(readyPlan());
     await openTab("Guests");
     const p = panel();
     await userEvent.click(p.getByLabelText("Name or household"));
@@ -124,7 +110,7 @@ describe("guests", () => {
       rsvp: "pending" as const,
       diet: "veg" as const,
     }));
-    renderWorkspace(ready(birthdayBrief, { guests }));
+    renderWorkspace(readyPlan(birthdayBrief, { guests }));
     await openTab("Guests");
     expect(panel().getByText("The guest list is full.")).toBeInTheDocument();
     expect(panel().getAllByRole("row")).toHaveLength(101);

@@ -1,32 +1,17 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import { screen } from "@testing-library/react";
 import { tasksFor } from "@/lib/plan/task-templates";
-import { withEnrichment } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
 import {
-  NOW,
   birthdayBrief,
   birthdayFacts,
   recordFor,
-  sampleEnrichment,
   weddingBrief,
+  readyPlan,
 } from "../helpers/fixtures";
 import { stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";
 import { panel, renderWorkspace } from "../helpers/workspace";
-
-/** A plan with AI ideas already in it, built the way the app builds it. */
-function ready(brief: Brief = weddingBrief, patch: Partial<PlanRecord> = {}): PlanRecord {
-  const base = withEnrichment(
-    recordFor(brief),
-    sampleEnrichment,
-    { facts: factsOf(brief), locale: "en" },
-    NOW,
-  );
-  return { ...base, ...patch };
-}
 
 beforeEach(() => {
   stubObjectUrls("blob:x");
@@ -41,7 +26,7 @@ afterEach(() => {
 
 describe("overview", () => {
   it("shows the key figures, next tasks, theme and risks", async () => {
-    const { container } = renderWorkspace(ready());
+    const { container } = renderWorkspace(readyPlan());
     const p = panel();
     expect(p.getByText("Left to commit")).toBeInTheDocument();
     expect(p.getByText("Next up")).toBeInTheDocument();
@@ -54,7 +39,7 @@ describe("overview", () => {
   });
 
   it("marks English AI text and an English title in the Hindi interface", async () => {
-    const { container } = renderWorkspace(ready(), vi.fn(), "hi");
+    const { container } = renderWorkspace(readyPlan(), vi.fn(), "hi");
     expect(screen.getByRole("heading", { level: 1 })).toHaveAttribute("lang", "en");
     expect(
       await panel().findByRole("heading", { level: 3, name: "Marigold courtyard" }),
@@ -74,7 +59,7 @@ describe("overview", () => {
 
   it("names the browser tab after the open plan and gives the old title back on close", () => {
     document.title = "Shamiyana";
-    const record = ready();
+    const record = readyPlan();
     const { unmount } = renderWorkspace(record);
     expect(document.title).toBe(`${record.brief.title} · Shamiyana`);
     unmount();

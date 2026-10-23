@@ -1,23 +1,11 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import { within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { withEnrichment } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { NOW, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { readyPlan } from "../helpers/fixtures";
 import { stubCanvas, stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
-
-function ready(brief: Brief = weddingBrief): PlanRecord {
-  return withEnrichment(
-    recordFor(brief),
-    sampleEnrichment,
-    { facts: factsOf(brief), locale: "en" },
-    NOW,
-  );
-}
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -51,7 +39,7 @@ describe("a new photo while one is being read", () => {
         });
       },
     });
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     await openTab("Ideas");
     const input = panel().getByLabelText("Choose a photo");
     expect(input).toHaveAccessibleDescription(/shrunk on your device/);
@@ -91,7 +79,7 @@ describe("photo ideas", () => {
           notes: ["Uneven ground near the stage"],
         }),
     });
-    const { saved, container } = renderWorkspace(ready());
+    const { saved, container } = renderWorkspace(readyPlan());
     await openTab("Ideas");
     const p = panel();
     await userEvent.upload(p.getByLabelText("Choose a photo"), photo());
@@ -118,7 +106,7 @@ describe("photo ideas", () => {
 
   it("refuses other file types and reports a photo it can't read", async () => {
     mockCanvas(null);
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     await openTab("Ideas");
     const p = panel();
     await userEvent.upload(
@@ -136,7 +124,7 @@ describe("photo ideas", () => {
   it("explains a failed upload and keeps the photo for another try", async () => {
     mockCanvas();
     mockFetch({ "/api/vision": () => jsonError("ai_unavailable", 503) });
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     await openTab("Ideas");
     const p = panel();
     await userEvent.upload(p.getByLabelText("Choose a photo"), photo());

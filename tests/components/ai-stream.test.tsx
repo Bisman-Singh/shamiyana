@@ -1,22 +1,10 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { withEnrichment } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { NOW, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { recordFor, sampleEnrichment, weddingBrief, readyPlan } from "../helpers/fixtures";
 import { stubCanvas, stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch, streamed } from "../helpers/fetch";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
-
-function ready(brief: Brief = weddingBrief): PlanRecord {
-  return withEnrichment(
-    recordFor(brief),
-    sampleEnrichment,
-    { facts: factsOf(brief), locale: "en" },
-    NOW,
-  );
-}
 
 const answer = JSON.stringify(sampleEnrichment);
 
@@ -89,7 +77,7 @@ describe("AI ideas stream", () => {
 
   it("asks for fresh ideas, skipping the cache, on request", async () => {
     const fetch = mockFetch({ "/api/plan": () => streamed([answer]) });
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     await userEvent.click(screen.getByRole("button", { name: "New ideas" }));
     await waitFor(() => {
       expect(fetch.bodies["/api/plan"]?.at(-1)).toMatchObject({ fresh: true });
@@ -155,7 +143,7 @@ describe("AI ideas stream", () => {
 
   it("does not ask again for a plan whose ideas match its brief", () => {
     const fetch = mockFetch({ "/api/plan": () => streamed([answer]) });
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     expect(screen.getByRole("button", { name: "New ideas" })).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -182,7 +170,7 @@ describe("leaving the plan", () => {
       "/api/refine": hanging(seen),
       "/api/vision": hanging(seen),
     });
-    const { unmount } = renderWorkspace(ready());
+    const { unmount } = renderWorkspace(readyPlan());
     await openTab("Ideas");
     await userEvent.click(panel().getByLabelText("Your message"));
     await userEvent.paste("Less on decor");

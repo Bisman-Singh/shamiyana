@@ -1,25 +1,11 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { withEnrichment } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { NOW, birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { birthdayBrief, readyPlan } from "../helpers/fixtures";
 import { stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
-
-/** A plan with AI ideas already in it, built the way the app builds it. */
-function ready(brief: Brief = weddingBrief, patch: Partial<PlanRecord> = {}): PlanRecord {
-  const base = withEnrichment(
-    recordFor(brief),
-    sampleEnrichment,
-    { facts: factsOf(brief), locale: "en" },
-    NOW,
-  );
-  return { ...base, ...patch };
-}
 
 const downloads: { name: string; text: string }[] = [];
 
@@ -49,7 +35,7 @@ async function settles(focused: () => HTMLElement, said: string | RegExp) {
 
 describe("budget", () => {
   it("nudges a category, resets it and applies an AI suggestion", async () => {
-    const { saved, container } = renderWorkspace(ready());
+    const { saved, container } = renderWorkspace(readyPlan());
     await openTab("Budget");
     await expectAccessible(container);
     expect(
@@ -79,7 +65,7 @@ describe("budget", () => {
 
   it("disables the limits and flags bookings over plan and over budget", async () => {
     renderWorkspace(
-      ready(birthdayBrief, {
+      readyPlan(birthdayBrief, {
         factors: { venue: 1.5, cake: 0.5 },
         vendors: { venue: { status: "booked", quote: 2_00_000, paid: 0, note: "" } },
       }),

@@ -1,24 +1,12 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describeChange } from "@/components/planner/ideas/describe-change";
 import { getDictionary } from "@/lib/i18n";
-import { withEnrichment } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { NOW, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { readyPlan } from "../helpers/fixtures";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
-
-function ready(brief: Brief = weddingBrief): PlanRecord {
-  return withEnrichment(
-    recordFor(brief),
-    sampleEnrichment,
-    { facts: factsOf(brief), locale: "en" },
-    NOW,
-  );
-}
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -37,7 +25,7 @@ describe("refine chat", () => {
 
   it("proposes changes and applies only the ones approved", async () => {
     const fetch = mockFetch({ "/api/refine": () => Response.json(reply) });
-    const { saved, container } = renderWorkspace(ready());
+    const { saved, container } = renderWorkspace(readyPlan());
     await openTab("Ideas");
     const p = panel();
     expect(p.getByLabelText("Your message")).toHaveAccessibleDescription(
@@ -74,7 +62,7 @@ describe("refine chat", () => {
         return jsonError("rate_limited", 429);
       },
     });
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     await openTab("Ideas");
     const p = panel();
     const send = async (text: string) => {

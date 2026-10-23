@@ -1,15 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { withEnrichment } from "@/lib/plan/record";
-import { factsOf, type Brief } from "@/lib/plan/schema";
-import {
-  NOW,
-  communityBrief,
-  recordFor,
-  sampleEnrichment,
-  weddingBrief,
-} from "../helpers/fixtures";
+import { communityBrief, recordFor, sampleEnrichment, readyPlan } from "../helpers/fixtures";
 import { jsonError, mockFetch, streamed } from "../helpers/fetch";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
 
@@ -19,9 +11,6 @@ async function announced(text: string | RegExp) {
     expect(screen.getByTestId("announcer")).toHaveTextContent(text);
   });
 }
-
-const ready = (brief: Brief = weddingBrief) =>
-  withEnrichment(recordFor(brief), sampleEnrichment, { facts: factsOf(brief), locale: "en" }, NOW);
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -34,7 +23,7 @@ describe("workspace focus and announcements", () => {
   });
 
   it("focuses Undo after a removal, the open panel after undoing, and drops Undo once the plan moves on", async () => {
-    renderWorkspace(ready(communityBrief));
+    renderWorkspace(readyPlan(communityBrief));
     await openTab("Timeline");
     await userEvent.click(
       panel().getByRole("button", { name: "Remove Fix the budget and the sponsorship target" }),
@@ -77,7 +66,7 @@ describe("workspace focus and announcements", () => {
   });
 
   it("sends focus to the wrong field, then announces and refocuses after an add", async () => {
-    renderWorkspace(ready(communityBrief));
+    renderWorkspace(readyPlan(communityBrief));
     await openTab("Timeline");
     await userEvent.click(panel().getByRole("button", { name: "Add task" }));
     await waitFor(() => {
@@ -109,7 +98,7 @@ describe("workspace focus and announcements", () => {
   });
 
   it("keeps focus on buttons that become unavailable, and ignores clicks on them", async () => {
-    const record = { ...ready(), factors: { venue: 1.5 } };
+    const record = { ...readyPlan(), factors: { venue: 1.5 } };
     const { saved } = renderWorkspace(record);
     await openTab("Budget");
     const more = panel().getAllByRole("button", { name: "More" })[0] ?? document.body;
@@ -134,7 +123,7 @@ describe("workspace focus and announcements", () => {
   });
 
   it("ignores Less at the lowest weight", async () => {
-    const { saved } = renderWorkspace({ ...ready(), factors: { venue: 0.5 } });
+    const { saved } = renderWorkspace({ ...readyPlan(), factors: { venue: 0.5 } });
     await openTab("Budget");
     const less = panel().getAllByRole("button", { name: "Less" })[0] ?? document.body;
     await userEvent.click(less);
@@ -142,7 +131,7 @@ describe("workspace focus and announcements", () => {
   });
 
   it("does not move between tabs on a modified arrow key", async () => {
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     screen.getByRole("tab", { name: "Overview" }).focus();
     await userEvent.keyboard("{Alt>}{ArrowRight}{/Alt}");
     expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");

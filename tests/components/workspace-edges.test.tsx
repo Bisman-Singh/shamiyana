@@ -5,7 +5,14 @@ import userEvent from "@testing-library/user-event";
 import { formatMoney } from "@/lib/i18n/format";
 import { planBudget } from "@/lib/plan/budget";
 import { saveIdea, withEnrichment } from "@/lib/plan/record";
-import { NOW, TODAY, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import {
+  NOW,
+  TODAY,
+  recordFor,
+  sampleEnrichment,
+  weddingBrief,
+  readyPlan,
+} from "../helpers/fixtures";
 import { stubCanvas, stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch, streamed } from "../helpers/fetch";
 import { renderIn } from "../helpers/render";
@@ -18,20 +25,12 @@ afterEach(() => {
 });
 
 describe("workspace edges", () => {
-  const ready = () =>
-    withEnrichment(
-      recordFor(weddingBrief),
-      sampleEnrichment,
-      { facts: factsOf(weddingBrief), locale: "en" },
-      NOW,
-    );
-
   beforeEach(() => {
     mockFetch({ "/api/plan": () => jsonError("ai_unavailable", 503) });
   });
 
   it("lowers a category with Less", async () => {
-    const { saved } = renderWorkspace(ready());
+    const { saved } = renderWorkspace(readyPlan());
     await openTab("Budget");
     const group = panel().getByRole("group", { name: "Adjust Venue" });
     await userEvent.click(group.querySelector("button") ?? group);
@@ -40,7 +39,7 @@ describe("workspace edges", () => {
 
   it("shows a saved idea that has no detail", async () => {
     const record = saveIdea(
-      ready(),
+      readyPlan(),
       { id: "i1", area: "music", title: "Dhol at the entry", detail: "" },
       NOW,
     );
@@ -52,7 +51,7 @@ describe("workspace edges", () => {
   it("ignores an empty file pick and frees the preview when leaving", async () => {
     stubCanvas();
     const { revoke } = stubObjectUrls("blob:p");
-    const { unmount } = renderWorkspace(ready());
+    const { unmount } = renderWorkspace(readyPlan());
     await openTab("Ideas");
     const input = panel().getByLabelText("Choose a photo");
     fireEvent.change(input, { target: { files: [] } });
@@ -68,7 +67,7 @@ describe("workspace edges", () => {
       "/api/plan": () => jsonError("ai_unavailable", 503),
       "/api/refine": () => Response.json({}),
     });
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     await openTab("Ideas");
     const form = panel().getByLabelText("Your message").closest("form");
     fireEvent.submit(form ?? document.body);

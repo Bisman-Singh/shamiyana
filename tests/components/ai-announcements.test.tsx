@@ -1,9 +1,7 @@
 // @vitest-environment jsdom
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { withEnrichment } from "@/lib/plan/record";
-import { factsOf, type Brief } from "@/lib/plan/schema";
-import { NOW, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { recordFor, sampleEnrichment, weddingBrief, readyPlan } from "../helpers/fixtures";
 import { stubCanvas, stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch, streamed } from "../helpers/fetch";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
@@ -14,9 +12,6 @@ async function announced(text: string | RegExp) {
     expect(screen.getByTestId("announcer")).toHaveTextContent(text);
   });
 }
-
-const ready = (brief: Brief = weddingBrief) =>
-  withEnrichment(recordFor(brief), sampleEnrichment, { facts: factsOf(brief), locale: "en" }, NOW);
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -63,7 +58,7 @@ describe("AI announcements", () => {
           : Response.json({ reply: "Done.", changes: [{ op: "set_guests", count: 300 }] });
       },
     });
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     await openTab("Ideas");
     const box = panel().getByLabelText("Your message");
     await userEvent.click(box);
@@ -84,7 +79,7 @@ describe("AI announcements", () => {
       "/api/plan": () => jsonError("ai_unavailable", 503),
       "/api/refine": () => answer,
     });
-    renderWorkspace(ready());
+    renderWorkspace(readyPlan());
     await openTab("Ideas");
     await userEvent.click(panel().getByLabelText("Your message"));
     await userEvent.paste("Hello");
@@ -106,7 +101,7 @@ describe("photo guards", () => {
       "/api/plan": () => jsonError("ai_unavailable", 503),
       "/api/vision": () => answer,
     });
-    const { saved } = renderWorkspace(ready());
+    const { saved } = renderWorkspace(readyPlan());
     await openTab("Ideas");
     await userEvent.upload(
       panel().getByLabelText("Choose a photo"),

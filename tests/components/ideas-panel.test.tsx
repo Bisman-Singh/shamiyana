@@ -1,31 +1,10 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import userEvent from "@testing-library/user-event";
-import { withEnrichment } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import {
-  NOW,
-  birthdayBrief,
-  birthdayFacts,
-  recordFor,
-  sampleEnrichment,
-  weddingBrief,
-} from "../helpers/fixtures";
+import { birthdayBrief, birthdayFacts, recordFor, readyPlan } from "../helpers/fixtures";
 import { stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
-
-/** A plan with AI ideas already in it, built the way the app builds it. */
-function ready(brief: Brief = weddingBrief, patch: Partial<PlanRecord> = {}): PlanRecord {
-  const base = withEnrichment(
-    recordFor(brief),
-    sampleEnrichment,
-    { facts: factsOf(brief), locale: "en" },
-    NOW,
-  );
-  return { ...base, ...patch };
-}
 
 beforeEach(() => {
   stubObjectUrls("blob:x");
@@ -40,7 +19,7 @@ afterEach(() => {
 
 describe("ideas", () => {
   it("saves and removes ideas", async () => {
-    const { saved, container } = renderWorkspace(ready());
+    const { saved, container } = renderWorkspace(readyPlan());
     await openTab("Ideas");
     await expectAccessible(container);
     const p = panel();
