@@ -1,4 +1,6 @@
-import { planHandler, refineHandler, visionHandler } from "@/lib/server/handlers";
+import { planHandler } from "@/lib/server/plan-handler";
+import { refineHandler } from "@/lib/server/refine-handler";
+import { visionHandler } from "@/lib/server/vision-handler";
 import { TODAY, weddingFacts } from "../helpers/fixtures";
 import {
   JPEG,

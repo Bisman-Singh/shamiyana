@@ -1,4 +1,4 @@
-import { healthHandler } from "@/lib/server/handlers";
+import { healthHandler } from "@/lib/server/health-handler";
 
 export const dynamic = "force-dynamic";
 

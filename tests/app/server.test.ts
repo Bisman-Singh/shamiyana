@@ -154,7 +154,7 @@ describe("route files", () => {
 
   it("reuses one set of dependencies per process", async () => {
     vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "test-key");
-    const { liveDeps } = await import("@/lib/server/handlers");
+    const { liveDeps } = await import("@/lib/server/deps");
     expect(liveDeps()).toBe(liveDeps());
     expect(liveDeps().chain?.map((m) => m.id)).toEqual([
       "gemini-3.5-flash-lite",

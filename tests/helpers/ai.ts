@@ -3,7 +3,7 @@ import { MockLanguageModelV4 } from "ai/test";
 import { AnswerCache } from "@/lib/ai/cache";
 import type { ModelSpec } from "@/lib/ai/models";
 import type { RunContext } from "@/lib/ai/run";
-import type { AiDeps } from "@/lib/server/handlers";
+import type { AiDeps } from "@/lib/server/deps";
 import { DailyCap, RateLimiter } from "@/lib/server/rate-limit";
 
 const usage = {

@@ -1,4 +1,5 @@
-import { liveDeps, planHandler } from "@/lib/server/handlers";
+import { liveDeps } from "@/lib/server/deps";
+import { planHandler } from "@/lib/server/plan-handler";
 
 export const maxDuration = 60;
 

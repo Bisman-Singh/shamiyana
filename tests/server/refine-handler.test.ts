@@ -1,5 +1,5 @@
 import { SCREENED_REPLY } from "@/lib/ai/guard";
-import { refineHandler } from "@/lib/server/handlers";
+import { refineHandler } from "@/lib/server/refine-handler";
 import { DailyCap } from "@/lib/server/rate-limit";
 import { TODAY, weddingFacts } from "../helpers/fixtures";
 import {

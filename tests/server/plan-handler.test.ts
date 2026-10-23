@@ -1,4 +1,4 @@
-import { planHandler } from "@/lib/server/handlers";
+import { planHandler } from "@/lib/server/plan-handler";
 import { DailyCap, RateLimiter } from "@/lib/server/rate-limit";
 import { TODAY, sampleEnrichment, weddingFacts } from "../helpers/fixtures";
 import {

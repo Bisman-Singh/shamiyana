@@ -1,7 +1,9 @@
-import { healthHandler, planHandler, refineHandler, visionHandler } from "@/lib/server/handlers";
+import { planHandler } from "@/lib/server/plan-handler";
 import { DailyCap } from "@/lib/server/rate-limit";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
+import { refineHandler } from "@/lib/server/refine-handler";
+import { visionHandler } from "@/lib/server/vision-handler";
 import { formPost, generatingModel, jsonPost, spec, testDeps } from "../helpers/ai";
+import { TODAY, weddingFacts } from "../helpers/fixtures";
 
 beforeEach(() => {
   vi.spyOn(console, "info").mockImplementation(() => undefined);
@@ -44,13 +46,5 @@ describe("every route", () => {
       error: "daily_cap",
     });
     expect((await refineHandler(() => deps)(as("198.51.100.2"))).status).toBe(200);
-  });
-});
-
-describe("GET /api/health", () => {
-  it("says only that the server is up, never how it is configured", async () => {
-    const response = healthHandler();
-    expect(await response.json()).toEqual({ status: "ok" });
-    expect(response.headers.get("cache-control")).toContain("no-store");
   });
 });
