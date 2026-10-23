@@ -58,14 +58,28 @@ export interface WindowClient {
   limit(identifier: string): Promise<{ success: boolean; reset: number; reason?: string }>;
 }
 
+export interface SharedRateLimiterOptions {
+  window: WindowClient;
+  /** This instance's own limit, which decides while Redis is down or slow. */
+  fallback: RateLimiter;
+  /** The key client codes are made with, from `pseudonymKey`. */
+  secret: string;
+  now?: () => number;
+}
+
 /** The per-minute limit held in Redis for every instance, with this instance's memory as the fallback. */
 export class SharedRateLimiter implements RequestLimiter {
-  constructor(
-    private readonly window: WindowClient,
-    private readonly fallback: RateLimiter,
-    private readonly secret: string,
-    private readonly now: () => number = Date.now,
-  ) {}
+  private readonly window: WindowClient;
+  private readonly fallback: RateLimiter;
+  private readonly secret: string;
+  private readonly now: () => number;
+
+  constructor(options: SharedRateLimiterOptions) {
+    this.window = options.window;
+    this.fallback = options.fallback;
+    this.secret = options.secret;
+    this.now = options.now ?? Date.now;
+  }
 
   async check(key: string): Promise<RateResult> {
     try {
@@ -119,15 +133,31 @@ export interface ScriptClient {
   eval(script: string, keys: string[], args: number[]): Promise<unknown>;
 }
 
+export interface SharedDailyCapOptions {
+  redis: ScriptClient;
+  caps: { total: number; client: number };
+  /** This instance's own caps, which decide while Redis is down or slow. */
+  fallback: DailyCap;
+  /** The key client codes are made with, from `pseudonymKey`. */
+  secret: string;
+  now?: () => number;
+}
+
 /** The daily caps held in Redis for every instance, with this instance's memory as the fallback. */
 export class SharedDailyCap implements DailyAllowance {
-  constructor(
-    private readonly redis: ScriptClient,
-    private readonly caps: { total: number; client: number },
-    private readonly fallback: DailyCap,
-    private readonly secret: string,
-    private readonly now: () => number = Date.now,
-  ) {}
+  private readonly redis: ScriptClient;
+  private readonly caps: { total: number; client: number };
+  private readonly fallback: DailyCap;
+  private readonly secret: string;
+  private readonly now: () => number;
+
+  constructor(options: SharedDailyCapOptions) {
+    this.redis = options.redis;
+    this.caps = options.caps;
+    this.fallback = options.fallback;
+    this.secret = options.secret;
+    this.now = options.now ?? Date.now;
+  }
 
   async take(client = ""): Promise<boolean> {
     const day = utcDay(this.now());

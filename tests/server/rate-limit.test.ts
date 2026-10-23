@@ -34,14 +34,14 @@ describe("RateLimiter", () => {
 
 describe("DailyCap", () => {
   it("limits each client separately under the instance ceiling", () => {
-    const cap = new DailyCap(3, 2, () => 0);
+    const cap = new DailyCap({ cap: 3, clientCap: 2, now: () => 0 });
     expect([cap.take("a"), cap.take("a"), cap.take("a")]).toEqual([true, true, false]);
     expect(cap.take("b")).toBe(true);
     expect(cap.take("c")).toBe(false);
   });
 
   it("forgets the least recent client past its memory bound", () => {
-    const cap = new DailyCap(100, 1, () => 0, 2);
+    const cap = new DailyCap({ cap: 100, clientCap: 1, now: () => 0, maxKeys: 2 });
     expect([cap.take("a"), cap.take("b"), cap.take("c")]).toEqual([true, true, true]);
     expect(cap.take("a")).toBe(true);
     expect(cap.take("c")).toBe(false);
@@ -49,10 +49,10 @@ describe("DailyCap", () => {
 
   it("allows the cap per UTC day and resets the next day", () => {
     let now = Date.parse("2026-10-21T23:59:00Z");
-    const cap = new DailyCap(2, 2, () => now);
+    const cap = new DailyCap({ cap: 2, clientCap: 2, now: () => now });
     expect([cap.take(), cap.take(), cap.take()]).toEqual([true, true, false]);
     now = Date.parse("2026-10-22T00:00:01Z");
     expect(cap.take()).toBe(true);
-    expect(new DailyCap(1).take()).toBe(true);
+    expect(new DailyCap({ cap: 1 }).take()).toBe(true);
   });
 });

@@ -1,5 +1,13 @@
 import "server-only";
 
+export interface AnswerCacheOptions {
+  maxEntries?: number;
+  /** Total characters across every cached answer. */
+  maxChars?: number;
+  ttlMs?: number;
+  now?: () => number;
+}
+
 /**
  * A small LRU cache with expiry for finished AI answers. The same brief asked
  * twice gets the first answer back at once and costs nothing; "new ideas"
@@ -8,13 +16,17 @@ import "server-only";
 export class AnswerCache {
   private readonly entries = new Map<string, { value: string; expires: number }>();
   private chars = 0;
+  private readonly maxEntries: number;
+  private readonly maxChars: number;
+  private readonly ttlMs: number;
+  private readonly now: () => number;
 
-  constructor(
-    private readonly maxEntries = 200,
-    private readonly maxChars = 2_000_000,
-    private readonly ttlMs = 6 * 60 * 60 * 1000,
-    private readonly now: () => number = Date.now,
-  ) {}
+  constructor(options: AnswerCacheOptions = {}) {
+    this.maxEntries = options.maxEntries ?? 200;
+    this.maxChars = options.maxChars ?? 2_000_000;
+    this.ttlMs = options.ttlMs ?? 6 * 60 * 60 * 1000;
+    this.now = options.now ?? Date.now;
+  }
 
   get(key: string): string | null {
     const entry = this.entries.get(key);

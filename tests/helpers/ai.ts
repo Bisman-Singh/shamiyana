@@ -116,7 +116,7 @@ export function testDeps(chain: readonly ModelSpec[] | null, patch: Partial<AiDe
       refine: new RateLimiter({ limit: 100, windowMs: 60_000 }),
       vision: new RateLimiter({ limit: 100, windowMs: 60_000 }),
     },
-    daily: new DailyCap(1_000),
+    daily: new DailyCap({ cap: 1_000 }),
     now: () => FIXED_NOW,
     deadlineMs: 55_000,
     ...patch,

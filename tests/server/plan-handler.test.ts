@@ -88,7 +88,7 @@ describe("POST /api/plan", () => {
 
   it("serves a repeat brief from cache without calling the model or the daily cap", async () => {
     const model = streamingModel(halves);
-    const daily = new DailyCap(1);
+    const daily = new DailyCap({ cap: 1 });
     const deps = testDeps([spec(model)], { daily });
     await (await planHandler(() => deps)(jsonPost(planBody))).text();
     const again = await planHandler(() => deps)(jsonPost(planBody));
@@ -154,7 +154,7 @@ describe("POST /api/plan", () => {
   });
 
   it("stops at the daily cap", async () => {
-    const deps = testDeps([spec(streamingModel(halves))], { daily: new DailyCap(0 + 1) });
+    const deps = testDeps([spec(streamingModel(halves))], { daily: new DailyCap({ cap: 0 + 1 }) });
     await (await planHandler(() => deps)(jsonPost({ ...planBody, fresh: true }))).text();
     const second = await planHandler(() => deps)(jsonPost({ ...planBody, fresh: true }));
     expect(await second.json()).toEqual({ error: "daily_cap" });

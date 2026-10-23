@@ -81,7 +81,7 @@ const PER_MINUTE: Record<LimitedRoute, number> = { plan: 8, refine: 20, vision: 
 function limitsFor(env: ServerEnv): Pick<AiDeps, "limiters" | "daily"> {
   const memory = (route: LimitedRoute) =>
     new RateLimiter({ limit: PER_MINUTE[route], windowMs: RATE_WINDOW_MS });
-  const daily = new DailyCap(env.AI_DAILY_REQUEST_CAP, env.AI_DAILY_CLIENT_CAP);
+  const daily = new DailyCap({ cap: env.AI_DAILY_REQUEST_CAP, clientCap: env.AI_DAILY_CLIENT_CAP });
   const apiKey = env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!env.redis || apiKey === undefined) {
     return {
@@ -92,15 +92,19 @@ function limitsFor(env: ServerEnv): Pick<AiDeps, "limiters" | "daily"> {
   const redis = connectRedis(env.redis);
   const secret = pseudonymKey(apiKey);
   const shared = (route: LimitedRoute) =>
-    new SharedRateLimiter(sharedWindow(redis, route, PER_MINUTE[route]), memory(route), secret);
+    new SharedRateLimiter({
+      window: sharedWindow(redis, route, PER_MINUTE[route]),
+      fallback: memory(route),
+      secret,
+    });
   return {
     limiters: { plan: shared("plan"), refine: shared("refine"), vision: shared("vision") },
-    daily: new SharedDailyCap(
+    daily: new SharedDailyCap({
       redis,
-      { total: env.AI_DAILY_REQUEST_CAP, client: env.AI_DAILY_CLIENT_CAP },
-      daily,
+      caps: { total: env.AI_DAILY_REQUEST_CAP, client: env.AI_DAILY_CLIENT_CAP },
+      fallback: daily,
       secret,
-    ),
+    }),
   };
 }
 

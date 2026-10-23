@@ -87,7 +87,7 @@ describe("POST /api/vision", () => {
     expect(await (await visionHandler(() => testDeps(null))(formPost(form(JPEG)))).json()).toEqual({
       error: "ai_unavailable",
     });
-    const capped = testDeps([spec(generatingModel(vision))], { daily: new DailyCap(0) });
+    const capped = testDeps([spec(generatingModel(vision))], { daily: new DailyCap({ cap: 0 }) });
     expect(await (await visionHandler(() => capped)(formPost(form(JPEG)))).json()).toEqual({
       error: "daily_cap",
     });

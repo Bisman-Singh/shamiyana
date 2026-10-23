@@ -87,27 +87,42 @@ describe("SharedRateLimiter", () => {
 
   it("passes what Redis allows and keys it by the pseudonym", async () => {
     const { client, seen } = window({ success: true, reset: NOW });
-    const limiter = new SharedRateLimiter(client, memory(), SECRET, () => NOW);
+    const limiter = new SharedRateLimiter({
+      window: client,
+      fallback: memory(),
+      secret: SECRET,
+      now: () => NOW,
+    });
     expect(await limiter.check("203.0.113.7")).toEqual({ ok: true, retryAfter: 0 });
     expect(seen).toEqual([pseudonym(SECRET, "203.0.113.7")]);
   });
 
   it("refuses with the seconds until the shared window frees up", async () => {
     const { client } = window({ success: false, reset: NOW + 12_300 });
-    const limiter = new SharedRateLimiter(client, memory(), SECRET, () => NOW);
+    const limiter = new SharedRateLimiter({
+      window: client,
+      fallback: memory(),
+      secret: SECRET,
+      now: () => NOW,
+    });
     expect(await limiter.check("a")).toEqual({ ok: false, retryAfter: 13 });
-    const soon = new SharedRateLimiter(
-      window({ success: false, reset: NOW }).client,
-      memory(),
-      SECRET,
-      () => NOW,
-    );
+    const soon = new SharedRateLimiter({
+      window: window({ success: false, reset: NOW }).client,
+      fallback: memory(),
+      secret: SECRET,
+      now: () => NOW,
+    });
     expect((await soon.check("a")).retryAfter).toBe(1);
   });
 
   it("lets memory decide when Redis times out, and says so", async () => {
     const { client } = window({ success: true, reset: NOW, reason: "timeout" });
-    const limiter = new SharedRateLimiter(client, memory(), SECRET, () => NOW);
+    const limiter = new SharedRateLimiter({
+      window: client,
+      fallback: memory(),
+      secret: SECRET,
+      now: () => NOW,
+    });
     expect((await limiter.check("a")).ok).toBe(true);
     expect((await limiter.check("a")).ok).toBe(false);
     expect(warnings[0]).toContain('"event":"limits_local","reason":"redis_unavailable"');
@@ -117,7 +132,7 @@ describe("SharedRateLimiter", () => {
     const redis = connectRedis(UNREACHABLE);
     const shared = sharedWindow(redis, "plan", 8);
     expect(shared).toBeInstanceOf(Ratelimit);
-    const limiter = new SharedRateLimiter(shared, memory(), SECRET);
+    const limiter = new SharedRateLimiter({ window: shared, fallback: memory(), secret: SECRET });
     expect((await limiter.check("a")).ok).toBe(true);
     expect((await limiter.check("a")).ok).toBe(false);
     expect(warnings.length).toBeGreaterThan(0);
@@ -129,7 +144,13 @@ describe("SharedDailyCap", () => {
 
   it("counts per day and per pseudonymous client, expiring at the next UTC midnight", async () => {
     const redis = new FakeScript();
-    const cap = new SharedDailyCap(redis, caps, new DailyCap(1), SECRET, () => NOW);
+    const cap = new SharedDailyCap({
+      redis,
+      caps,
+      fallback: new DailyCap({ cap: 1 }),
+      secret: SECRET,
+      now: () => NOW,
+    });
     expect(await cap.take("203.0.113.7")).toBe(true);
     expect(redis.calls[0]).toEqual({
       keys: [
@@ -142,7 +163,13 @@ describe("SharedDailyCap", () => {
 
   it("stops a client at its cap without using up anyone else's day", async () => {
     const redis = new FakeScript();
-    const cap = new SharedDailyCap(redis, caps, new DailyCap(1), SECRET, () => NOW);
+    const cap = new SharedDailyCap({
+      redis,
+      caps,
+      fallback: new DailyCap({ cap: 1 }),
+      secret: SECRET,
+      now: () => NOW,
+    });
     expect(await cap.take("a")).toBe(true);
     expect(await cap.take("a")).toBe(true);
     expect(await cap.take("a")).toBe(false);
@@ -153,7 +180,12 @@ describe("SharedDailyCap", () => {
   });
 
   it("falls back to this instance's cap when Redis fails", async () => {
-    const cap = new SharedDailyCap(connectRedis(UNREACHABLE), caps, new DailyCap(1), SECRET);
+    const cap = new SharedDailyCap({
+      redis: connectRedis(UNREACHABLE),
+      caps,
+      fallback: new DailyCap({ cap: 1 }),
+      secret: SECRET,
+    });
     expect(await cap.take("a")).toBe(true);
     expect(await cap.take("a")).toBe(false);
     expect(warnings.some((line) => line.includes("redis_unavailable"))).toBe(true);

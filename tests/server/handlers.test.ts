@@ -27,7 +27,7 @@ describe("every route", () => {
 
   it("stops one client at its own daily allowance while others carry on", async () => {
     const deps = testDeps([spec(generatingModel(JSON.stringify({ reply: "ok", changes: [] })))], {
-      daily: new DailyCap(100, 1),
+      daily: new DailyCap({ cap: 100, clientCap: 1 }),
     });
     const body = {
       facts: weddingFacts,

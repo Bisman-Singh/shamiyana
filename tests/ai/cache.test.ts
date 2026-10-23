@@ -3,7 +3,7 @@ import { AnswerCache, cacheKey } from "@/lib/ai/cache";
 describe("AnswerCache", () => {
   it("returns fresh entries, expires old ones and evicts the least recently used", () => {
     let now = 0;
-    const cache = new AnswerCache(2, 1_000, 100, () => now);
+    const cache = new AnswerCache({ maxEntries: 2, maxChars: 1_000, ttlMs: 100, now: () => now });
     cache.set("a", "1");
     cache.set("b", "2");
     expect(cache.get("a")).toBe("1");
@@ -16,7 +16,7 @@ describe("AnswerCache", () => {
   });
 
   it("bounds total size and ignores a single oversized answer", () => {
-    const cache = new AnswerCache(10, 10);
+    const cache = new AnswerCache({ maxEntries: 10, maxChars: 10 });
     cache.set("big", "x".repeat(11));
     expect(cache.size).toBe(0);
     cache.set("a", "xxxxxx");

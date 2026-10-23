@@ -77,6 +77,15 @@ export class RateLimiter implements RequestLimiter {
   }
 }
 
+export interface DailyCapOptions {
+  /** Calls this instance allows per UTC day. */
+  cap: number;
+  /** Calls one client may make per UTC day; the instance's cap when left out. */
+  clientCap?: number;
+  maxKeys?: number;
+  now?: () => number;
+}
+
 /**
  * Hard ceilings on AI calls per UTC day: one for this instance, a spend cap
  * that needs no billing API, and a smaller one per client so a single
@@ -87,14 +96,15 @@ export class DailyCap implements DailyAllowance {
   private day = "";
   private count = 0;
   private readonly byClient: BoundedMap<string, number>;
+  private readonly cap: number;
+  private readonly clientCap: number;
+  private readonly now: () => number;
 
-  constructor(
-    private readonly cap: number,
-    private readonly clientCap: number = cap,
-    private readonly now: () => number = Date.now,
-    maxKeys = 10_000,
-  ) {
-    this.byClient = new BoundedMap(maxKeys);
+  constructor(options: DailyCapOptions) {
+    this.cap = options.cap;
+    this.clientCap = options.clientCap ?? options.cap;
+    this.byClient = new BoundedMap(options.maxKeys ?? 10_000);
+    this.now = options.now ?? Date.now;
   }
 
   take(client = ""): boolean {
