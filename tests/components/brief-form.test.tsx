@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BriefForm } from "@/components/planner/brief-form";
 import { draftFromBrief } from "@/lib/plan/draft";
@@ -15,6 +15,9 @@ describe("BriefForm", () => {
     await userEvent.click(screen.getByRole("button", { name: "Make my plan" }));
     const summary = await screen.findByRole("alert");
     expect(summary).toHaveTextContent("Please fix 5 fields.");
+    expect(within(summary).getByRole("heading", { level: 2 })).toHaveTextContent(
+      "Please fix 5 fields.",
+    );
     expect(screen.getByLabelText("Event name")).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByLabelText("Budget", { exact: false })).toHaveAccessibleDescription(
       /₹5,000 to ₹50 crore/,

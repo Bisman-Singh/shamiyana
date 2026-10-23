@@ -51,7 +51,9 @@ function ErrorSummary({ errors, idOf, summaryRef }: Readonly<ErrorSummaryProps>)
   if (fields.length === 0) return null;
   return (
     <div className="error-summary" role="alert" tabIndex={-1} ref={summaryRef}>
-      <p>{plural(locale, dict.form.errorSummary, fields.length)}</p>
+      <h2 className="error-summary-title">
+        {plural(locale, dict.form.errorSummary, fields.length)}
+      </h2>
       <ul>
         {fields.map(({ field, code }) => (
           <li key={field}>

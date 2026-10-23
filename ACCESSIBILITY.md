@@ -68,7 +68,7 @@ The target is WCAG 2.2 level AA, in English and Hindi, on a phone and a desktop.
 - The page reflows at 320 px and at 200% text with nothing scrolling sideways;
   the tab list wraps onto a second row instead of scrolling.
 - Colours meet 4.5:1 for text in both themes. Focus is a 3 px outline that
-  stays visible in both.
+  stays visible in both, the date picker's calendar button included.
 - `<html lang>` follows the chosen language, and Hindi text gets a taller line
   height for its matras. Text in the other language gets its own `lang`: AI
   ideas keep the language they were written in until they are made again, and

@@ -67,6 +67,12 @@ a {
   outline-offset: 2px;
 }
 
+/* a rule of its own: a browser that doesn't know the pseudo-element would drop a whole list */
+::-webkit-calendar-picker-indicator:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
 img,
 svg {
   max-width: 100%;

@@ -91,6 +91,11 @@ input[type="radio"] {
   margin-block: 16px;
 }
 
+.error-summary-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
 .error-summary ul {
   margin: 0;
   padding-left: 1.2em;
