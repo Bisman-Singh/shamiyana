@@ -2,7 +2,7 @@
 import { factsOf } from "@/lib/plan/schema";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describeChange } from "@/components/planner/refine-chat";
+import { describeChange } from "@/components/planner/ideas/describe-change";
 import { getDictionary } from "@/lib/i18n";
 import { withEnrichment } from "@/lib/plan/record";
 import type { Brief, PlanRecord } from "@/lib/plan/schema";

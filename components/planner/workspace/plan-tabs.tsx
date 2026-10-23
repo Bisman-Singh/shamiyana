@@ -4,7 +4,7 @@ import type { Enrichment } from "@/lib/plan/enrichment";
 import type { Tab } from "@/components/ui/tabs";
 import { BudgetPanel } from "@/components/planner/budget-panel";
 import { GuestsPanel } from "@/components/planner/guests-panel";
-import { IdeasPanel } from "@/components/planner/ideas-panel";
+import { IdeasPanel } from "@/components/planner/ideas/ideas-panel";
 import { OverviewPanel } from "@/components/planner/overview-panel";
 import { TimelinePanel } from "@/components/planner/timeline-panel";
 import type { PlanView, Update } from "@/components/planner/types";

@@ -5,6 +5,7 @@ import { format, formatDate, formatNumber } from "@/lib/i18n/format";
 import { langOf } from "@/lib/i18n/lang";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { vendorTally } from "@/lib/plan/vendors";
+import { ThemeSummary } from "./theme-summary";
 import { useLocale, useMoney } from "../locale-provider";
 import { taskTitle } from "./task-title";
 import type { PlanView } from "./types";
@@ -104,15 +105,7 @@ function ThemeAndRisks({ ideas }: Readonly<ThemeAndRisksProps>) {
   const o = dict.overview;
   return (
     <>
-      {ideas.theme.name === "" ? null : (
-        <section aria-labelledby={`${id}-theme`}>
-          <h2 id={`${id}-theme`}>{o.theme}</h2>
-          <h3 className="theme-name" lang={langOf(ideas.theme.name, locale)}>
-            {ideas.theme.name}
-          </h3>
-          <p lang={langOf(ideas.theme.summary, locale)}>{ideas.theme.summary}</p>
-        </section>
-      )}
+      <ThemeSummary theme={ideas.theme} heading={o.theme} level={2} />
       {ideas.risks.length === 0 ? null : (
         <section aria-labelledby={`${id}-risks`}>
           <h2 id={`${id}-risks`}>{o.risks}</h2>

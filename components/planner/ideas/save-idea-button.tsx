@@ -4,8 +4,8 @@ import { langOf } from "@/lib/i18n/lang";
 import type { IdeaArea } from "@/lib/plan/constants";
 import { isIdeaSaved, newId, saveIdea } from "@/lib/plan/record";
 import type { PlanRecord } from "@/lib/plan/schema";
-import { useLocale } from "../locale-provider";
-import type { Update } from "./types";
+import { useLocale } from "@/components/locale-provider";
+import type { Update } from "@/components/planner/types";
 
 interface SaveIdeaButtonProps {
   idea: { area: IdeaArea; title: string; detail: string };
