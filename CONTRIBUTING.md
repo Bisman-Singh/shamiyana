@@ -11,7 +11,7 @@ npm run dev
 ```
 
 Everything except the AI works without a key. Playwright needs its browser
-once: `npx playwright install --only-shell chromium`, as CI does.
+once: `npx playwright install --only-shell chromium webkit`, as CI does.
 
 ## Before you open a pull request
 
@@ -41,7 +41,9 @@ and the Playwright tests. A change is ready when it passes.
 - Unit and component tests live in `tests/`, in folders that mirror the source.
   Component tests run axe with the WCAG 2.2 AA, best-practice and experimental
   rules.
-- Browser tests live in `e2e/` and run on a desktop and a 360 px phone.
+- Browser tests live in `e2e/` and run on a desktop and a 360 px phone in
+  Chromium. The flows tagged `@webkit` also run on an iPhone in WebKit, the
+  engine of every iPhone browser.
 - `npm run eval` checks the prompts against the real model and needs a key.
   More in [TESTING.md](TESTING.md).
 

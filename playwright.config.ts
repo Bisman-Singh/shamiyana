@@ -20,6 +20,8 @@ export default defineConfig({
   },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] }, grepInvert: /@phone/ },
+    // Safari's engine, which every iPhone browser uses: the core flows tagged @webkit.
+    { name: "iphone", use: { ...devices["iPhone 15"] }, grep: /@webkit/ },
     {
       name: "mobile",
       use: {

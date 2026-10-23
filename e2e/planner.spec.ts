@@ -2,30 +2,36 @@ import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 import { mockAi, mockVision, startSamplePlan } from "./helpers";
 
-test("a plan is built at once, filled in by AI and kept after a reload", async ({ page }) => {
-  await mockAi(page);
-  await startSamplePlan(page);
-  await expect(page.getByText(/days to go/)).toBeVisible();
-  await expect(page.getByRole("tabpanel").getByText("Marigold courtyard")).toBeVisible();
+test(
+  "a plan is built at once, filled in by AI and kept after a reload",
+  { tag: "@webkit" },
+  async ({ page }) => {
+    await mockAi(page);
+    await startSamplePlan(page);
+    await expect(page.getByText(/days to go/)).toBeVisible();
+    await expect(page.getByRole("tabpanel").getByText("Marigold courtyard")).toBeVisible();
 
-  await page.getByRole("tab", { name: "Budget" }).click();
-  const total = page.getByRole("tabpanel").locator("tfoot td").first();
-  await expect(total).toHaveText("₹18,00,000");
-  await page.getByRole("tabpanel").getByRole("button", { name: "Apply" }).click();
-  await expect(page.getByRole("tabpanel").getByRole("button", { name: "Applied" })).toBeDisabled();
+    await page.getByRole("tab", { name: "Budget" }).click();
+    const total = page.getByRole("tabpanel").locator("tfoot td").first();
+    await expect(total).toHaveText("₹18,00,000");
+    await page.getByRole("tabpanel").getByRole("button", { name: "Apply" }).click();
+    await expect(
+      page.getByRole("tabpanel").getByRole("button", { name: "Applied" }),
+    ).toBeDisabled();
 
-  await page.getByRole("tab", { name: "Timeline" }).click();
-  await expect(
-    page.getByRole("tabpanel").getByText("Book a tent backup for rain", { exact: true }),
-  ).toBeVisible();
-  await page.getByRole("checkbox", { name: "Done: Visit and book the main venue" }).check();
+    await page.getByRole("tab", { name: "Timeline" }).click();
+    await expect(
+      page.getByRole("tabpanel").getByText("Book a tent backup for rain", { exact: true }),
+    ).toBeVisible();
+    await page.getByRole("checkbox", { name: "Done: Visit and book the main venue" }).check();
 
-  await page.reload();
-  await page.getByRole("tab", { name: "Timeline" }).click();
-  await expect(
-    page.getByRole("checkbox", { name: "Done: Visit and book the main venue" }),
-  ).toBeChecked();
-});
+    await page.reload();
+    await page.getByRole("tab", { name: "Timeline" }).click();
+    await expect(
+      page.getByRole("checkbox", { name: "Done: Visit and book the main venue" }),
+    ).toBeChecked();
+  },
+);
 
 test("guests, vendors and the refine chat update the plan", async ({ page }) => {
   await mockAi(page);
@@ -71,33 +77,32 @@ test("the calendar download is a valid iCalendar file", async ({ page }) => {
   expect(text).toContain("SUMMARY:Winter wedding in Jaipur");
 });
 
-test("a share link opens a copy in another browser without the guest list", async ({
-  page,
-  browser,
-  context,
-}) => {
-  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  await mockAi(page);
-  await startSamplePlan(page, /Diwali mela/);
-  await page.getByRole("tab", { name: "Guests" }).click();
-  await page.getByLabel("Name or household").fill("Bua ji");
-  await page.getByRole("tabpanel").getByRole("button", { name: "Add" }).click();
-  await page.getByRole("button", { name: "Share" }).click();
-  const link = await page.getByLabel("Share link").inputValue();
-  expect(link).toMatch(/\/#plan=[A-Za-z0-9_-]+$/);
+test(
+  "a share link opens a copy in another browser without the guest list",
+  { tag: "@webkit" },
+  async ({ page, browser }) => {
+    await mockAi(page);
+    await startSamplePlan(page, /Diwali mela/);
+    await page.getByRole("tab", { name: "Guests" }).click();
+    await page.getByLabel("Name or household").fill("Bua ji");
+    await page.getByRole("tabpanel").getByRole("button", { name: "Add" }).click();
+    await page.getByRole("button", { name: "Share" }).click();
+    const link = await page.getByLabel("Share link").inputValue();
+    expect(link).toMatch(/\/#plan=[A-Za-z0-9_-]+$/);
 
-  const other = await browser.newContext();
-  const friend = await other.newPage();
-  await friend.route("**/api/plan", (route) =>
-    route.fulfill({ status: 503, json: { error: "ai_unavailable" } }),
-  );
-  await friend.goto(link);
-  await friend.getByRole("button", { name: "Add to my plans" }).click();
-  await expect(friend.getByRole("heading", { level: 1 })).toHaveText("Block C Diwali mela");
-  await friend.getByRole("tab", { name: "Guests" }).click();
-  await expect(friend.getByText(/No guests yet/)).toBeVisible();
-  await other.close();
-});
+    const other = await browser.newContext();
+    const friend = await other.newPage();
+    await friend.route("**/api/plan", (route) =>
+      route.fulfill({ status: 503, json: { error: "ai_unavailable" } }),
+    );
+    await friend.goto(link);
+    await friend.getByRole("button", { name: "Add to my plans" }).click();
+    await expect(friend.getByRole("heading", { level: 1 })).toHaveText("Block C Diwali mela");
+    await friend.getByRole("tab", { name: "Guests" }).click();
+    await expect(friend.getByText(/No guests yet/)).toBeVisible();
+    await other.close();
+  },
+);
 
 test("switching to Hindi translates the page from the server", async ({ page }) => {
   await page.goto("/");
@@ -115,34 +120,38 @@ test("without an AI key the server says so and the plan still works", async ({ p
   await expect(page.getByRole("tabpanel").getByRole("checkbox").first()).toBeVisible();
 });
 
-test("nothing scrolls sideways on a phone", { tag: "@phone" }, async ({ page }) => {
+test("nothing scrolls sideways on a phone", { tag: ["@phone", "@webkit"] }, async ({ page }) => {
   await mockAi(page);
   await startSamplePlan(page);
   for (const tab of ["Overview", "Budget", "Timeline", "Vendors", "Guests", "Ideas"]) {
     await page.getByRole("tab", { name: tab }).click();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
-      360,
-    );
+    const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }));
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
   }
 });
 
-test("a photo is shrunk in the browser, sent once and turned into ideas to save", async ({
-  page,
-}) => {
-  await mockAi(page);
-  const sent = await mockVision(page);
-  await startSamplePlan(page);
-  await page.getByRole("tab", { name: "Ideas" }).click();
-  const panel = page.getByRole("tabpanel");
-  await panel.getByLabel("Choose a photo").setInputFiles("e2e/fixtures/venue.jpg");
-  await expect(panel.getByRole("img", { name: "The photo you chose" })).toBeVisible();
-  await panel.getByRole("button", { name: "Get ideas from this photo" }).click();
-  await expect(panel.locator(".idea-title").filter({ hasText: "Lantern path" })).toBeVisible();
-  await expect(panel.getByRole("img", { name: "Venue: Open lawn at dusk" })).toBeVisible();
-  await panel.getByRole("button", { name: /^Save idea Lantern path/ }).click();
-  await expect(panel.getByRole("button", { name: /^Saved Lantern path/ })).toBeVisible();
-  expect(sent).toHaveLength(1);
-  expect(sent[0]?.type).toContain("multipart/form-data");
-  expect(sent[0]?.bytes).toBeGreaterThan(0);
-  expect(sent[0]?.bytes).toBeLessThan(4 * 1024 * 1024);
-});
+test(
+  "a photo is shrunk in the browser, sent once and turned into ideas to save",
+  { tag: "@webkit" },
+  async ({ page }) => {
+    await mockAi(page);
+    const sent = await mockVision(page);
+    await startSamplePlan(page);
+    await page.getByRole("tab", { name: "Ideas" }).click();
+    const panel = page.getByRole("tabpanel");
+    await panel.getByLabel("Choose a photo").setInputFiles("e2e/fixtures/venue.jpg");
+    await expect(panel.getByRole("img", { name: "The photo you chose" })).toBeVisible();
+    await panel.getByRole("button", { name: "Get ideas from this photo" }).click();
+    await expect(panel.locator(".idea-title").filter({ hasText: "Lantern path" })).toBeVisible();
+    await expect(panel.getByRole("img", { name: "Venue: Open lawn at dusk" })).toBeVisible();
+    await panel.getByRole("button", { name: /^Save idea Lantern path/ }).click();
+    await expect(panel.getByRole("button", { name: /^Saved Lantern path/ })).toBeVisible();
+    expect(sent).toHaveLength(1);
+    expect(sent[0]?.type).toContain("multipart/form-data");
+    expect(sent[0]?.bytes).toBeGreaterThan(0);
+    expect(sent[0]?.bytes).toBeLessThan(4 * 1024 * 1024);
+  },
+);

@@ -185,8 +185,9 @@ only. The key is never sent to the browser.
   schema, model output sanitizer, upload sniffer, CSV guard and share link
   decoder, and route tests against a mock Gemini model for streaming, fallback,
   caching and every error path.
-- 77 Playwright tests on desktop and a 360 px phone against the production
-  build, with AI responses mocked at the network layer.
+- 82 Playwright tests against the production build, with AI responses mocked
+  at the network layer: everything on a desktop and a 360 px phone in Chromium,
+  and the core flows on an iPhone in WebKit, Safari's engine.
 - More in [TESTING.md](TESTING.md).
 
 ### Accessibility
