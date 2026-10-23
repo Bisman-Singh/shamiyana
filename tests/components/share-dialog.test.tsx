@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { ShareDialog } from "@/components/planner/share-dialog";
 import { MAX_ENCODED } from "@/lib/export/share";
 import type * as Share from "@/lib/export/share";
@@ -58,7 +58,10 @@ describe("share dialog limits", () => {
       `${window.location.origin}/#plan=${"x".repeat(MAX_ENCODED)}`,
     );
     expect(screen.getByRole("dialog")).toHaveAccessibleDescription(/anyone with it can open/);
-    expect(screen.getByRole("button", { name: "Copy link" })).toHaveFocus();
+    // Copy takes focus in an effect after the link renders
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Copy link" })).toHaveFocus();
+    });
     encoded.value = "x".repeat(40_000);
   });
 
