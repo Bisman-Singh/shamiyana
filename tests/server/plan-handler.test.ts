@@ -1,6 +1,5 @@
 import { planHandler } from "@/lib/server/plan-handler";
 import { DailyCap, RateLimiter } from "@/lib/server/rate-limit";
-import { TODAY, sampleEnrichment, weddingFacts } from "../helpers/fixtures";
 import {
   brokenStreamModel,
   cutOffModel,
@@ -10,6 +9,7 @@ import {
   streamingModel,
   testDeps,
 } from "../helpers/ai";
+import { TODAY, sampleEnrichment, weddingFacts } from "../helpers/fixtures";
 
 const planBody = { facts: weddingFacts, locale: "en", today: TODAY };
 const answer = JSON.stringify(sampleEnrichment);

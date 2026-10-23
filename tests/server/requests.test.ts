@@ -1,6 +1,6 @@
 import { planRequestSchema, sniffImage } from "@/lib/server/requests";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
 import { FIXED_NOW, JPEG, PNG, WEBP } from "../helpers/ai";
+import { TODAY, weddingFacts } from "../helpers/fixtures";
 
 describe("request schemas", () => {
   it("accepts a device date a day either side of the server", () => {

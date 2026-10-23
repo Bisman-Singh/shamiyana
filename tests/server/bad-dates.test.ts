@@ -1,7 +1,6 @@
 import { planHandler } from "@/lib/server/plan-handler";
 import { refineHandler } from "@/lib/server/refine-handler";
 import { visionHandler } from "@/lib/server/vision-handler";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
 import {
   JPEG,
   formPost,
@@ -11,6 +10,7 @@ import {
   streamingModel,
   testDeps,
 } from "../helpers/ai";
+import { TODAY, weddingFacts } from "../helpers/fixtures";
 
 beforeEach(() => {
   vi.spyOn(console, "info").mockImplementation(() => undefined);

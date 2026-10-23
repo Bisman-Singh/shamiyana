@@ -1,7 +1,6 @@
 import { SCREENED_REPLY } from "@/lib/ai/guard";
-import { refineHandler } from "@/lib/server/refine-handler";
 import { DailyCap } from "@/lib/server/rate-limit";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
+import { refineHandler } from "@/lib/server/refine-handler";
 import {
   brokenGenerateModel,
   generatingModel,
@@ -10,6 +9,7 @@ import {
   spec,
   testDeps,
 } from "../helpers/ai";
+import { TODAY, weddingFacts } from "../helpers/fixtures";
 
 /** Info-level log lines from the current test. */
 const infoLines: string[] = [];

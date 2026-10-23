@@ -1,7 +1,7 @@
-import { visionHandler } from "@/lib/server/vision-handler";
 import { DailyCap } from "@/lib/server/rate-limit";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
+import { visionHandler } from "@/lib/server/vision-handler";
 import { JPEG, formPost, generatingModel, jsonPost, spec, testDeps } from "../helpers/ai";
+import { TODAY, weddingFacts } from "../helpers/fixtures";
 
 beforeEach(() => {
   vi.spyOn(console, "info").mockImplementation(() => undefined);
