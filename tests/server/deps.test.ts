@@ -39,6 +39,17 @@ describe("live dependencies", () => {
     expect(warnings.some((line) => line.includes("redis_unavailable"))).toBe(true);
   });
 
+  it("key the client codes with RATE_LIMIT_SECRET when it is set", async () => {
+    vi.resetModules();
+    vi.stubEnv("KV_REST_API_URL", UNREACHABLE.url);
+    vi.stubEnv("KV_REST_API_TOKEN", SECRET);
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "test-key");
+    vi.stubEnv("RATE_LIMIT_SECRET", "s".repeat(32));
+    const { liveDeps } = await import("@/lib/server/deps");
+    const shared = await import("@/lib/server/shared-limits");
+    expect(liveDeps().daily).toBeInstanceOf(shared.SharedDailyCap);
+  });
+
   it("keep the limits in memory without an AI key, since the AI routes refuse then", async () => {
     vi.resetModules();
     vi.stubEnv("KV_REST_API_URL", UNREACHABLE.url);

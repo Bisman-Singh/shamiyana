@@ -57,7 +57,7 @@ function limitsFor(env: ServerEnv): Pick<AiDeps, "limiters" | "daily"> {
     };
   }
   const redis = connectRedis(env.redis);
-  const secret = pseudonymKey(apiKey);
+  const secret = env.RATE_LIMIT_SECRET ?? pseudonymKey(apiKey);
   const shared = (route: AiRoute) =>
     new SharedRateLimiter({
       window: sharedWindow(redis, route, PER_MINUTE[route]),

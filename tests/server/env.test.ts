@@ -47,6 +47,14 @@ describe("readEnv", () => {
     }
   });
 
+  it("takes a RATE_LIMIT_SECRET of at least 32 characters, or none", () => {
+    expect(readEnv({ RATE_LIMIT_SECRET: "k".repeat(32) }).RATE_LIMIT_SECRET).toHaveLength(32);
+    expect(readEnv({ RATE_LIMIT_SECRET: "" }).RATE_LIMIT_SECRET).toBeUndefined();
+    expect(() => readEnv({ RATE_LIMIT_SECRET: "short" })).toThrow(
+      "Invalid server environment: RATE_LIMIT_SECRET",
+    );
+  });
+
   it("takes TRUST_PROXY as 0 or 1 only, so a typo fails the deploy instead of merging every client", () => {
     expect(readEnv({ TRUST_PROXY: "1" }).TRUST_PROXY).toBe("1");
     expect(readEnv({ TRUST_PROXY: "" }).TRUST_PROXY).toBeUndefined();

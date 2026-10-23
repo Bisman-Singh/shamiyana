@@ -34,6 +34,8 @@ const fields = z.object({
   /** Upstash Redis over REST, as the Vercel marketplace integration names it. */
   KV_REST_API_URL: optionalText.pipe(z.url({ protocol: /^https$/ }).optional()),
   KV_REST_API_TOKEN: optionalText,
+  /** Its own key for the client codes kept in Redis; without it one is derived from the Gemini key. */
+  RATE_LIMIT_SECRET: optionalText.pipe(z.string().min(32).optional()),
   /** "1" off Vercel when a proxy in front overwrites the forwarding headers; read per request by `clientKey`. */
   TRUST_PROXY: optionalText.pipe(z.enum(["0", "1"]).optional()),
 });

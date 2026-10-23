@@ -40,9 +40,9 @@ export function connectRedis(config: { url: string; token: string }): Redis {
 }
 
 /**
- * The key client codes are made with, derived from the server's Gemini key.
- * Upstash never holds it, so the codes in Redis can't be turned back into
- * addresses by trying every one.
+ * The key client codes are made with when no RATE_LIMIT_SECRET is set,
+ * derived from the server's Gemini key. Upstash never holds either, so the
+ * codes in Redis can't be turned back into addresses by trying every one.
  */
 export function pseudonymKey(apiKey: string): string {
   return createHmac("sha256", apiKey).update("shamiyana client codes").digest("base64url");
