@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { readAtMost } from "@/lib/shared/byte-stream";
-import { createRecord, withCleanEnrichment } from "@/lib/plan/record";
+import { createRecord } from "@/lib/plan/record";
 import { planRecordSchema, type PlanRecord } from "@/lib/plan/schema";
 
 /**
@@ -61,7 +61,11 @@ function inflate(bytes: Uint8Array, max: number): Promise<Uint8Array | null> {
   return readAtMost(through(new DecompressionStream("deflate-raw"), bytes), max);
 }
 
-/** The plan, without guests and vendor notes, compressed and base64url-encoded for a link. */
+/**
+ * The plan, compressed and base64url-encoded for a link. Guests, vendor notes
+ * and the event notes stay behind, and so do the AI ideas, which the copy makes
+ * again: text in a link can't then pass itself off as the model's.
+ */
 export async function encodeShare(record: PlanRecord): Promise<string> {
   const vendors = Object.fromEntries(
     Object.entries(record.vendors).map(([category, progress]) => [
@@ -72,9 +76,9 @@ export async function encodeShare(record: PlanRecord): Promise<string> {
   const payload: z.infer<typeof sharedSchema> = {
     v: 1,
     plan: {
-      brief: record.brief,
-      enrichment: record.enrichment,
-      enrichedFor: record.enrichedFor,
+      brief: { ...record.brief, notes: "" },
+      enrichment: null,
+      enrichedFor: null,
       factors: record.factors,
       tasks: record.tasks,
       hidden: record.hidden,
@@ -107,9 +111,15 @@ export async function decodeShare(encoded: string): Promise<SharedPlan | null> {
   }
 }
 
-/** A new plan of your own from a shared one, its AI text cleaned again. */
+/** A new plan of your own from a shared one; any AI ideas a link carries are dropped and made again. */
 export function recordFromShare(shared: SharedPlan, id: string, now: string): PlanRecord {
-  return withCleanEnrichment({ ...createRecord(shared.brief, id, now), ...shared, guests: [] });
+  return {
+    ...createRecord(shared.brief, id, now),
+    ...shared,
+    guests: [],
+    enrichment: null,
+    enrichedFor: null,
+  };
 }
 
 /** The share link; the plan rides in the fragment, which browsers never send. */

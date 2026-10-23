@@ -5,9 +5,10 @@
  * calendar file.
  */
 
-// Cc is every C0 and C1 control; the ranges are the bidi embeddings, overrides and isolates.
-const CONTROLS = /[^\P{Cc}\n]|[\u202A-\u202E\u2066-\u2069]/gu;
-const CONTROLS_AND_NEWLINES = /[\p{Cc}\u202A-\u202E\u2066-\u2069]/gu;
+// Cc is every C0 and C1 control; the rest are the bidi marks, embeddings, overrides and isolates.
+// The joiners U+200C and U+200D stay, since Devanagari needs them.
+const CONTROLS = /[^\P{Cc}\n]|[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/gu;
+const CONTROLS_AND_NEWLINES = /[\p{Cc}\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/gu;
 
 /** Text with control and bidi characters replaced, lines trimmed and NFC applied. */
 export function cleanText(value: string, keepNewlines = false): string {

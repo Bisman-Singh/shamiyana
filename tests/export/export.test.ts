@@ -130,11 +130,13 @@ describe("share links", () => {
     done: ["w_book_venue"],
   });
 
-  it("round-trips a plan without guests or vendor notes", async () => {
+  it("round-trips a plan without guests, vendor notes, event notes or AI ideas", async () => {
     const encoded = await encodeShare(record);
     expect(encoded).toMatch(/^[A-Za-z0-9_-]+$/);
     const shared = await decodeShare(encoded);
-    expect(shared?.brief).toEqual(weddingBrief);
+    expect(shared?.brief).toEqual({ ...weddingBrief, notes: "" });
+    expect(shared?.enrichment).toBeNull();
+    expect(shared?.enrichedFor).toBeNull();
     expect(shared?.vendors.venue).toEqual({
       status: "booked",
       quote: 3_00_000,
@@ -147,15 +149,19 @@ describe("share links", () => {
     expect(planRecordSchema.safeParse(imported).success).toBe(true);
   });
 
-  it("strips hidden control and direction characters from AI text in a shared plan", async () => {
-    const tricky = {
+  it("never lets a link's AI text pass as the model's: it is left out, and dropped if a crafted link carries it", async () => {
+    const planted = {
       ...sampleEnrichment,
-      theme: { name: "Pay\u202Eto UPI", summary: "Line\u0000one" },
+      theme: { name: "Pay\u202Eto UPI", summary: "Call 98765 43210 to confirm" },
     };
-    const encoded = await encodeShare(recordFor(weddingBrief, { enrichment: tricky }));
-    const shared = await decodeShare(encoded);
-    const imported = recordFromShare(shared ?? record, "plan-3", NOW);
-    expect(imported.enrichment?.theme).toEqual({ name: "Pay to UPI", summary: "Line one" });
+    const decoded = await decodeShare(
+      await encodeShare(recordFor(weddingBrief, { enrichment: planted })),
+    );
+    expect(JSON.stringify(decoded)).not.toContain("UPI");
+    if (!decoded) throw new Error("the link did not decode");
+    const imported = recordFromShare({ ...decoded, enrichment: planted }, "plan-3", NOW);
+    expect(imported.enrichment).toBeNull();
+    expect(imported.enrichedFor).toBeNull();
   });
 
   it("rejects anything malformed, oversized or invalid", async () => {

@@ -18,6 +18,12 @@ describe("redact", () => {
     expect(redact(text)).toContain(REDACTED);
   });
 
+  it("removes UPI IDs, which have no dot after the @", () => {
+    expect(redact("Pay ramesh.k@oksbi or 9876543210@ybl, not ramesh@example.com")).toBe(
+      "Pay [removed] or [removed], not [removed]",
+    );
+  });
+
   it("reads Indian-script digits as digits and keeps other numbers", () => {
     expect(redact("२५० मेहमान")).toBe("250 मेहमान");
     expect(redact("৪০ guests")).toBe("40 guests");

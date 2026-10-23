@@ -5,6 +5,7 @@ import {
   SharedRateLimiter,
   connectRedis,
   pseudonym,
+  pseudonymKey,
   sharedWindow,
   type ScriptClient,
   type WindowClient,
@@ -44,6 +45,15 @@ class FakeScript implements ScriptClient {
     return Promise.resolve(1);
   }
 }
+
+describe("pseudonymKey", () => {
+  it("derives a stable key that does not reveal the API key", () => {
+    const key = pseudonymKey("api-key-123");
+    expect(key).toBe(pseudonymKey("api-key-123"));
+    expect(key).not.toContain("api-key-123");
+    expect(pseudonymKey("another-key")).not.toBe(key);
+  });
+});
 
 describe("pseudonym", () => {
   it("is stable, keyed and never contains the address", () => {
@@ -148,11 +158,11 @@ describe("live dependencies", () => {
     vi.unstubAllEnvs();
   });
 
-  it("share the limits through Redis when it is configured, and still answer when it is down", async () => {
+  it("share the limits through Redis when it and the AI key are set, and still answer when Redis is down", async () => {
     vi.resetModules();
     vi.stubEnv("KV_REST_API_URL", UNREACHABLE.url);
     vi.stubEnv("KV_REST_API_TOKEN", SECRET);
-    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "test-key");
     const handlers = await import("@/lib/server/handlers");
     const shared = await import("@/lib/server/shared-limits");
     const deps = handlers.liveDeps();
@@ -160,10 +170,23 @@ describe("live dependencies", () => {
     expect(deps.limiters.refine).toBeInstanceOf(shared.SharedRateLimiter);
     expect(deps.limiters.vision).toBeInstanceOf(shared.SharedRateLimiter);
     expect(deps.daily).toBeInstanceOf(shared.SharedDailyCap);
+    // an unknown language fails validation after the limit, so no model is called
     const response = await handlers.planHandler(handlers.liveDeps)(
-      jsonPost({ facts: weddingFacts, locale: "en", today: new Date().toISOString().slice(0, 10) }),
+      jsonPost({ facts: weddingFacts, locale: "xx", today: new Date().toISOString().slice(0, 10) }),
     );
-    expect(response.status).toBe(503);
+    expect(response.status).toBe(422);
     expect(warnings.some((line) => line.includes("redis_unavailable"))).toBe(true);
+  });
+
+  it("keep the limits in memory without an AI key, since the AI routes refuse then", async () => {
+    vi.resetModules();
+    vi.stubEnv("KV_REST_API_URL", UNREACHABLE.url);
+    vi.stubEnv("KV_REST_API_TOKEN", SECRET);
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
+    const handlers = await import("@/lib/server/handlers");
+    const limits = await import("@/lib/server/rate-limit");
+    const deps = handlers.liveDeps();
+    expect(deps.limiters.plan).toBeInstanceOf(limits.RateLimiter);
+    expect(deps.daily).toBeInstanceOf(limits.DailyCap);
   });
 });

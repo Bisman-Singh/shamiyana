@@ -5,6 +5,11 @@ describe("cleanText", () => {
     expect(cleanText("a\u0000b\u202Ec\u2066d\u007F")).toBe("a b c d");
   });
 
+  it("removes the bidi marks LRM, RLM and ALM but keeps the joiners Devanagari needs", () => {
+    expect(cleanText("a\u200Eb\u200Fc\u061Cd")).toBe("a b c d");
+    expect(cleanText("क्\u200Dष and क्\u200Cष")).toBe("क्\u200Dष and क्\u200Cष");
+  });
+
   it("removes C1 control characters too", () => {
     expect(cleanText("a\u0085b\u009Fc")).toBe("a b c");
   });

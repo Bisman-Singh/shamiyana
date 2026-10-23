@@ -14,6 +14,12 @@ test("pages carry a nonce CSP and the hardening headers", async ({ request }) =>
   expect(headers["x-powered-by"]).toBeUndefined();
 });
 
+test("a page whose path only starts with api still gets the CSP", async ({ request }) => {
+  const response = await request.get("/api-docs");
+  expect(response.status()).toBe(404);
+  expect(response.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+});
+
 test("the page runs with no CSP violations", async ({ page }) => {
   const violations: string[] = [];
   page.on("console", (message) => {

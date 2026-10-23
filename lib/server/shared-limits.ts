@@ -36,7 +36,16 @@ export function connectRedis(config: { url: string; token: string }): Redis {
   });
 }
 
-/** A stable code for a client key that cannot be turned back into the address without the token. */
+/**
+ * The key client codes are made with, derived from the server's Gemini key.
+ * Upstash never holds it, so the codes in Redis can't be turned back into
+ * addresses by trying every one.
+ */
+export function pseudonymKey(apiKey: string): string {
+  return createHmac("sha256", apiKey).update("shamiyana client codes").digest("base64url");
+}
+
+/** A stable code for a client key that cannot be turned back into the address without the secret. */
 export function pseudonym(secret: string, key: string): string {
   return createHmac("sha256", secret).update(key).digest("base64url").slice(0, 22);
 }

@@ -35,6 +35,23 @@ describe("content security policy", () => {
     expect(csp).toContain("style-src 'self' 'unsafe-inline'");
   });
 
+  it("puts the CSP on every page, and only skips the API, build assets and the icons", () => {
+    const source = config.matcher[0]?.source ?? "";
+    const matches = (path: string) => new RegExp(`^${source}$`).test(path);
+    for (const page of ["/", "/privacy", "/api-docs", "/apix", "/icon.svg.html", "/favicon.icon"]) {
+      expect(matches(page), page).toBe(true);
+    }
+    for (const skipped of [
+      "/api/plan",
+      "/_next/static/x.js",
+      "/_next/image",
+      "/favicon.ico",
+      "/icon.svg",
+    ]) {
+      expect(matches(skipped), skipped).toBe(false);
+    }
+  });
+
   it("sets a fresh nonce on the request and the response", () => {
     const first = proxy(new NextRequest("https://plan.test/"));
     const second = proxy(new NextRequest("https://plan.test/"));
@@ -43,7 +60,7 @@ describe("content security policy", () => {
     expect(nonce(first)).toBeTruthy();
     expect(nonce(first)).not.toBe(nonce(second));
     expect(first.headers.get("x-middleware-request-x-nonce")).toBe(nonce(first));
-    expect(config.matcher[0]?.source).toContain("?!api");
+    expect(config.matcher[0]?.source).toContain("?!api/");
   });
 });
 

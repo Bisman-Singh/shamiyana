@@ -577,7 +577,7 @@
   },
   "share": {
     "heading": "Share this plan",
-    "intro": "The link carries the plan itself, so anyone with it can open their own copy, including the event name and the amounts agreed and paid. The guest list and vendor notes are left out.",
+    "intro": "The link carries the plan itself, so anyone with it can open their own copy, including the event name and the amounts agreed and paid. The guest list, vendor notes and your notes for the AI are left out, and the copy makes its own AI ideas.",
     "label": "Share link",
     "copy": "Copy link",
     "copied": "Link copied.",

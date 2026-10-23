@@ -23,7 +23,13 @@ import {
 } from "./http";
 import { logEvent, type LogRoute } from "./log";
 import { DailyCap, RateLimiter, type DailyAllowance, type RequestLimiter } from "./rate-limit";
-import { connectRedis, SharedDailyCap, SharedRateLimiter, sharedWindow } from "./shared-limits";
+import {
+  connectRedis,
+  pseudonymKey,
+  SharedDailyCap,
+  SharedRateLimiter,
+  sharedWindow,
+} from "./shared-limits";
 import {
   IMAGE_MAX_BYTES,
   planRequestSchema,
@@ -62,28 +68,32 @@ type LimitedRoute = "plan" | "refine" | "vision";
 /** Requests per client per minute on each AI route. */
 const PER_MINUTE: Record<LimitedRoute, number> = { plan: 8, refine: 20, vision: 6 };
 
-/** Each route's limit and the daily caps: in Redis when configured, with memory as the fallback. */
+/**
+ * Each route's limit and the daily caps: in Redis when it and the AI key are
+ * set, with memory as the fallback. Without a key the AI routes refuse anyway.
+ */
 function limitsFor(env: ServerEnv): Pick<AiDeps, "limiters" | "daily"> {
   const memory = (route: LimitedRoute) =>
     new RateLimiter({ limit: PER_MINUTE[route], windowMs: 60_000 });
   const daily = new DailyCap(env.AI_DAILY_REQUEST_CAP, env.AI_DAILY_CLIENT_CAP);
-  if (!env.redis) {
+  const apiKey = env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (!env.redis || apiKey === undefined) {
     return {
       limiters: { plan: memory("plan"), refine: memory("refine"), vision: memory("vision") },
       daily,
     };
   }
   const redis = connectRedis(env.redis);
-  const { token } = env.redis;
+  const secret = pseudonymKey(apiKey);
   const shared = (route: LimitedRoute) =>
-    new SharedRateLimiter(sharedWindow(redis, route, PER_MINUTE[route]), memory(route), token);
+    new SharedRateLimiter(sharedWindow(redis, route, PER_MINUTE[route]), memory(route), secret);
   return {
     limiters: { plan: shared("plan"), refine: shared("refine"), vision: shared("vision") },
     daily: new SharedDailyCap(
       redis,
       { total: env.AI_DAILY_REQUEST_CAP, client: env.AI_DAILY_CLIENT_CAP },
       daily,
-      token,
+      secret,
     ),
   };
 }

@@ -19,6 +19,8 @@ function asciiDigits(text: string): string {
 
 const PATTERNS: readonly RegExp[] = [
   /[\w.+-]{1,254}@[\w-]{1,63}(?:\.[\w-]{1,63}){1,10}/g,
+  // a UPI ID, such as name@oksbi, after emails have gone
+  /[\w.-]{2,256}@[a-z]{2,64}\b/gi,
   /\b[A-Z]{5}\d{4}[A-Z]\b/gi,
   /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g,
   /(?<!\d)(?:\+?91[\s-]?|0)?[6-9](?:[\s-]?\d){9}(?!\d)/g,
@@ -28,7 +30,7 @@ const PATTERNS: readonly RegExp[] = [
 
 export const REDACTED = "[removed]";
 
-/** Removes email addresses, phone numbers and ID numbers in their common formats. */
+/** Removes email addresses, UPI IDs, phone numbers and ID numbers in their common formats. */
 export function redact(text: string): string {
   return PATTERNS.reduce((acc, pattern) => acc.replace(pattern, REDACTED), asciiDigits(text));
 }

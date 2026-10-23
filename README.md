@@ -68,7 +68,8 @@ suggests; the code adds up, schedules and checks.
   a colour palette, ideas and practical notes. The photo is shrunk and stripped
   of location data in the browser before it is sent.
 - **Share and keep.** A share link carries the plan in the URL fragment, which
-  never reaches a server; guests and vendor notes are left out. Full JSON
+  never reaches a server; guests, vendor notes and the notes for the AI are
+  left out, and the copy makes its own AI ideas. Full JSON
   backup and restore, CSV for budget, checklist and guests, and a print layout.
 - **Two languages.** Every screen, task, vendor question, error and policy is
   in English and Hindi, chosen per browser and rendered on the server.
@@ -93,7 +94,7 @@ only. The key is never sent to the browser.
   categories the plan doesn't have dropped, colours checked as hex codes
   (`lib/plan/enrichment.ts`, `lib/plan/changes.ts`, `lib/ai/vision-result.ts`).
 - The event name is never sent, because it often holds a person's name. Emails,
-  phone numbers, PAN and Aadhaar-shaped numbers are removed from notes and chat
+  UPI IDs, phone numbers, PAN and Aadhaar-shaped numbers are removed from notes and chat
   first (`lib/ai/redact.ts`).
 - A pattern screen in English and Hindi answers a chat message that tries to
   re-instruct the assistant with a fixed reply, and drops such sentences from
@@ -154,7 +155,8 @@ only. The key is never sent to the browser.
   codes with no internals. Config is validated at boot.
 - Server code imports `server-only`, so the key and the handlers can never be
   bundled for the browser. `/api/health` says only that the server is up.
-- CI runs `npm audit`, gitleaks over the full history and CodeQL. Dependabot
+- CI runs `npm audit` and gitleaks over the full history, and CodeQL while the
+  repository is public. Dependabot
   watches npm and Actions. Every Action is pinned to a commit SHA. The
   reporting contact is in `/.well-known/security.txt`. More in
   [SECURITY.md](SECURITY.md).
