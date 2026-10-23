@@ -3,8 +3,12 @@ import type { Dictionary } from "@/lib/i18n/en";
 import { BrandMark, ScallopRule } from "./brand-mark";
 import { LanguageSwitch } from "./language-switch";
 
+interface SiteHeaderProps {
+  dict: Dictionary;
+}
+
 /** Brand and the language switch. */
-export function SiteHeader({ dict }: Readonly<{ dict: Dictionary }>) {
+export function SiteHeader({ dict }: Readonly<SiteHeaderProps>) {
   return (
     <header className="site-header">
       <div className="wrap header-row">
@@ -22,8 +26,12 @@ export function SiteHeader({ dict }: Readonly<{ dict: Dictionary }>) {
   );
 }
 
+interface SiteFooterProps {
+  dict: Dictionary;
+}
+
 /** The AI and storage notes, and links to the policies. */
-export function SiteFooter({ dict }: Readonly<{ dict: Dictionary }>) {
+export function SiteFooter({ dict }: Readonly<SiteFooterProps>) {
   return (
     <footer className="site-footer">
       <div className="wrap footer-grid">

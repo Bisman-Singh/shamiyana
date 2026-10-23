@@ -19,3 +19,9 @@ export interface PlanView {
   vendors: VendorCard[];
   guests: GuestTally;
 }
+
+/** What every panel that edits the plan gets: the derived view and the way to change it. */
+export interface PanelProps {
+  view: PlanView;
+  update: Update;
+}

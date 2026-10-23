@@ -5,16 +5,14 @@ import { newId, saveIdea } from "@/lib/plan/record";
 import { useLocale } from "../locale-provider";
 import type { Update } from "./types";
 
-/** Saves an idea to the plan once; after that it reads Saved and does nothing. */
-export function SaveIdeaButton({
-  idea,
-  saved,
-  update,
-}: Readonly<{
+interface SaveIdeaButtonProps {
   idea: { area: IdeaArea; title: string; detail: string };
   saved: boolean;
   update: Update;
-}>) {
+}
+
+/** Saves an idea to the plan once; after that it reads Saved and does nothing. */
+export function SaveIdeaButton({ idea, saved, update }: Readonly<SaveIdeaButtonProps>) {
   const { dict } = useLocale();
   return (
     <button

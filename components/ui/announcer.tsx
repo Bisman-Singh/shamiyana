@@ -22,8 +22,12 @@ type Announce = (message: string) => void;
 
 const AnnouncerContext = createContext<Announce>(() => undefined);
 
+interface AnnouncerProviderProps {
+  children: ReactNode;
+}
+
 /** Holds the one polite live region and lets any component speak through it. */
-export function AnnouncerProvider({ children }: Readonly<{ children: ReactNode }>) {
+export function AnnouncerProvider({ children }: Readonly<AnnouncerProviderProps>) {
   const [message, setMessage] = useState("");
   const announce = useCallback((next: string) => {
     // Clearing first makes a repeated message count as a change.

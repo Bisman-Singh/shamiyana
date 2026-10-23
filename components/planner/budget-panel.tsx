@@ -26,7 +26,13 @@ export function nudge(current: number, direction: 1 | -1): number {
 
 type Shift = (category: CategoryId, factor: number | null) => void;
 
-function Stepper({ row, factor, shift }: Readonly<{ row: Row; factor: number; shift: Shift }>) {
+interface StepperProps {
+  row: Row;
+  factor: number;
+  shift: Shift;
+}
+
+function Stepper({ row, factor, shift }: Readonly<StepperProps>) {
   const { dict } = useLocale();
   const b = dict.budget;
   const moreRef = useRef<HTMLButtonElement>(null);
@@ -76,17 +82,14 @@ function Stepper({ row, factor, shift }: Readonly<{ row: Row; factor: number; sh
   );
 }
 
-function BudgetLine({
-  row,
-  widest,
-  factor,
-  shift,
-}: Readonly<{
+interface BudgetLineProps {
   row: Row;
   widest: number;
   factor: number;
   shift: Shift;
-}>) {
+}
+
+function BudgetLine({ row, widest, factor, shift }: Readonly<BudgetLineProps>) {
   const { dict } = useLocale();
   const money = useMoney();
   const b = dict.budget;
@@ -116,17 +119,14 @@ function BudgetLine({
   );
 }
 
-function Suggestions({
-  ideas,
-  factors,
-  preview,
-  shift,
-}: Readonly<{
+interface SuggestionsProps {
   ideas: Enrichment;
   factors: PlanView["record"]["factors"];
   preview: ShiftPreview;
   shift: Shift;
-}>) {
+}
+
+function Suggestions({ ideas, factors, preview, shift }: Readonly<SuggestionsProps>) {
   const { dict, locale } = useLocale();
   const money = useMoney();
   const id = useId();
@@ -175,7 +175,12 @@ function Suggestions({
   );
 }
 
-function BudgetTable({ view, shift }: Readonly<{ view: PlanView; shift: Shift }>) {
+interface BudgetTableProps {
+  view: PlanView;
+  shift: Shift;
+}
+
+function BudgetTable({ view, shift }: Readonly<BudgetTableProps>) {
   const { dict } = useLocale();
   const money = useMoney();
   const b = dict.budget;
@@ -228,16 +233,14 @@ function BudgetTable({ view, shift }: Readonly<{ view: PlanView; shift: Shift }>
   );
 }
 
-/** The budget split with weights to adjust, AI shifts to apply, and a CSV export. */
-export function BudgetPanel({
-  view,
-  ideas,
-  update,
-}: Readonly<{
+interface BudgetPanelProps {
   view: PlanView;
   ideas: Enrichment | null;
   update: Update;
-}>) {
+}
+
+/** The budget split with weights to adjust, AI shifts to apply, and a CSV export. */
+export function BudgetPanel({ view, ideas, update }: Readonly<BudgetPanelProps>) {
   const { dict } = useLocale();
   const money = useMoney();
   const b = dict.budget;

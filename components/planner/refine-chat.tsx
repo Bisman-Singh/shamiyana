@@ -15,7 +15,7 @@ import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
-import type { PlanView, Update } from "./types";
+import type { PanelProps, PlanView, Update } from "./types";
 import { useRequestSignal } from "./use-request-signal";
 
 interface Turn {
@@ -58,7 +58,11 @@ export function describeChange(
   }
 }
 
-function ChatLog({ turns }: Readonly<{ turns: readonly Turn[] }>) {
+interface ChatLogProps {
+  turns: readonly Turn[];
+}
+
+function ChatLog({ turns }: Readonly<ChatLogProps>) {
   const { dict, locale } = useLocale();
   if (turns.length === 0) return null;
   return (
@@ -75,19 +79,21 @@ function ChatLog({ turns }: Readonly<{ turns: readonly Turn[] }>) {
   );
 }
 
+interface ProposalFormProps {
+  proposal: Proposal;
+  preview: ShiftPreview;
+  onChange: (next: Proposal) => void;
+  onApply: () => void;
+  onDiscard: () => void;
+}
+
 function ProposalForm({
   proposal,
   preview,
   onChange,
   onApply,
   onDiscard,
-}: Readonly<{
-  proposal: Proposal;
-  preview: ShiftPreview;
-  onChange: (next: Proposal) => void;
-  onApply: () => void;
-  onDiscard: () => void;
-}>) {
+}: Readonly<ProposalFormProps>) {
   const { dict, locale } = useLocale();
   const r = dict.refine;
   return (
@@ -126,19 +132,15 @@ function ProposalForm({
   );
 }
 
-function ChatForm({
-  message,
-  pending,
-  inputRef,
-  onChange,
-  onSend,
-}: Readonly<{
+interface ChatFormProps {
   message: string;
   pending: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
   onChange: (value: string) => void;
   onSend: (event: SubmitEvent<HTMLFormElement>) => void;
-}>) {
+}
+
+function ChatForm({ message, pending, inputRef, onChange, onSend }: Readonly<ChatFormProps>) {
   const { dict } = useLocale();
   const r = dict.refine;
   const inputId = useId();
@@ -262,7 +264,7 @@ function useRefineChat(view: PlanView, update: Update) {
 }
 
 /** Plan changes asked for in plain words, proposed as tickable changes. */
-export function RefineChat({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+export function RefineChat({ view, update }: Readonly<PanelProps>) {
   const { dict } = useLocale();
   const r = dict.refine;
   const baseId = useId();

@@ -12,8 +12,12 @@ import type { PlanView } from "./types";
 /** Tasks shown under "Next up". */
 const NEXT_UP = 5;
 
+interface KeyFiguresProps {
+  view: PlanView;
+}
+
 /** The six numbers that say where the plan stands. */
-function KeyFigures({ view }: Readonly<{ view: PlanView }>) {
+function KeyFigures({ view }: Readonly<KeyFiguresProps>) {
   const { dict, locale } = useLocale();
   const o = dict.overview;
   const { budget, timeline, guests } = view;
@@ -51,8 +55,12 @@ function KeyFigures({ view }: Readonly<{ view: PlanView }>) {
   );
 }
 
+interface NextUpProps {
+  view: PlanView;
+}
+
 /** The next open tasks by due date, overdue ones marked. */
-function NextUp({ view }: Readonly<{ view: PlanView }>) {
+function NextUp({ view }: Readonly<NextUpProps>) {
   const { dict, locale } = useLocale();
   const id = useId();
   const o = dict.overview;
@@ -86,8 +94,12 @@ function NextUp({ view }: Readonly<{ view: PlanView }>) {
   );
 }
 
+interface ThemeAndRisksProps {
+  ideas: Enrichment;
+}
+
 /** The AI's theme and the risks it sees, each in the language it was written in. */
-function ThemeAndRisks({ ideas }: Readonly<{ ideas: Enrichment }>) {
+function ThemeAndRisks({ ideas }: Readonly<ThemeAndRisksProps>) {
   const { dict, locale } = useLocale();
   const id = useId();
   const o = dict.overview;
@@ -118,11 +130,13 @@ function ThemeAndRisks({ ideas }: Readonly<{ ideas: Enrichment }>) {
   );
 }
 
+interface OverviewPanelProps {
+  view: PlanView;
+  ideas: Enrichment | null;
+}
+
 /** Where the plan stands, what is next, and the AI's theme and risks once they arrive. */
-export function OverviewPanel({
-  view,
-  ideas,
-}: Readonly<{ view: PlanView; ideas: Enrichment | null }>) {
+export function OverviewPanel({ view, ideas }: Readonly<OverviewPanelProps>) {
   return (
     <div className="overview">
       <KeyFigures view={view} />

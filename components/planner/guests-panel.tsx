@@ -20,9 +20,14 @@ import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
 import { focusOpenPanel } from "../ui/tabs";
-import type { PlanView, Update } from "./types";
+import type { PanelProps, Update } from "./types";
 
-function AddGuest({ update, full }: Readonly<{ update: Update; full: boolean }>) {
+interface AddGuestProps {
+  update: Update;
+  full: boolean;
+}
+
+function AddGuest({ update, full }: Readonly<AddGuestProps>) {
   const { dict } = useLocale();
   const g = dict.guests;
   const baseId = useId();
@@ -102,7 +107,7 @@ function AddGuest({ update, full }: Readonly<{ update: Update; full: boolean }>)
   );
 }
 
-function Tallies({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+function Tallies({ view, update }: Readonly<PanelProps>) {
   const { dict, locale } = useLocale();
   const g = dict.guests;
   const { record, guests: tally } = view;
@@ -156,7 +161,12 @@ function Tallies({ view, update }: Readonly<{ view: PlanView; update: Update }>)
   );
 }
 
-function GuestRow({ guest, update }: Readonly<{ guest: Guest; update: Update }>) {
+interface GuestRowProps {
+  guest: Guest;
+  update: Update;
+}
+
+function GuestRow({ guest, update }: Readonly<GuestRowProps>) {
   const { dict, locale } = useLocale();
   const g = dict.guests;
   return (
@@ -203,7 +213,12 @@ function GuestRow({ guest, update }: Readonly<{ guest: Guest; update: Update }>)
 /** Rows rendered at a time; a long list grows on request instead of all at once. */
 const PAGE = 100;
 
-function GuestTable({ guests, update }: Readonly<{ guests: readonly Guest[]; update: Update }>) {
+interface GuestTableProps {
+  guests: readonly Guest[];
+  update: Update;
+}
+
+function GuestTable({ guests, update }: Readonly<GuestTableProps>) {
   const { dict } = useLocale();
   const g = dict.guests;
   const filterId = useId();
@@ -264,7 +279,7 @@ function GuestTable({ guests, update }: Readonly<{ guests: readonly Guest[]; upd
 }
 
 /** Households, replies and food counts, with a CSV export. */
-export function GuestsPanel({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+export function GuestsPanel({ view, update }: Readonly<PanelProps>) {
   const { dict } = useLocale();
   const g = dict.guests;
   const { record } = view;

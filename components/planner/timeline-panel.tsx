@@ -17,7 +17,7 @@ import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
 import { focusOpenPanel } from "../ui/tabs";
 import { areaName, taskTitle } from "./task-title";
-import type { PlanView, Update } from "./types";
+import type { PanelProps, PlanView, Update } from "./types";
 
 /** A new task needs a title within the limit and a date from today up to the event. */
 function checkTask(
@@ -35,7 +35,7 @@ function checkTask(
   return { errors, clean: named.success ? named.data : "", lead };
 }
 
-function AddTask({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+function AddTask({ view, update }: Readonly<PanelProps>) {
   const { dict } = useLocale();
   const t = dict.timeline;
   const baseId = useId();
@@ -104,11 +104,13 @@ function AddTask({ view, update }: Readonly<{ view: PlanView; update: Update }>)
   );
 }
 
-function TaskRow({
-  item,
-  view,
-  update,
-}: Readonly<{ item: TimelineItem; view: PlanView; update: Update }>) {
+interface TaskRowProps {
+  item: TimelineItem;
+  view: PlanView;
+  update: Update;
+}
+
+function TaskRow({ item, view, update }: Readonly<TaskRowProps>) {
   const { dict, locale } = useLocale();
   const t = dict.timeline;
   const title = taskTitle(item, dict);
@@ -171,7 +173,7 @@ function TaskRow({
 }
 
 /** Tasks by phase with due dates, calendar export, removed tasks and a form to add one. */
-export function TimelinePanel({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+export function TimelinePanel({ view, update }: Readonly<PanelProps>) {
   const { dict, locale } = useLocale();
   const t = dict.timeline;
   const announce = useAnnounce();

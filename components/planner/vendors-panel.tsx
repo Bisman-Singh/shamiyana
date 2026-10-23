@@ -12,18 +12,20 @@ import type { VendorProgress } from "@/lib/plan/schema";
 import { vendorTally, type VendorCard } from "@/lib/plan/vendors";
 import { useLocale } from "../locale-provider";
 import { SelectField, TextArea, TextField } from "../ui/field";
-import type { PlanView, Update } from "./types";
+import type { PanelProps, Update } from "./types";
 
 function rupees(text: string): number {
   return Math.min(LIMITS.budgetMax, readAmount(text) ?? 0);
 }
 
+interface QuestionsProps {
+  title: string;
+  vendor: string;
+  items: readonly string[];
+}
+
 /** A list of questions; its heading names the vendor too, since every card repeats it. */
-function Questions({
-  title,
-  vendor,
-  items,
-}: Readonly<{ title: string; vendor: string; items: readonly string[] }>) {
+function Questions({ title, vendor, items }: Readonly<QuestionsProps>) {
   const { locale } = useLocale();
   if (items.length === 0) return null;
   return (
@@ -43,11 +45,13 @@ function Questions({
   );
 }
 
-function Card({
-  card,
-  city,
-  update,
-}: Readonly<{ card: VendorCard; city: string; update: Update }>) {
+interface CardProps {
+  card: VendorCard;
+  city: string;
+  update: Update;
+}
+
+function Card({ card, city, update }: Readonly<CardProps>) {
   const { dict, locale } = useLocale();
   const v = dict.vendors;
   const name = dict.categories[card.category];
@@ -126,7 +130,7 @@ function Card({
 }
 
 /** One card per vendor with status, price, payments, notes and questions to ask. */
-export function VendorsPanel({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+export function VendorsPanel({ view, update }: Readonly<PanelProps>) {
   const { dict } = useLocale();
   const v = dict.vendors;
   const tally = vendorTally(view.vendors);

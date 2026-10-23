@@ -35,16 +35,14 @@ interface Props {
 
 type Errors = Partial<Record<DraftField, DraftError>>;
 
-/** A focusable list of what to fix, each item linking to its field. */
-function ErrorSummary({
-  errors,
-  idOf,
-  summaryRef,
-}: Readonly<{
+interface ErrorSummaryProps {
   errors: Errors;
   idOf: (n: string) => string;
   summaryRef: RefObject<HTMLDivElement | null>;
-}>) {
+}
+
+/** A focusable list of what to fix, each item linking to its field. */
+function ErrorSummary({ errors, idOf, summaryRef }: Readonly<ErrorSummaryProps>) {
   const { dict, locale } = useLocale();
   const fields = DRAFT_FIELDS.flatMap((field) => {
     const code = errors[field];
@@ -65,7 +63,11 @@ function ErrorSummary({
   );
 }
 
-function Samples({ onPick }: Readonly<{ onPick: (type: EventType) => void }>) {
+interface SamplesProps {
+  onPick: (type: EventType) => void;
+}
+
+function Samples({ onPick }: Readonly<SamplesProps>) {
   const { dict } = useLocale();
   const headingId = useId();
   return (

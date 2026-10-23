@@ -11,8 +11,12 @@ export function linkify(text: string): { at: number; text: string; link: boolean
   return out;
 }
 
+interface ParagraphProps {
+  text: string;
+}
+
 /** Renders policy text; bare https links in it become real links. */
-function Paragraph({ text }: Readonly<{ text: string }>) {
+function Paragraph({ text }: Readonly<ParagraphProps>) {
   return (
     <p>
       {linkify(text).map((run) =>
@@ -28,8 +32,12 @@ function Paragraph({ text }: Readonly<{ text: string }>) {
   );
 }
 
+interface LegalArticleProps {
+  page: LegalPage;
+}
+
 /** A policy page: its title, last change and sections. */
-export function LegalArticle({ page }: Readonly<{ page: LegalPage }>) {
+export function LegalArticle({ page }: Readonly<LegalArticleProps>) {
   return (
     <article className="legal">
       <h1>{page.title}</h1>

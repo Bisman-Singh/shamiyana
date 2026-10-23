@@ -49,14 +49,13 @@ function focusHeading(): void {
   });
 }
 
-/** Says when the browser blocks or fills storage, or when saved data had to be recovered. */
-export function StoreNotice({
-  notice,
-  onDismiss,
-}: Readonly<{
+interface StoreNoticeProps {
   notice: StoreNoticeKind;
   onDismiss: () => void;
-}>) {
+}
+
+/** Says when the browser blocks or fills storage, or when saved data had to be recovered. */
+export function StoreNotice({ notice, onDismiss }: Readonly<StoreNoticeProps>) {
   const { dict } = useLocale();
   return (
     <Notice
@@ -79,18 +78,15 @@ export function StoreNotice({
   );
 }
 
-/** Offers to open a plan that arrived in a share link. */
-export function SharedImport({
-  incoming,
-  full,
-  onAdd,
-  onDismiss,
-}: Readonly<{
+interface SharedImportProps {
   incoming: Incoming;
   full: boolean;
   onAdd: (plan: SharedPlan) => void;
   onDismiss: () => void;
-}>) {
+}
+
+/** Offers to open a plan that arrived in a share link. */
+export function SharedImport({ incoming, full, onAdd, onDismiss }: Readonly<SharedImportProps>) {
   const { dict } = useLocale();
   const headingId = useId();
   if (incoming === null) return null;
@@ -133,14 +129,13 @@ export interface Message {
   undo?: PlanRecord;
 }
 
-/** A one-off message, with Undo when it reports a deleted plan. */
-export function MessageNotice({
-  message,
-  onUndo,
-}: Readonly<{
+interface MessageNoticeProps {
   message: Message;
   onUndo: (record: PlanRecord) => void;
-}>) {
+}
+
+/** A one-off message, with Undo when it reports a deleted plan. */
+export function MessageNotice({ message, onUndo }: Readonly<MessageNoticeProps>) {
   const deleted = message.undo;
   return (
     <Notice
@@ -160,16 +155,14 @@ export function MessageNotice({
   );
 }
 
-/** Choosing in the list changes nothing until Open is pressed, so the page never switches under the user. */
-function PlanPicker({
-  plans,
-  initial,
-  onSelect,
-}: Readonly<{
+interface PlanPickerProps {
   plans: readonly PlanRecord[];
   initial: PlanRecord;
   onSelect: (id: string) => void;
-}>) {
+}
+
+/** Choosing in the list changes nothing until Open is pressed, so the page never switches under the user. */
+function PlanPicker({ plans, initial, onSelect }: Readonly<PlanPickerProps>) {
   const { dict, locale } = useLocale();
   const selectId = useId();
   const [choice, setChoice] = useState(initial.id);
@@ -202,6 +195,16 @@ function PlanPicker({
   );
 }
 
+interface PlansBarProps {
+  plans: readonly PlanRecord[];
+  active: PlanRecord | null;
+  full: boolean;
+  onSelect: (id: string) => void;
+  onNew: () => void;
+  onRestore: (event: ChangeEvent<HTMLInputElement>) => void;
+  onDelete: (() => void) | null;
+}
+
 /** Pick, start, restore or delete a saved plan. */
 export function PlansBar({
   plans,
@@ -211,15 +214,7 @@ export function PlansBar({
   onNew,
   onRestore,
   onDelete,
-}: Readonly<{
-  plans: readonly PlanRecord[];
-  active: PlanRecord | null;
-  full: boolean;
-  onSelect: (id: string) => void;
-  onNew: () => void;
-  onRestore: (event: ChangeEvent<HTMLInputElement>) => void;
-  onDelete: (() => void) | null;
-}>) {
+}: Readonly<PlansBarProps>) {
   const { dict } = useLocale();
   const limitId = useId();
   return (

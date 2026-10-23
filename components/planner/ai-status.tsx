@@ -43,6 +43,15 @@ export function AiStatus(props: Parameters<typeof StatusLine>[0]) {
   );
 }
 
+interface StatusLineProps {
+  state: EnrichmentState;
+  city: string;
+  hasIdeas: boolean;
+  onRegenerate: () => void;
+  onRetry: () => void;
+  onStop: () => void;
+}
+
 /** One status, writing, failed or idle, with its one action. */
 function StatusLine({
   state,
@@ -51,14 +60,7 @@ function StatusLine({
   onRegenerate,
   onRetry,
   onStop,
-}: Readonly<{
-  state: EnrichmentState;
-  city: string;
-  hasIdeas: boolean;
-  onRegenerate: () => void;
-  onRetry: () => void;
-  onStop: () => void;
-}>) {
+}: Readonly<StatusLineProps>) {
   const { dict } = useLocale();
   const a = dict.ai;
 

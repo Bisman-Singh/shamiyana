@@ -47,19 +47,15 @@ export function usePlanView(record: PlanRecord, today: string): PlanView {
   }, [record, today]);
 }
 
-function PlanHeader({
-  titleId,
-  view,
-  focusOnOpen,
-  onEdit,
-  onShare,
-}: Readonly<{
+interface PlanHeaderProps {
   titleId: string;
   view: PlanView;
   focusOnOpen: boolean;
   onEdit: () => void;
   onShare: () => void;
-}>) {
+}
+
+function PlanHeader({ titleId, view, focusOnOpen, onEdit, onShare }: Readonly<PlanHeaderProps>) {
   const { dict, locale } = useLocale();
   const titleRef = useFocusOnMount<HTMLHeadingElement>(focusOnOpen);
   const w = dict.workspace;
@@ -114,8 +110,13 @@ function PlanHeader({
   );
 }
 
+interface UndoNoticeProps {
+  message: string;
+  onUndo: () => void;
+}
+
 /** Shown after a removal; its button takes focus, since the removed row took the focus with it. */
-function UndoNotice({ message, onUndo }: Readonly<{ message: string; onUndo: () => void }>) {
+function UndoNotice({ message, onUndo }: Readonly<UndoNoticeProps>) {
   return (
     <Notice tone="success" action={<UndoButton onUndo={onUndo} />}>
       {message}

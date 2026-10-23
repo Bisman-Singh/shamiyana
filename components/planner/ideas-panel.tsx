@@ -8,18 +8,16 @@ import { removeIdea } from "@/lib/plan/record";
 import { useLocale } from "../locale-provider";
 import { PhotoIdeas } from "./photo-ideas";
 import { RefineChat } from "./refine-chat";
-import type { PlanView, Update } from "./types";
+import type { PanelProps, PlanView, Update } from "./types";
 import { SaveIdeaButton } from "./save-idea-button";
 
-function AiIdeas({
-  ideas,
-  saved,
-  update,
-}: Readonly<{
+interface AiIdeasProps {
   ideas: Enrichment;
   saved: ReadonlySet<string>;
   update: Update;
-}>) {
+}
+
+function AiIdeas({ ideas, saved, update }: Readonly<AiIdeasProps>) {
   const { dict, locale } = useLocale();
   const id = useId();
   const i = dict.ideas;
@@ -71,7 +69,7 @@ function AiIdeas({
   );
 }
 
-function SavedIdeas({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+function SavedIdeas({ view, update }: Readonly<PanelProps>) {
   const { dict, locale } = useLocale();
   const id = useId();
   const i = dict.ideas;
@@ -111,18 +109,15 @@ function SavedIdeas({ view, update }: Readonly<{ view: PlanView; update: Update 
   );
 }
 
-/** AI ideas and menu, saved ideas, the refine chat and photo ideas. */
-export function IdeasPanel({
-  view,
-  ideas,
-  status,
-  update,
-}: Readonly<{
+interface IdeasPanelProps {
   view: PlanView;
   ideas: Enrichment | null;
   status: ReactNode;
   update: Update;
-}>) {
+}
+
+/** AI ideas and menu, saved ideas, the refine chat and photo ideas. */
+export function IdeasPanel({ view, ideas, status, update }: Readonly<IdeasPanelProps>) {
   const { dict } = useLocale();
   const saved = new Set(view.record.ideas.map((s) => s.title));
   return (

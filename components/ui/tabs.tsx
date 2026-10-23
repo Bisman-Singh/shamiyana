@@ -37,18 +37,20 @@ export function focusOpenPanel(): void {
   });
 }
 
+interface TabsProps<T extends string> {
+  label: string;
+  tabs: readonly Tab<T>[];
+  selected: T;
+  onSelect: (id: T) => void;
+}
+
 /** WAI-ARIA tabs with roving focus, arrow keys, Home and End. */
 export function Tabs<T extends string>({
   label,
   tabs,
   selected,
   onSelect,
-}: Readonly<{
-  label: string;
-  tabs: readonly Tab<T>[];
-  selected: T;
-  onSelect: (id: T) => void;
-}>) {
+}: Readonly<TabsProps<T>>) {
   const baseId = useId();
   const tabsRef = useRef(new Map<T, HTMLButtonElement>());
 

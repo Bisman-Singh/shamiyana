@@ -7,8 +7,13 @@ import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 
+interface ShareLinkProps {
+  link: string;
+  title: string;
+}
+
 /** The link with Copy and, where the browser has one, its share sheet. Copy takes focus when the link appears. */
-function ShareLink({ link, title }: Readonly<{ link: string; title: string }>) {
+function ShareLink({ link, title }: Readonly<ShareLinkProps>) {
   const { dict } = useLocale();
   const s = dict.share;
   const id = useId();
@@ -65,14 +70,16 @@ function ShareLink({ link, title }: Readonly<{ link: string; title: string }>) {
   );
 }
 
+interface ShareDialogProps {
+  record: PlanRecord;
+  onClose: () => void;
+}
+
 /**
  * A modal with the share link. The native dialog makes the page behind it
  * inert and closes on Escape; its description is the privacy note.
  */
-export function ShareDialog({
-  record,
-  onClose,
-}: Readonly<{ record: PlanRecord; onClose: () => void }>) {
+export function ShareDialog({ record, onClose }: Readonly<ShareDialogProps>) {
   const { dict } = useLocale();
   const s = dict.share;
   const baseId = useId();

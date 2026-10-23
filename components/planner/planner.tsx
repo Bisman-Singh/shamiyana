@@ -104,6 +104,17 @@ function useActions(
   };
 }
 
+interface PlannerNoticesProps {
+  store: PlanStore;
+  notice: Notice | null;
+  incoming: Incoming;
+  full: boolean;
+  message: Message | null;
+  onAdd: (plan: SharedPlan) => void;
+  onDismissShare: () => void;
+  onUndo: (record: PlanRecord) => void;
+}
+
 /** Storage problems, an incoming share link and the last action's message, in that order. */
 function PlannerNotices({
   store,
@@ -114,16 +125,7 @@ function PlannerNotices({
   onAdd,
   onDismissShare,
   onUndo,
-}: Readonly<{
-  store: PlanStore;
-  notice: Notice | null;
-  incoming: Incoming;
-  full: boolean;
-  message: Message | null;
-  onAdd: (plan: SharedPlan) => void;
-  onDismissShare: () => void;
-  onUndo: (record: PlanRecord) => void;
-}>) {
+}: Readonly<PlannerNoticesProps>) {
   return (
     <>
       {notice ? (
@@ -142,6 +144,15 @@ function PlannerNotices({
   );
 }
 
+interface PlanFormProps {
+  active: PlanRecord | null;
+  today: string;
+  focusOnOpen: boolean;
+  onCreate: (brief: Brief) => void;
+  onSave: (record: PlanRecord) => void;
+  onCancel: (() => void) | null;
+}
+
 /** The brief form, new or editing the open plan. */
 function PlanForm({
   active,
@@ -150,14 +161,7 @@ function PlanForm({
   onCreate,
   onSave,
   onCancel,
-}: Readonly<{
-  active: PlanRecord | null;
-  today: string;
-  focusOnOpen: boolean;
-  onCreate: (brief: Brief) => void;
-  onSave: (record: PlanRecord) => void;
-  onCancel: (() => void) | null;
-}>) {
+}: Readonly<PlanFormProps>) {
   return (
     <BriefForm
       key={active ? active.id : "new"}
@@ -200,22 +204,17 @@ function useView() {
   };
 }
 
-/** The open plan, or the form that makes a new one or edits the open one. */
-function PlanOrForm({
-  active,
-  mode,
-  today,
-  focus,
-  actions,
-  go,
-}: Readonly<{
+interface PlanOrFormProps {
   active: PlanRecord | null;
   mode: Mode;
   today: string;
   focus: boolean;
   actions: ReturnType<typeof useActions>;
   go: (mode: Mode) => void;
-}>) {
+}
+
+/** The open plan, or the form that makes a new one or edits the open one. */
+function PlanOrForm({ active, mode, today, focus, actions, go }: Readonly<PlanOrFormProps>) {
   if (mode === "plan" && active) {
     return (
       <Workspace
@@ -253,8 +252,12 @@ function PlanOrForm({
   );
 }
 
+interface PlannerProps {
+  store?: PlanStore;
+}
+
 /** The whole planner: saved plans, notices, and the open plan or its form. */
-export function Planner({ store }: Readonly<{ store?: PlanStore }>) {
+export function Planner({ store }: Readonly<PlannerProps>) {
   const plans = store ?? sharedStore();
   const snapshot = useSyncExternalStore(
     plans.subscribe,

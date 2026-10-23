@@ -9,7 +9,7 @@ import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
-import type { PlanView, Update } from "./types";
+import type { PanelProps, PlanView, Update } from "./types";
 import { SaveIdeaButton } from "./save-idea-button";
 import { useRequestSignal } from "./use-request-signal";
 
@@ -24,15 +24,13 @@ type State =
   | { phase: "done"; photo: Photo; result: VisionResult }
   | { phase: "error"; message: string; photo?: Photo };
 
-function VisionResultView({
-  result,
-  saved,
-  update,
-}: Readonly<{
+interface VisionResultViewProps {
   result: VisionResult;
   saved: ReadonlySet<string>;
   update: Update;
-}>) {
+}
+
+function VisionResultView({ result, saved, update }: Readonly<VisionResultViewProps>) {
   const { dict, locale } = useLocale();
   const p = dict.photo;
   return (
@@ -90,8 +88,12 @@ function VisionResultView({
   );
 }
 
+interface PhotoPreviewProps {
+  state: State;
+}
+
 /** The chosen photo, described by what the AI saw once it has looked. */
-function PhotoPreview({ state }: Readonly<{ state: State }>) {
+function PhotoPreview({ state }: Readonly<PhotoPreviewProps>) {
   const { dict } = useLocale();
   const p = dict.photo;
   if (!("photo" in state) || !state.photo) return null;
@@ -158,7 +160,7 @@ function usePhotoIdeas(view: PlanView) {
 }
 
 /** Ideas from a venue, decor or outfit photo; the photo is sent once and not kept. */
-export function PhotoIdeas({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+export function PhotoIdeas({ view, update }: Readonly<PanelProps>) {
   const { dict } = useLocale();
   const p = dict.photo;
   const headingId = useId();
