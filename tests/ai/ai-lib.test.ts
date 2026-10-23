@@ -215,15 +215,11 @@ describe("models", () => {
     expect(
       buildChain({
         GEMINI_MODELS: ["gemini-3.5-flash"],
-        AI_DAILY_REQUEST_CAP: 1,
-        AI_DAILY_CLIENT_CAP: 1,
         GOOGLE_GENERATIVE_AI_API_KEY: undefined,
       }),
     ).toBeNull();
     const chain = buildChain({
       GEMINI_MODELS: ["a-model", "b-model"],
-      AI_DAILY_REQUEST_CAP: 1,
-      AI_DAILY_CLIENT_CAP: 1,
       GOOGLE_GENERATIVE_AI_API_KEY: "k",
     });
     expect(chain?.map((s) => s.id)).toEqual(["a-model", "b-model"]);

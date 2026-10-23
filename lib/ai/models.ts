@@ -21,7 +21,9 @@ export function providerOptionsFor(id: string): ProviderOptions {
 }
 
 /** The fallback chain from config, or null when no key is set and AI is off. */
-export function buildChain(env: ServerEnv): ModelSpec[] | null {
+export function buildChain(
+  env: Pick<ServerEnv, "GOOGLE_GENERATIVE_AI_API_KEY" | "GEMINI_MODELS">,
+): ModelSpec[] | null {
   const apiKey = env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (apiKey === undefined) return null;
   const google = createGoogle({ apiKey });

@@ -34,12 +34,14 @@ export function logEvent(fields: LogFields): void {
   else console.info(line(fields));
 }
 
-export interface Notice {
-  event: "ai_off";
-  reason: "no_api_key";
-}
+export type Notice =
+  | { event: "ai_off"; reason: "no_api_key" }
+  | { event: "limits_local"; reason: "redis_unavailable" };
 
-/** A configuration warning at startup, such as the AI being off for want of a key. */
+/**
+ * A configuration warning, such as the AI being off for want of a key, or a
+ * request limited in memory because Redis did not answer.
+ */
 export function logNotice(notice: Notice): void {
   console.warn(line(notice));
 }

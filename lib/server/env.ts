@@ -4,17 +4,21 @@ import { z } from "zod";
 /**
  * Server configuration, validated once at boot by `instrumentation.ts` so a
  * malformed value fails the deploy instead of the first request. A missing
- * API key is allowed: the planner works without AI and says so.
+ * API key is allowed: the planner works without AI and says so. Without the
+ * Redis pair, limits stay in each instance's memory.
  */
 
 const MODEL_ID = /^[a-z0-9][a-z0-9.-]{1,63}$/;
 
-const schema = z.object({
-  GOOGLE_GENERATIVE_AI_API_KEY: z
-    .string()
-    .trim()
-    .optional()
-    .transform((v) => (v === "" ? undefined : v)),
+/** An optional secret or address where an empty value means unset. */
+const optionalText = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v) => (v === "" ? undefined : v));
+
+const fields = z.object({
+  GOOGLE_GENERATIVE_AI_API_KEY: optionalText,
   GEMINI_MODELS: z
     .string()
     .default("gemini-3.5-flash-lite,gemini-3.5-flash,gemini-3.6-flash,gemini-3.8-flash")
@@ -27,9 +31,26 @@ const schema = z.object({
     .pipe(z.array(z.string().regex(MODEL_ID)).min(1).max(4)),
   AI_DAILY_REQUEST_CAP: z.coerce.number().int().min(1).max(1_000_000).default(2000),
   AI_DAILY_CLIENT_CAP: z.coerce.number().int().min(1).max(100_000).default(100),
+  /** Upstash Redis over REST, as the Vercel marketplace integration names it. */
+  KV_REST_API_URL: optionalText.pipe(z.url({ protocol: /^https$/ }).optional()),
+  KV_REST_API_TOKEN: optionalText,
 });
 
-export type ServerEnv = z.infer<typeof schema>;
+const schema = fields.transform(
+  ({ KV_REST_API_URL: url, KV_REST_API_TOKEN: token, ...rest }, ctx) => {
+    if ((url === undefined) !== (token === undefined)) {
+      ctx.addIssue({
+        code: "custom",
+        path: [url === undefined ? "KV_REST_API_URL" : "KV_REST_API_TOKEN"],
+        message: "set both or neither",
+      });
+      return z.NEVER;
+    }
+    return { ...rest, redis: url && token ? { url, token } : null };
+  },
+);
+
+export type ServerEnv = z.output<typeof schema>;
 
 export class EnvError extends Error {
   override name = "EnvError";

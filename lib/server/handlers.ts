@@ -12,7 +12,7 @@ import {
   textStream,
   type RunContext,
 } from "@/lib/ai/run";
-import { readEnv } from "./env";
+import { readEnv, type ServerEnv } from "./env";
 import {
   clientKey,
   errorResponse,
@@ -22,7 +22,8 @@ import {
   type GuardOptions,
 } from "./http";
 import { logEvent, type LogRoute } from "./log";
-import { DailyCap, RateLimiter } from "./rate-limit";
+import { DailyCap, RateLimiter, type DailyAllowance, type RequestLimiter } from "./rate-limit";
+import { connectRedis, SharedDailyCap, SharedRateLimiter, sharedWindow } from "./shared-limits";
 import {
   IMAGE_MAX_BYTES,
   planRequestSchema,
@@ -39,8 +40,8 @@ import {
 export interface AiDeps {
   chain: readonly ModelSpec[] | null;
   cache: AnswerCache;
-  limiters: { plan: RateLimiter; refine: RateLimiter; vision: RateLimiter };
-  daily: DailyCap;
+  limiters: Record<LimitedRoute, RequestLimiter>;
+  daily: DailyAllowance;
   now: () => Date;
 }
 
@@ -51,16 +52,42 @@ const BODY_LIMITS = {
   visionFields: 16_384,
 } as const;
 
+type LimitedRoute = "plan" | "refine" | "vision";
+
+/** Requests per client per minute on each AI route. */
+const PER_MINUTE: Record<LimitedRoute, number> = { plan: 8, refine: 20, vision: 6 };
+
+/** Each route's limit and the daily caps: in Redis when configured, with memory as the fallback. */
+function limitsFor(env: ServerEnv): Pick<AiDeps, "limiters" | "daily"> {
+  const memory = (route: LimitedRoute) =>
+    new RateLimiter({ limit: PER_MINUTE[route], windowMs: 60_000 });
+  const daily = new DailyCap(env.AI_DAILY_REQUEST_CAP, env.AI_DAILY_CLIENT_CAP);
+  if (!env.redis) {
+    return {
+      limiters: { plan: memory("plan"), refine: memory("refine"), vision: memory("vision") },
+      daily,
+    };
+  }
+  const redis = connectRedis(env.redis);
+  const { token } = env.redis;
+  const shared = (route: LimitedRoute) =>
+    new SharedRateLimiter(sharedWindow(redis, route, PER_MINUTE[route]), memory(route), token);
+  return {
+    limiters: { plan: shared("plan"), refine: shared("refine"), vision: shared("vision") },
+    daily: new SharedDailyCap(
+      redis,
+      { total: env.AI_DAILY_REQUEST_CAP, client: env.AI_DAILY_CLIENT_CAP },
+      daily,
+      token,
+    ),
+  };
+}
+
 function createDeps(env = readEnv()): AiDeps {
   return {
     chain: buildChain(env),
     cache: new AnswerCache(),
-    limiters: {
-      plan: new RateLimiter({ limit: 8, windowMs: 60_000 }),
-      refine: new RateLimiter({ limit: 20, windowMs: 60_000 }),
-      vision: new RateLimiter({ limit: 6, windowMs: 60_000 }),
-    },
-    daily: new DailyCap(env.AI_DAILY_REQUEST_CAP, env.AI_DAILY_CLIENT_CAP),
+    ...limitsFor(env),
     now: () => new Date(),
   };
 }
@@ -141,13 +168,13 @@ async function readJson<T>(
 }
 
 /** The model chain and today's allowance for this client, or the reason there is none. */
-function admit(
+async function admit(
   request: Request,
   d: AiDeps,
   log: Log,
-): { ctx: RunContext } | { refused: ErrorCode } {
+): Promise<{ ctx: RunContext } | { refused: ErrorCode }> {
   if (!d.chain) return { refused: "ai_unavailable" };
-  if (!d.daily.take(clientKey(request))) return { refused: "daily_cap" };
+  if (!(await d.daily.take(clientKey(request)))) return { refused: "daily_cap" };
   return {
     ctx: {
       chain: d.chain,
@@ -185,7 +212,7 @@ export function planHandler(deps: () => AiDeps) {
         true,
       );
     }
-    const gate = admit(request, d, log);
+    const gate = await admit(request, d, log);
     if ("refused" in gate) return log.fail(gate.refused);
     const result = await streamPlan(gate.ctx, d.cache, key, input.data);
     if (!result) return log.fail("ai_failed");
@@ -208,7 +235,7 @@ export function refineHandler(deps: () => AiDeps) {
       const reply = SCREENED_REPLY[input.data.locale];
       return log.screened(Response.json({ reply, changes: [] }, { headers: JSON_HEADERS }));
     }
-    const gate = admit(request, d, log);
+    const gate = await admit(request, d, log);
     if ("refused" in gate) return log.fail(gate.refused);
     return answered(log, await runRefine(gate.ctx, input.data));
   });
@@ -255,7 +282,7 @@ export function visionHandler(deps: () => AiDeps) {
     if (!upload.ok) return log.fail(upload.code, upload.headers);
     const parsed = visionFieldsSchema(d.now()).safeParse(upload.data.fields);
     if (!parsed.success) return log.fail("invalid");
-    const gate = admit(request, d, log);
+    const gate = await admit(request, d, log);
     if ("refused" in gate) return log.fail(gate.refused);
     const { image, mediaType } = upload.data;
     return answered(log, await runVision(gate.ctx, { ...parsed.data, image, mediaType }));

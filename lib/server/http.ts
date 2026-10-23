@@ -1,6 +1,6 @@
 import "server-only";
 import { readAtMost } from "@/lib/plan/bytes";
-import type { RateLimiter } from "./rate-limit";
+import type { RequestLimiter } from "./rate-limit";
 
 /**
  * Request checks every AI route runs before touching the model: same origin
@@ -94,7 +94,7 @@ export async function readCapped(request: Request, max: number): Promise<Uint8Ar
 }
 
 export interface GuardOptions {
-  limiter: RateLimiter;
+  limiter: RequestLimiter;
   maxBytes: number;
   /** Media type the body must have, e.g. `application/json`. */
   type: "application/json" | "multipart/form-data";
@@ -110,7 +110,7 @@ export async function guard(request: Request, options: GuardOptions): Promise<Gu
   if (contentType.split(";")[0]?.trim().toLowerCase() !== options.type) {
     return { ok: false, code: "unsupported_media_type" };
   }
-  const rate = options.limiter.check(clientKey(request));
+  const rate = await options.limiter.check(clientKey(request));
   if (!rate.ok) {
     return { ok: false, code: "rate_limited", headers: { "Retry-After": String(rate.retryAfter) } };
   }

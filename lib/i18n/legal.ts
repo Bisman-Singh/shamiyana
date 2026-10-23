@@ -15,7 +15,7 @@ const GEMINI_TERMS = "https://ai.google.dev/gemini-api/terms";
 
 const privacyEn: LegalPage = {
   title: "Privacy",
-  updated: "Last updated 21 October 2026",
+  updated: "Last updated 23 October 2026",
   sections: [
     {
       heading: "No accounts, no database",
@@ -43,7 +43,7 @@ const privacyEn: LegalPage = {
       heading: "What our server keeps",
       body: [
         "For each AI request the server logs the time, which feature was used, the outcome, how long it took and which model answered. It does not log your event details, messages, photos or IP address.",
-        "To limit abuse, the server counts requests per IP address in memory for one minute. To save cost, a finished AI answer can be kept in server memory for up to six hours and reused for exactly the same event details. Neither is written to disk or linked to you.",
+        "To limit abuse, the server counts AI requests from each network address, per minute and per day. The counts are kept in a Redis database run by Upstash, under a one-way code made from the address with a secret key rather than the address itself, and expire on their own within a day. To save cost, a finished AI answer can be kept in server memory for up to six hours and reused for exactly the same event details. None of this is linked to you.",
         "The hosting provider may keep its own standard request logs, including IP addresses, for security and operations.",
       ],
     },
@@ -76,7 +76,7 @@ const privacyEn: LegalPage = {
 
 const privacyHi: LegalPage = {
   title: "निजता",
-  updated: "आख़िरी बदलाव 21 अक्टूबर 2026",
+  updated: "आख़िरी बदलाव 23 अक्टूबर 2026",
   sections: [
     {
       heading: "न खाता, न डेटाबेस",
@@ -104,7 +104,7 @@ const privacyHi: LegalPage = {
       heading: "हमारा सर्वर क्या रखता है",
       body: [
         "हर AI अनुरोध के लिए सर्वर समय, कौन-सी सुविधा इस्तेमाल हुई, नतीजा, कितना समय लगा और किस मॉडल ने जवाब दिया, यह दर्ज करता है। आपके आयोजन का विवरण, संदेश, फ़ोटो या IP पता दर्ज नहीं होता।",
-        "दुरुपयोग रोकने के लिए सर्वर एक मिनट तक मेमोरी में हर IP पते के अनुरोध गिनता है। ख़र्च बचाने के लिए पूरा हुआ AI जवाब छह घंटे तक सर्वर की मेमोरी में रखा जा सकता है और ठीक उसी विवरण पर दोबारा दिया जा सकता है। इनमें से कुछ भी डिस्क पर नहीं लिखा जाता और न आपसे जोड़ा जाता है।",
+        "दुरुपयोग रोकने के लिए सर्वर हर नेटवर्क पते से आए AI अनुरोध प्रति मिनट और प्रति दिन गिनता है। ये गिनतियाँ Upstash के Redis डेटाबेस में रखी जाती हैं। उनमें आपका पता नहीं, बल्कि एक गुप्त कुंजी से उस पते से बनाया गया एकतरफ़ा कोड होता है, और वे एक दिन के भीतर अपने-आप मिट जाती हैं। ख़र्च बचाने के लिए पूरा हुआ AI जवाब छह घंटे तक सर्वर की मेमोरी में रखा जा सकता है और ठीक उसी विवरण पर दोबारा दिया जा सकता है। इनमें से कुछ भी आपसे नहीं जोड़ा जाता।",
         "होस्टिंग कंपनी सुरक्षा और संचालन के लिए अपने सामान्य रिकॉर्ड रख सकती है, जिनमें IP पते भी होते हैं।",
       ],
     },

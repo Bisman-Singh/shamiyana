@@ -4,15 +4,25 @@ import "server-only";
  * Sliding-window rate limiting held in memory, one window per client key.
  *
  * Memory is bounded: past `maxKeys` the least recently seen key is dropped,
- * so a flood of spoofed addresses cannot grow the map without limit. Limits
- * are per server instance, which is what an app without a shared store can
- * honestly promise.
+ * so a flood of spoofed addresses cannot grow the map without limit. These
+ * limits are per server instance; `shared-limits.ts` holds the same limits in
+ * Redis for every instance and falls back to these.
  */
 
 export interface RateResult {
   ok: boolean;
   /** Seconds until the next request would be allowed; 0 when allowed. */
   retryAfter: number;
+}
+
+/** A per-client request limit, held in memory or shared. */
+export interface RequestLimiter {
+  check(key: string): RateResult | Promise<RateResult>;
+}
+
+/** A daily allowance of AI calls, held in memory or shared. */
+export interface DailyAllowance {
+  take(client?: string): boolean | Promise<boolean>;
 }
 
 export interface RateLimiterOptions {
@@ -22,7 +32,7 @@ export interface RateLimiterOptions {
   now?: () => number;
 }
 
-export class RateLimiter {
+export class RateLimiter implements RequestLimiter {
   private readonly hits = new Map<string, number[]>();
   private readonly limit: number;
   private readonly windowMs: number;
@@ -68,7 +78,7 @@ export class RateLimiter {
  * client can't use up everyone's day. Client memory is bounded like the
  * rate limiter's.
  */
-export class DailyCap {
+export class DailyCap implements DailyAllowance {
   private day = "";
   private count = 0;
   private readonly byClient = new Map<string, number>();

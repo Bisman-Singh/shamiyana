@@ -15,6 +15,7 @@ describe("readEnv", () => {
       ],
       AI_DAILY_REQUEST_CAP: 2000,
       AI_DAILY_CLIENT_CAP: 100,
+      redis: null,
     });
   });
 
@@ -29,6 +30,7 @@ describe("readEnv", () => {
       GEMINI_MODELS: ["a-1", "b.2"],
       AI_DAILY_REQUEST_CAP: 50,
       AI_DAILY_CLIENT_CAP: 100,
+      redis: null,
     });
   });
 
@@ -45,6 +47,25 @@ describe("readEnv", () => {
       attempt();
     } catch (error) {
       expect(String(error)).not.toContain("secret-value");
+    }
+  });
+
+  it("takes the Redis pair together and over https only, never echoing the token", () => {
+    expect(
+      readEnv({ KV_REST_API_URL: "https://kv.example.test", KV_REST_API_TOKEN: "tok" }).redis,
+    ).toEqual({ url: "https://kv.example.test", token: "tok" });
+    expect(readEnv({ KV_REST_API_URL: " ", KV_REST_API_TOKEN: "" }).redis).toBeNull();
+    expect(() => readEnv({ KV_REST_API_URL: "https://kv.example.test" })).toThrow(
+      "Invalid server environment: KV_REST_API_TOKEN",
+    );
+    expect(() => readEnv({ KV_REST_API_TOKEN: "tok" })).toThrow(
+      "Invalid server environment: KV_REST_API_URL",
+    );
+    try {
+      readEnv({ KV_REST_API_URL: "http://kv.example.test", KV_REST_API_TOKEN: "secret-token" });
+      expect.unreachable();
+    } catch (error) {
+      expect(String(error)).toBe("EnvError: Invalid server environment: KV_REST_API_URL");
     }
   });
 

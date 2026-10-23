@@ -119,7 +119,8 @@ only. The key is never sent to the browser.
   `unsafe-inline`, plus HSTS, `nosniff`, frame denial, COOP, CORP and a minimal
   Permissions-Policy (`proxy.ts`, `next.config.ts`).
 - Every AI route checks same origin, content type, a body cap enforced while
-  reading, a sliding-window rate limit per client and a daily request cap, then
+  reading, a sliding-window rate limit per client and a daily request cap,
+  shared by every instance through Upstash Redis, then
   validates the body with a strict Zod schema (`lib/server/http.ts`,
   `lib/server/requests.ts`).
 - Uploads are typed by their magic bytes, never by the declared type, and
