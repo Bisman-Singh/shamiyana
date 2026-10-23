@@ -12,6 +12,20 @@ Hindi.
 A shamiana is the tent that goes up over every Indian celebration. This one
 holds the plan.
 
+## How it fits together
+
+- The browser keeps the plans and does the arithmetic: budget, timeline,
+  vendors and guests are pure functions in `lib/plan`, on screen before any AI
+  call.
+- The server holds the Gemini key. Three routes take the event facts only,
+  check and limit every request, and stream or return answers that the page
+  sanitizes before keeping (`lib/server`, `lib/ai`).
+- No database. Plans live in local storage, share links in the URL fragment.
+
+One request end to end, the decisions behind it and every limit are in
+[ARCHITECTURE.md](ARCHITECTURE.md). How to work on it is in
+[CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## The problem
 
 Families plan big events in group chats and a notebook. The money gets
@@ -81,9 +95,12 @@ only. The key is never sent to the browser.
 - The event name is never sent, because it often holds a person's name. Emails,
   phone numbers, PAN and Aadhaar-shaped numbers are removed from notes and chat
   first (`lib/ai/redact.ts`).
-- User text is fenced in `<user_text>` tags with angle brackets stripped, and
-  the system prompt says fenced text is data. Proposed changes need the user's
-  approval, so an injected instruction can at most suggest something.
+- A pattern screen in English and Hindi answers a chat message that tries to
+  re-instruct the assistant with a fixed reply, and drops such sentences from
+  notes (`lib/ai/guard.ts`). User text is then fenced in `<user_text>` tags
+  with angle brackets stripped, and the system prompt says fenced text is data.
+  Proposed changes need the user's approval, so an injected instruction can at
+  most suggest something.
 - Models are tried in order. The default chain is `gemini-3.5-flash-lite`,
   which answers a full plan in about five seconds, then `gemini-3.5-flash`,
   `gemini-3.6-flash` and `gemini-3.8-flash`, set by `GEMINI_MODELS`. Free-tier
@@ -105,8 +122,8 @@ only. The key is never sent to the browser.
 - Strict TypeScript with `noUncheckedIndexedAccess`, no `any`, no non-null
   assertions.
 - ESLint with typescript-eslint strict and stylistic type-checked rules,
-  @eslint-react strict, React Hooks and JSX a11y strict, plus a complexity cap
-  of 12 and 90 lines per function. Zero warnings allowed.
+  @eslint-react strict, React Hooks, JSX a11y strict and SonarJS, plus a
+  complexity cap of 10 and 80 lines per function. Zero warnings allowed.
 - Domain logic is pure functions in `lib/plan`, one concern per file. Every edit
   to a plan is a function from one record to the next, which makes undo a
   matter of keeping the previous value.
@@ -148,34 +165,39 @@ only. The key is never sent to the browser.
   the form is submitted. AI ideas stream in token by token after that.
 - A finished answer is cached in server memory for six hours by a hash of the
   exact request, so a repeat costs nothing. "New ideas" skips the cache.
-- Output tokens and time are capped per route; Gemini 2.5 thinking is turned off
-  for speed.
+- Output tokens and time are capped per route (`lib/ai/run.ts`); a Gemini 2.5
+  model, if one is configured, runs with thinking off for speed.
 - Photos are resized to 1600 px JPEG in the browser before upload.
 - No UI library, no icon font, no web fonts. Only the active language's
   dictionary is sent to the page.
 
 ### Testing
 
-- 359 unit and component tests with 100% statement, branch, function and line
+- 490 unit and component tests with 100% statement, branch, function and line
   coverage enforced in CI (`vitest.config.mts`).
 - Property-style tests for the money split, adversarial tests for every input
   schema, model output sanitizer, upload sniffer, CSV guard and share link
   decoder, and route tests against a mock Gemini model for streaming, fallback,
   caching and every error path.
-- 39 Playwright tests on desktop and a 360 px phone against the production
+- 41 Playwright tests on desktop and a 360 px phone against the production
   build, with AI responses mocked at the network layer.
 - More in [TESTING.md](TESTING.md).
 
 ### Accessibility
 
-- axe-core runs in the component tests on the form, each panel and the AI
-  flows, and with colour contrast in a real browser on every tab, in light and
-  dark themes and in Hindi.
+- axe-core runs with the WCAG 2.2 AA, best-practice and experimental rules in
+  the component tests on the form, each panel and the AI flows, and with colour
+  contrast in a real browser on every tab, in light and dark themes and in
+  Hindi.
 - Semantic HTML, labelled controls, hints and errors tied to fields, an error
   summary that takes focus, WAI-ARIA tabs with arrow keys, a skip link and a
   keyboard-only end to end test.
-- Respects `prefers-reduced-motion` and `prefers-color-scheme`. Tested at 360 px
-  with no sideways scroll. More in [ACCESSIBILITY.md](ACCESSIBILITY.md).
+- Focus never drops to the page when a control goes away, and changes such as
+  a moved budget line are announced. Text in the other language, AI ideas or a
+  typed title, carries its own `lang`.
+- Respects `prefers-reduced-motion` and `prefers-color-scheme`. Tested at 320
+  and 360 px and at 200% text with no sideways scroll. More in
+  [ACCESSIBILITY.md](ACCESSIBILITY.md).
 
 ### Problem Statement Alignment
 
@@ -216,12 +238,13 @@ provider, Zod 4. Tests with Vitest, Testing Library, axe-core and Playwright.
 ## Project layout
 
 ```text
-app/                 pages, API routes, global styles
+app/                 pages, API routes, styles split by area
 components/planner/  the planner, workspace and its panels
 components/ui/       fields, tabs, notices
 lib/plan/            budget, timeline, vendors, guests, schemas, record edits
-lib/ai/              prompts, output schemas, model chain, fallback, cache
-lib/server/          env, request guard, rate limits, route handlers
+lib/ai/              prompts, output schemas, injection guard, model chain, fallback, cache
+lib/server/          env, request guard, rate limits shared through Redis, route handlers
+lib/client/          API calls, local storage and files in the browser
 lib/export/          iCalendar, CSV, share links, outbound links
 lib/i18n/            English and Hindi dictionaries, formatting, policies
 tests/  e2e/  evals/ unit and component tests, browser tests, live prompt checks
