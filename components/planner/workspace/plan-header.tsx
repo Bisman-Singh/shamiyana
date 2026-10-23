@@ -1,7 +1,7 @@
 "use client";
 
 import { downloadText } from "@/lib/client/download";
-import { fileName } from "@/lib/export/links";
+import { fileName } from "@/lib/export/file-name";
 import type { Dictionary } from "@/lib/i18n/en";
 import { formatDate, plural } from "@/lib/i18n/format";
 import { langOf } from "@/lib/i18n/lang";

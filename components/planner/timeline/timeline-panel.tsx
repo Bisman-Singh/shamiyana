@@ -3,7 +3,7 @@
 import { useId } from "react";
 import { downloadText } from "@/lib/client/download";
 import { buildIcs } from "@/lib/export/ics";
-import { fileName } from "@/lib/export/links";
+import { fileName } from "@/lib/export/file-name";
 import { format, formatDate, plural } from "@/lib/i18n/format";
 import { restoreHiddenTasks } from "@/lib/plan/record";
 import { PHASES } from "@/lib/plan/timeline";

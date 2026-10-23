@@ -10,7 +10,7 @@ import { parseObject } from "@/lib/shared/untrusted";
 import { cacheKey, type AnswerCache } from "./cache";
 import { firstWorking } from "./fallback";
 import { PROMPT_VERSION, planPrompt, planSystem } from "./prompts";
-import { AI_LIMITS, type RunContext } from "./run";
+import { AI_LIMITS, callSettings, type RunContext } from "./run";
 
 type Part = TextStreamPart<ToolSet>;
 
@@ -99,15 +99,10 @@ export async function streamPlan(
     id: spec.id,
     run: () =>
       streamText({
-        model: spec.model,
-        providerOptions: spec.providerOptions,
+        ...callSettings(spec, AI_LIMITS.plan, ctx.signal),
         output: Output.object({ schema: enrichmentOutputSchema }),
         instructions: planSystem(input.locale),
         prompt: planPrompt(input.facts, lines, input.today),
-        maxOutputTokens: AI_LIMITS.plan.maxOutputTokens,
-        temperature: AI_LIMITS.plan.temperature,
-        maxRetries: 0,
-        abortSignal: ctx.signal,
         timeout: { totalMs: AI_LIMITS.plan.totalMs, firstChunkMs: AI_LIMITS.plan.firstChunkMs },
         onError: () => undefined,
       }).stream,

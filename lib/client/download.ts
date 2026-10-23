@@ -1,5 +1,5 @@
 import { toCsv } from "@/lib/export/csv";
-import { fileName } from "@/lib/export/links";
+import { fileName } from "@/lib/export/file-name";
 
 /** Saves text as a file through a temporary object URL. */
 export function downloadText(name: string, type: string, text: string): void {

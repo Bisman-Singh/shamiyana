@@ -51,7 +51,7 @@ test("guests, vendors and the refine chat update the plan", async ({ page }) => 
   const vendors = page.getByRole("tabpanel");
   await vendors.locator("summary", { hasText: "Food and catering" }).click();
   await vendors.getByLabel("Status for Food and catering").selectOption("booked");
-  await vendors.locator("#vendor-catering-quote").fill("600000");
+  await vendors.getByLabel("Agreed price (₹), Food and catering").fill("600000");
   await page.getByRole("tab", { name: "Budget" }).click();
   await expect(page.getByRole("tabpanel").getByText(/over plan/)).toBeVisible();
 

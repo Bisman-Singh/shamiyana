@@ -6,7 +6,7 @@ import type { CategoryId, EventType } from "./constants";
  * listings; the page marks them with their own language.
  */
 
-/** Google Maps search phrases for finding vendors near the event city. */
+/** The phrase per event type and kind of vendor. */
 export const VENDOR_SEARCH: Record<EventType, Partial<Record<CategoryId, string>>> = {
   wedding: {
     venue: "wedding venues",

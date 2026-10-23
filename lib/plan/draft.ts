@@ -42,7 +42,7 @@ export const DRAFT_FIELDS = [
   "notes",
 ] as const;
 export type DraftField = (typeof DRAFT_FIELDS)[number];
-export type DraftError =
+type DraftError =
   | "title"
   | "city"
   | "dateInvalid"

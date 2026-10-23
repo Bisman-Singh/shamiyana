@@ -1,4 +1,4 @@
-import { fileName, googleCalendarUrl, mapsSearchUrl } from "@/lib/export/links";
+import { googleCalendarUrl, mapsSearchUrl } from "@/lib/export/links";
 
 describe("links", () => {
   it("builds a Google Calendar template for an all-day task", () => {
@@ -16,13 +16,5 @@ describe("links", () => {
     expect(url.hostname).toBe("www.google.com");
     expect(url.searchParams.get("query")).toBe("wedding caterers in Jaipur");
     expect(url.searchParams.get("api")).toBe("1");
-  });
-
-  it("makes safe file names in any script", () => {
-    expect(fileName("Winter wedding in Jaipur!", "ics")).toBe("winter-wedding-in-jaipur.ics");
-    expect(fileName("../../etc/passwd", "csv")).toBe("etc-passwd.csv");
-    expect(fileName("दादी का जन्मदिन", "csv")).toBe("दादी-का-जन्मदिन.csv");
-    expect(fileName("!!!", "json")).toBe("plan.json");
-    expect(fileName(`${"a".repeat(47)} b`, "ics")).toBe(`${"a".repeat(47)}.ics`);
   });
 });

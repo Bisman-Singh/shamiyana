@@ -1,6 +1,6 @@
 import type { ChoiceProps } from "./field";
 
-interface RadioGroupProps<T extends string> extends ChoiceProps<T> {
+interface RadioGroupProps<T extends string> extends Omit<ChoiceProps<T>, "error"> {
   value: T;
   onValueChange: (value: T) => void;
 }

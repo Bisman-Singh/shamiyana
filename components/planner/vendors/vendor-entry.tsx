@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { mapsSearchUrl } from "@/lib/export/links";
 import { format } from "@/lib/i18n/format";
 import { langOf } from "@/lib/i18n/lang";
@@ -84,7 +85,7 @@ export function VendorEntry({ card, city, update }: Readonly<VendorEntryProps>) 
   const { dict } = useLocale();
   const money = useMoney();
   const name = dict.categories[card.category];
-  const id = `vendor-${card.category}`;
+  const id = useId();
   const save = (patch: Partial<VendorProgress>) => {
     update((record, now) => setVendor(record, card.category, { ...card.progress, ...patch }, now));
   };

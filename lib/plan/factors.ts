@@ -6,7 +6,7 @@ export function clampFactor(value: number): number {
 }
 
 /** The step a budget line's weight moves by. */
-export const FACTOR_STEP = 0.1;
+const FACTOR_STEP = 0.1;
 
 /** One step up or down on a category's weight, on the 0.1 grid and inside its bounds. */
 export function nudge(current: number, direction: 1 | -1): number {

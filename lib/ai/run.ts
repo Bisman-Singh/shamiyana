@@ -15,6 +15,26 @@ export const AI_LIMITS = {
 } as const;
 
 /** What a runner gets from its route: the models in order, the request's signal and log hooks. */
+/**
+ * What every model call shares: the model with its provider options, the
+ * route's output cap and temperature, and no retries, since the next model in
+ * the chain is the retry.
+ */
+export function callSettings(
+  spec: ModelSpec,
+  limits: { maxOutputTokens: number; temperature: number },
+  signal: AbortSignal,
+) {
+  return {
+    model: spec.model,
+    providerOptions: spec.providerOptions,
+    maxOutputTokens: limits.maxOutputTokens,
+    temperature: limits.temperature,
+    maxRetries: 0,
+    abortSignal: signal,
+  };
+}
+
 export interface RunContext {
   chain: readonly ModelSpec[];
   signal: AbortSignal;
@@ -57,15 +77,10 @@ export async function generateSanitized<T>(
       run: async () => {
         const text = await generatedText(() =>
           generateText({
-            model: spec.model,
-            providerOptions: spec.providerOptions,
+            ...callSettings(spec, generation.limits, ctx.signal),
             output: generation.output,
             instructions: generation.instructions,
             ...generation.input,
-            maxOutputTokens: generation.limits.maxOutputTokens,
-            temperature: generation.limits.temperature,
-            maxRetries: 0,
-            abortSignal: ctx.signal,
             timeout: generation.limits.totalMs,
           }),
         );
