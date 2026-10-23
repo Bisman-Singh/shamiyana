@@ -16,10 +16,16 @@ export function UndoButton({ onUndo, onVanish }: Readonly<UndoButtonProps>) {
   const ref = useFocusOnMount<HTMLButtonElement>(true);
   const vanish = useEffectEvent(() => onVanish?.());
   // A layout cleanup runs before React removes the button, while it can still hold focus.
+  // The move waits a frame and happens only if focus really fell to the page: in
+  // development's strict mode React builds the button twice and the new one takes focus.
   useLayoutEffect(() => {
     const button = ref.current;
     return () => {
-      if (button !== null && button === document.activeElement) vanish();
+      if (button === null || button !== document.activeElement) return;
+      requestAnimationFrame(() => {
+        const fell = document.activeElement === null || document.activeElement === document.body;
+        if (!button.isConnected && fell) vanish();
+      });
     };
   }, [ref]);
   return (
