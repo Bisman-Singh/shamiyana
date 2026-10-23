@@ -27,6 +27,25 @@ describe("every route", () => {
     expect((await visionHandler(broken)(formPost(new FormData()))).status).toBe(500);
   });
 
+  it("logs what went wrong by its class name only, never its message", async () => {
+    const typeError = () => {
+      throw new TypeError("Priya's wedding in Jaipur");
+    };
+    const thrown: unknown = "a bare string";
+    const notAnError = () => {
+      throw thrown;
+    };
+    await planHandler(typeError)(jsonPost({}));
+    await refineHandler(notAnError)(jsonPost({}));
+    const lines = vi.mocked(console.error).mock.calls.map((call) => String(call[0]));
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toContain('"route":"plan","ms":');
+    expect(lines[0]).toContain('"outcome":"internal","status":500,"errorType":"TypeError"');
+    expect(lines[1]).toContain('"errorType":"string"');
+    expect(lines.join("\n")).not.toContain("Jaipur");
+    expect(lines.join("\n")).not.toContain("bare string");
+  });
+
   it("stops one client at its own daily allowance while others carry on", async () => {
     const deps = testDeps([spec(generatingModel(JSON.stringify({ reply: "ok", changes: [] })))], {
       daily: new DailyCap({ cap: 100, clientCap: 1 }),

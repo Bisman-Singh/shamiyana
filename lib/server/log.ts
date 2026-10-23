@@ -23,6 +23,8 @@ export interface LogFields {
   ms?: number;
   model?: string;
   cached?: boolean;
+  /** An unexpected error's class name. Never its message, which can carry user text. */
+  errorType?: string;
 }
 
 function line(fields: object): string {

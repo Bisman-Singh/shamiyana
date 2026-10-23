@@ -28,6 +28,8 @@ export const BODY_LIMITS = {
 /** One log line per outcome of a request, each with the route and the time since it started. */
 export interface RouteLog {
   fail: (code: ErrorCode, headers?: Record<string, string>) => Response;
+  /** A bare 500 for anything unexpected, logged by the error's class name only. */
+  crash: (error: unknown) => Response;
   ok: (response: Response, model: string, cached?: boolean) => Response;
   modelFailed: (model: string) => void;
   screened: (response: Response) => Response;
@@ -43,6 +45,12 @@ function startRouteLog(route: AiRoute): RouteLog {
     fail: (code, headers) => {
       const response = errorResponse(code, headers);
       emit({ outcome: code, status: response.status });
+      return response;
+    },
+    crash: (error) => {
+      const response = errorResponse("internal");
+      const errorType = error instanceof Error ? error.name : typeof error;
+      emit({ outcome: "internal", status: response.status, errorType });
       return response;
     },
     ok: (response, model, cached = false) => {
@@ -78,8 +86,8 @@ export function aiRoute(name: AiRoute, getDeps: () => AiDeps, steps: RouteSteps)
     const log = startRouteLog(name);
     try {
       return await steps(request, getDeps(), log);
-    } catch {
-      return log.fail("internal");
+    } catch (error) {
+      return log.crash(error);
     }
   };
 }
