@@ -3,10 +3,8 @@
 import { downloadCsv } from "@/lib/client/download";
 import { budgetRows } from "@/lib/export/sheets";
 import { format } from "@/lib/i18n/format";
-import { previewShifts } from "@/lib/plan/budget";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { setFactor } from "@/lib/plan/record";
-import { factsOf } from "@/lib/plan/schema";
 import { useLocale, useMoney } from "@/components/locale-provider";
 import type { PlanView, Shift, Update } from "@/components/planner/types";
 import { useAnnounce } from "@/components/ui/announcer";
@@ -26,7 +24,7 @@ export function BudgetPanel({ view, ideas, update }: Readonly<BudgetPanelProps>)
   const { budget, record } = view;
   const announce = useAnnounce();
   const shift: Shift = (category, factor) => {
-    const { after } = previewShifts(factsOf(record.brief), record.factors)(category, factor ?? 1);
+    const { after } = view.preview(category, factor ?? 1);
     update((current, now) => setFactor(current, category, factor, now));
     announce(
       format(dict.budget.nowPlanned, { category: dict.categories[category], amount: money(after) }),
@@ -62,7 +60,7 @@ export function BudgetPanel({ view, ideas, update }: Readonly<BudgetPanelProps>)
         <BudgetSuggestions
           ideas={ideas}
           factors={record.factors}
-          preview={previewShifts(factsOf(record.brief), record.factors)}
+          preview={view.preview}
           shift={shift}
         />
       ) : null}

@@ -1,6 +1,6 @@
 import { planBudget } from "@/lib/plan/budget";
 import { isSecured } from "@/lib/plan/vendor-status";
-import { EMPTY_PROGRESS, buildVendors, vendorTally } from "@/lib/plan/vendors";
+import { EMPTY_PROGRESS, buildVendors, securedCount, vendorTally } from "@/lib/plan/vendors";
 import { birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
 
 describe("buildVendors", () => {
@@ -48,8 +48,9 @@ describe("buildVendors", () => {
         decor: { status: "shortlisted", quote: 0, paid: 0, note: "" },
       },
     });
-    const tally = vendorTally(buildVendors(record, planBudget(birthdayBrief, {})));
-    expect(tally).toEqual({ todo: 5, shortlisted: 1, booked: 1, paid: 1 });
+    const cards = buildVendors(record, planBudget(birthdayBrief, {}));
+    expect(vendorTally(cards)).toEqual({ todo: 5, shortlisted: 1, booked: 1, paid: 1 });
+    expect(securedCount(cards)).toBe(2);
     expect([
       isSecured("todo"),
       isSecured("shortlisted"),

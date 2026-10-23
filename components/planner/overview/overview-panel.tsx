@@ -4,7 +4,7 @@ import { useId } from "react";
 import { format, formatDate, formatNumber } from "@/lib/i18n/format";
 import { langOf } from "@/lib/i18n/lang";
 import type { Enrichment } from "@/lib/plan/enrichment";
-import { vendorTally } from "@/lib/plan/vendors";
+import { securedCount } from "@/lib/plan/vendors";
 import { useLocale, useMoney } from "@/components/locale-provider";
 import { taskTitle } from "@/components/planner/task-title";
 import { ThemeSummary } from "@/components/planner/theme-summary";
@@ -22,7 +22,6 @@ function KeyFigures({ view }: Readonly<KeyFiguresProps>) {
   const { dict, locale } = useLocale();
   const money = useMoney();
   const { budget, timeline, guests } = view;
-  const tally = vendorTally(view.vendors);
   const count = (value: number) => formatNumber(value, locale);
   return (
     <dl className="ledger">
@@ -53,7 +52,7 @@ function KeyFigures({ view }: Readonly<KeyFiguresProps>) {
         <dt>{dict.overview.vendorsBooked}</dt>
         <dd>
           {format(dict.overview.of, {
-            count: count(tally.booked + tally.paid),
+            count: count(securedCount(view.vendors)),
             total: count(view.vendors.length),
           })}
         </dd>

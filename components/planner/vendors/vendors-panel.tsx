@@ -3,7 +3,7 @@
 import { downloadCsv } from "@/lib/client/download";
 import { checklistRows } from "@/lib/export/sheets";
 import { format } from "@/lib/i18n/format";
-import { vendorTally } from "@/lib/plan/vendors";
+import { securedCount } from "@/lib/plan/vendors";
 import { useLocale } from "@/components/locale-provider";
 import type { PanelProps } from "@/components/planner/types";
 import { VendorEntry } from "./vendor-entry";
@@ -11,7 +11,6 @@ import { VendorEntry } from "./vendor-entry";
 /** One card per vendor with status, price, payments, notes and questions to ask. */
 export function VendorsPanel({ view, update }: Readonly<PanelProps>) {
   const { dict } = useLocale();
-  const tally = vendorTally(view.vendors);
   const { record } = view;
 
   return (
@@ -20,7 +19,7 @@ export function VendorsPanel({ view, update }: Readonly<PanelProps>) {
         <h2>{dict.vendors.heading}</h2>
         <p className="hint">
           {format(dict.vendors.summary, {
-            booked: tally.booked + tally.paid,
+            booked: securedCount(view.vendors),
             total: view.vendors.length,
           })}
         </p>

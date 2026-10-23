@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { planBudget, summariseBudget } from "@/lib/plan/budget";
+import { planBudget, previewShifts, summariseBudget } from "@/lib/plan/budget";
 import { tallyGuests } from "@/lib/plan/guests";
-import type { PlanRecord } from "@/lib/plan/schema";
+import { factsOf, type PlanRecord } from "@/lib/plan/schema";
 import { buildTimeline } from "@/lib/plan/timeline";
 import { buildVendors } from "@/lib/plan/vendors";
 import type { PlanView } from "@/components/planner/types";
@@ -16,6 +16,7 @@ export function usePlanView(record: PlanRecord, today: string): PlanView {
       record,
       today,
       budget: summariseBudget(lines, record.brief, record.vendors),
+      preview: previewShifts(factsOf(record.brief), record.factors),
       timeline: buildTimeline(record, today),
       vendors: buildVendors(record, lines),
       guests: tallyGuests(record.guests),

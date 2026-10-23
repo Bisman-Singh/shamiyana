@@ -38,3 +38,9 @@ export function vendorTally(cards: readonly VendorCard[]): Record<VendorStatus, 
   for (const card of cards) tally[card.progress.status] += 1;
   return tally;
 }
+
+/** How many vendors are booked or paid: the number the plan counts as secured. */
+export function securedCount(cards: readonly VendorCard[]): number {
+  const tally = vendorTally(cards);
+  return tally.booked + tally.paid;
+}

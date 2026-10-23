@@ -2,8 +2,6 @@
 
 import { useId } from "react";
 import { langOf } from "@/lib/i18n/lang";
-import { previewShifts } from "@/lib/plan/budget";
-import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "@/components/locale-provider";
 import type { PanelProps } from "@/components/planner/types";
 import { Notice } from "@/components/ui/notice";
@@ -61,7 +59,7 @@ export function RefineChat({ view, update }: Readonly<PanelProps>) {
       {proposal ? (
         <ProposalForm
           proposal={proposal}
-          preview={previewShifts(factsOf(view.record.brief), view.record.factors)}
+          preview={view.preview}
           onChange={setProposal}
           onApply={() => {
             apply(proposal);

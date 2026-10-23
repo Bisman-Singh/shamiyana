@@ -1,4 +1,4 @@
-import type { BudgetSummary } from "@/lib/plan/budget";
+import type { BudgetSummary, ShiftPreview } from "@/lib/plan/budget";
 import type { CategoryId } from "@/lib/plan/constants";
 import type { GuestTally } from "@/lib/plan/guests";
 import type { PlanRecord } from "@/lib/plan/schema";
@@ -16,6 +16,8 @@ export interface PlanView {
   record: PlanRecord;
   today: string;
   budget: BudgetSummary;
+  /** What a budget line would be with a different weight, for showing a shift before it is made. */
+  preview: ShiftPreview;
   timeline: Timeline;
   vendors: VendorCard[];
   guests: GuestTally;
