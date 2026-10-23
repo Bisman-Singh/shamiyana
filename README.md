@@ -184,7 +184,7 @@ only. The key is never sent to the browser.
 
 ### Testing
 
-- 540 unit and component tests with 100% statement, branch, function and line
+- 545 unit and component tests with 100% statement, branch, function and line
   coverage enforced in CI (`vitest.config.mts`).
 - Property-style tests for the money split, adversarial tests for every input
   schema, model output sanitizer, upload sniffer, CSV guard and share link
