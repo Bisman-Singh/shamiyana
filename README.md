@@ -124,6 +124,9 @@ only. The key is never sent to the browser.
   `lib/server/requests.ts`).
 - Uploads are typed by their magic bytes, never by the declared type, and
   capped at 4 MB.
+- A chat message that tries to re-instruct the assistant, in English or Hindi,
+  gets a fixed reply and never reaches the model. Such sentences are dropped
+  from notes too (`lib/ai/guard.ts`).
 - Model output is rendered as text only; ESLint forbids
   `dangerouslySetInnerHTML`. Links are built from fixed bases with encoded
   values, never taken from the model.

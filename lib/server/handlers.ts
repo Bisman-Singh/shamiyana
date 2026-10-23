@@ -2,6 +2,7 @@ import "server-only";
 import { createTextStreamResponse } from "ai";
 import type { z } from "zod";
 import { AnswerCache } from "@/lib/ai/cache";
+import { isInjectionAttempt, SCREENED_REPLY } from "@/lib/ai/guard";
 import { buildChain, type ModelSpec } from "@/lib/ai/models";
 import {
   lookupPlan,
@@ -93,6 +94,10 @@ function reporter(route: LogRoute) {
     },
     modelFailed: (model: string): void => {
       logEvent({ route, outcome: "model_failed", status: 502, ms: Date.now() - started, model });
+    },
+    screened: (response: Response): Response => {
+      logEvent({ route, outcome: "screened", status: response.status, ms: Date.now() - started });
+      return response;
     },
     cutOff: (model: string): void => {
       logEvent({ route, outcome: "cut_off", status: 200, ms: Date.now() - started, model });
@@ -199,6 +204,10 @@ export function refineHandler(deps: () => AiDeps) {
       refineRequestSchema(d.now()),
     );
     if (!input.ok) return log.fail(input.code, input.headers);
+    if (isInjectionAttempt(input.data.message)) {
+      const reply = SCREENED_REPLY[input.data.locale];
+      return log.screened(Response.json({ reply, changes: [] }, { headers: JSON_HEADERS }));
+    }
     const gate = admit(request, d, log);
     if ("refused" in gate) return log.fail(gate.refused);
     return answered(log, await runRefine(gate.ctx, input.data));

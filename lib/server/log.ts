@@ -9,8 +9,11 @@ import type { ErrorCode } from "./http";
 
 export type LogRoute = "plan" | "refine" | "vision";
 
-/** `cut_off`: a streamed answer stopped partway while the client was still there. */
-export type LogOutcome = "ok" | "model_failed" | "cut_off" | ErrorCode;
+/**
+ * `cut_off`: a streamed answer stopped partway while the client was still there.
+ * `screened`: the message tried to re-instruct the assistant and got the fixed reply.
+ */
+export type LogOutcome = "ok" | "model_failed" | "cut_off" | "screened" | ErrorCode;
 
 export interface LogFields {
   route: LogRoute;
