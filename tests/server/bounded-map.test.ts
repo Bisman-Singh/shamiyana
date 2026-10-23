@@ -25,4 +25,17 @@ describe("BoundedMap", () => {
     map.clear();
     expect(map.size).toBe(0);
   });
+
+  it("also drops the oldest keys past a total weight, and forgets a deleted key's weight", () => {
+    const map = new BoundedMap<string, string>(10, { max: 5, weigh: (value) => value.length });
+    map.set("a", "xx");
+    map.set("b", "xxx");
+    map.set("c", "x");
+    expect(map.get("a")).toBeUndefined();
+    expect(map.size).toBe(2);
+    map.delete("b");
+    map.set("d", "xxxx");
+    expect(map.get("c")).toBe("x");
+    expect(map.size).toBe(2);
+  });
 });

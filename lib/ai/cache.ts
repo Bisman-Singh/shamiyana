@@ -1,4 +1,5 @@
 import "server-only";
+import { BoundedMap } from "@/lib/server/bounded-map";
 
 export interface AnswerCacheOptions {
   maxEntries?: number;
@@ -8,52 +9,48 @@ export interface AnswerCacheOptions {
   now?: () => number;
 }
 
+interface CachedAnswer {
+  value: string;
+  expires: number;
+}
+
 /**
  * A small LRU cache with expiry for finished AI answers. The same brief asked
  * twice gets the first answer back at once and costs nothing; "new ideas"
  * skips it. Bounded by entry count and total characters.
  */
 export class AnswerCache {
-  private readonly entries = new Map<string, { value: string; expires: number }>();
-  private chars = 0;
-  private readonly maxEntries: number;
+  private readonly entries: BoundedMap<string, CachedAnswer>;
   private readonly maxChars: number;
   private readonly ttlMs: number;
   private readonly now: () => number;
 
   constructor(options: AnswerCacheOptions = {}) {
-    this.maxEntries = options.maxEntries ?? 200;
     this.maxChars = options.maxChars ?? 2_000_000;
     this.ttlMs = options.ttlMs ?? 6 * 60 * 60 * 1000;
     this.now = options.now ?? Date.now;
+    this.entries = new BoundedMap(options.maxEntries ?? 200, {
+      max: this.maxChars,
+      weigh: (answer) => answer.value.length,
+    });
   }
 
+  /** A fresh answer, which also becomes the most recently used; an expired one is dropped. */
   get(key: string): string | null {
-    const entry = this.entries.get(key);
-    if (!entry) return null;
-    this.entries.delete(key);
-    if (entry.expires <= this.now()) {
-      this.chars -= entry.value.length;
+    const answer = this.entries.get(key);
+    if (!answer) return null;
+    if (answer.expires <= this.now()) {
+      this.entries.delete(key);
       return null;
     }
-    this.entries.set(key, entry);
-    return entry.value;
+    this.entries.set(key, answer);
+    return answer.value;
   }
 
+  /** Keeps an answer as the newest; one longer than the whole budget is not kept at all. */
   set(key: string, value: string): void {
     if (value.length > this.maxChars) return;
-    const old = this.entries.get(key);
-    if (old) {
-      this.chars -= old.value.length;
-      this.entries.delete(key);
-    }
     this.entries.set(key, { value, expires: this.now() + this.ttlMs });
-    this.chars += value.length;
-    for (const [oldestKey, oldest] of this.entries) {
-      if (this.entries.size <= this.maxEntries && this.chars <= this.maxChars) break;
-      this.entries.delete(oldestKey);
-      this.chars -= oldest.value.length;
-    }
   }
 
   get size(): number {
