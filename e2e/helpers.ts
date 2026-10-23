@@ -34,7 +34,7 @@ export async function mockAi(page: Page): Promise<void> {
   );
 }
 
-export const VISION_ANSWER = {
+const VISION_ANSWER = {
   kind: "venue",
   mood: "Open lawn at dusk",
   palette: [{ name: "Saffron", hex: "#f39b2d" }],
