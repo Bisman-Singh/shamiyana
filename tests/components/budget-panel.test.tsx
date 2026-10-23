@@ -53,6 +53,11 @@ describe("budget", () => {
     const { saved, container } = renderWorkspace(ready());
     await openTab("Budget");
     await expectAccessible(container);
+    expect(
+      panel().getByText(
+        /^Planned amounts are a starting split of your budget, not vendor quotes\./,
+      ),
+    ).toBeVisible();
     const decor = within(panel().getByRole("group", { name: "Adjust Decor and flowers" }));
     await userEvent.click(decor.getByRole("button", { name: "More" }));
     expect(saved.current.factors).toEqual({ decor: 1.1 });

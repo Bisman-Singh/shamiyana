@@ -220,6 +220,7 @@
     "overTotal": "Bookings are {amount} over your total budget.",
     "overLine": "{amount} over plan",
     "contingency": "Contingency is for surprises. Try not to spend it early.",
+    "estimate": "Planned amounts are a starting split of your budget, not vendor quotes. Fill in the agreed price on the Vendors tab once you have a quote in writing.",
     "adjust": "Adjust",
     "adjustLabel": "Adjust {category}",
     "less": "Less",

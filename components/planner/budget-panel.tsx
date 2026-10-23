@@ -274,6 +274,7 @@ export function BudgetPanel({ view, ideas, update }: Readonly<BudgetPanelProps>)
           ? null
           : format(b.perGuest, { amount: money(budget.perGuestCatering) })}
       </p>
+      <p className="hint">{b.estimate}</p>
       <BudgetTable view={view} shift={shift} />
       {ideas && ideas.shifts.length > 0 ? (
         <Suggestions
