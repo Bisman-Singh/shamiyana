@@ -1,3 +1,4 @@
+import "server-only";
 import { en } from "@/lib/i18n/en";
 import { messageOr } from "@/lib/i18n/messages";
 import {
