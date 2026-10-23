@@ -4,23 +4,25 @@ import { checklistRows } from "@/lib/export/sheets";
 import { downloadCsv } from "@/lib/client/files";
 import { format } from "@/lib/i18n/format";
 import { vendorTally } from "@/lib/plan/vendors";
-import { useLocale } from "../locale-provider";
-import type { PanelProps } from "./types";
+import { useLocale } from "@/components/locale-provider";
+import type { PanelProps } from "@/components/planner/types";
 import { VendorEntry } from "./vendor-entry";
 
 /** One card per vendor with status, price, payments, notes and questions to ask. */
 export function VendorsPanel({ view, update }: Readonly<PanelProps>) {
   const { dict } = useLocale();
-  const v = dict.vendors;
   const tally = vendorTally(view.vendors);
   const { record } = view;
 
   return (
     <div className="vendors">
       <div className="panel-head">
-        <h2>{v.heading}</h2>
+        <h2>{dict.vendors.heading}</h2>
         <p className="hint">
-          {format(v.summary, { booked: tally.booked + tally.paid, total: view.vendors.length })}
+          {format(dict.vendors.summary, {
+            booked: tally.booked + tally.paid,
+            total: view.vendors.length,
+          })}
         </p>
         <button
           type="button"
@@ -33,9 +35,9 @@ export function VendorsPanel({ view, update }: Readonly<PanelProps>) {
         </button>
       </div>
       <details className="steps">
-        <summary>{v.steps}</summary>
+        <summary>{dict.vendors.steps}</summary>
         <ol>
-          {v.stepList.map((step) => (
+          {dict.vendors.stepList.map((step) => (
             <li key={step}>{step}</li>
           ))}
         </ol>

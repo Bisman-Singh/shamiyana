@@ -5,10 +5,10 @@ import { format, formatDate, formatNumber } from "@/lib/i18n/format";
 import { langOf } from "@/lib/i18n/lang";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { vendorTally } from "@/lib/plan/vendors";
-import { ThemeSummary } from "./theme-summary";
-import { useLocale, useMoney } from "../locale-provider";
-import { taskTitle } from "./task-title";
-import type { PlanView } from "./types";
+import { ThemeSummary } from "@/components/planner/theme-summary";
+import { useLocale, useMoney } from "@/components/locale-provider";
+import { taskTitle } from "@/components/planner/task-title";
+import type { PlanView } from "@/components/planner/types";
 
 /** Tasks shown under "Next up". */
 const NEXT_UP = 5;
@@ -21,35 +21,46 @@ interface KeyFiguresProps {
 function KeyFigures({ view }: Readonly<KeyFiguresProps>) {
   const { dict, locale } = useLocale();
   const money = useMoney();
-  const o = dict.overview;
   const { budget, timeline, guests } = view;
   const tally = vendorTally(view.vendors);
-  const n = (value: number) => formatNumber(value, locale);
+  const count = (value: number) => formatNumber(value, locale);
   return (
     <dl className="ledger">
       <div>
-        <dt>{o.leftToCommit}</dt>
+        <dt>{dict.overview.leftToCommit}</dt>
         <dd className={budget.remaining < 0 ? "is-over" : undefined}>{money(budget.remaining)}</dd>
       </div>
       <div>
-        <dt>{o.committed}</dt>
+        <dt>{dict.overview.committed}</dt>
         <dd>{money(budget.committed)}</dd>
       </div>
       <div>
-        <dt>{o.tasksDone}</dt>
-        <dd>{format(o.of, { a: n(timeline.doneCount), b: n(timeline.items.length) })}</dd>
+        <dt>{dict.overview.tasksDone}</dt>
+        <dd>
+          {format(dict.overview.of, {
+            count: count(timeline.doneCount),
+            total: count(timeline.items.length),
+          })}
+        </dd>
       </div>
       <div>
-        <dt>{o.overdue}</dt>
-        <dd className={timeline.lateCount > 0 ? "is-over" : undefined}>{n(timeline.lateCount)}</dd>
+        <dt>{dict.overview.overdue}</dt>
+        <dd className={timeline.lateCount > 0 ? "is-over" : undefined}>
+          {count(timeline.lateCount)}
+        </dd>
       </div>
       <div>
-        <dt>{o.vendorsBooked}</dt>
-        <dd>{format(o.of, { a: n(tally.booked + tally.paid), b: n(view.vendors.length) })}</dd>
+        <dt>{dict.overview.vendorsBooked}</dt>
+        <dd>
+          {format(dict.overview.of, {
+            count: count(tally.booked + tally.paid),
+            total: count(view.vendors.length),
+          })}
+        </dd>
       </div>
       <div>
-        <dt>{o.expected}</dt>
-        <dd>{n(guests.parties > 0 ? guests.expected : view.record.brief.guests)}</dd>
+        <dt>{dict.overview.expected}</dt>
+        <dd>{count(guests.parties > 0 ? guests.expected : view.record.brief.guests)}</dd>
       </div>
     </dl>
   );
@@ -63,16 +74,15 @@ interface NextUpProps {
 function NextUp({ view }: Readonly<NextUpProps>) {
   const { dict, locale } = useLocale();
   const id = useId();
-  const o = dict.overview;
   const open = view.timeline.items
-    .filter((i) => !i.done)
-    .sort((a, b) => a.due.localeCompare(b.due))
+    .filter((item) => !item.done)
+    .sort((first, second) => first.due.localeCompare(second.due))
     .slice(0, NEXT_UP);
   return (
     <section aria-labelledby={id}>
-      <h2 id={id}>{o.next}</h2>
+      <h2 id={id}>{dict.overview.next}</h2>
       {open.length === 0 ? (
-        <p>{o.allDone}</p>
+        <p>{dict.overview.allDone}</p>
       ) : (
         <ol className="next-list">
           {open.map((item) => {
@@ -102,17 +112,16 @@ interface ThemeAndRisksProps {
 function ThemeAndRisks({ ideas }: Readonly<ThemeAndRisksProps>) {
   const { dict, locale } = useLocale();
   const id = useId();
-  const o = dict.overview;
   return (
     <>
-      <ThemeSummary theme={ideas.theme} heading={o.theme} level={2} />
+      <ThemeSummary theme={ideas.theme} heading={dict.overview.theme} level={2} />
       {ideas.risks.length === 0 ? null : (
         <section aria-labelledby={`${id}-risks`}>
-          <h2 id={`${id}-risks`}>{o.risks}</h2>
+          <h2 id={`${id}-risks`}>{dict.overview.risks}</h2>
           <ul className="plain-list">
-            {ideas.risks.map((r) => (
-              <li key={r.risk} lang={langOf(r.risk + r.mitigation, locale)}>
-                <strong>{r.risk}</strong> {r.mitigation}
+            {ideas.risks.map(({ risk, mitigation }) => (
+              <li key={risk} lang={langOf(risk + mitigation, locale)}>
+                <strong>{risk}</strong> {mitigation}
               </li>
             ))}
           </ul>

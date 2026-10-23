@@ -18,7 +18,6 @@ interface ShareLinkProps {
  */
 function ShareLink({ link, title }: Readonly<ShareLinkProps>) {
   const { dict } = useLocale();
-  const s = dict.share;
   const id = useId();
   const copyRef = useRef<HTMLButtonElement>(null);
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
@@ -40,18 +39,18 @@ function ShareLink({ link, title }: Readonly<ShareLinkProps>) {
 
   return (
     <>
-      <label htmlFor={id}>{s.label}</label>
+      <label htmlFor={id}>{dict.share.label}</label>
       <input
         id={id}
         readOnly
         value={link}
-        onFocus={(e) => {
-          e.target.select();
+        onFocus={(event) => {
+          event.target.select();
         }}
       />
       <div className="actions">
         <button ref={copyRef} type="button" className="btn btn-primary" onClick={() => void copy()}>
-          {s.copy}
+          {dict.share.copy}
         </button>
         {canShare ? (
           <button
@@ -61,14 +60,14 @@ function ShareLink({ link, title }: Readonly<ShareLinkProps>) {
               navigator.share({ title, url: link }).catch(() => undefined);
             }}
           >
-            {s.native}
+            {dict.share.native}
           </button>
         ) : null}
       </div>
       <div role="status">
-        {status === "copied" ? <Notice tone="success">{s.copied}</Notice> : null}
+        {status === "copied" ? <Notice tone="success">{dict.share.copied}</Notice> : null}
       </div>
-      {status === "failed" ? <Notice tone="error">{s.copyFailed}</Notice> : null}
+      {status === "failed" ? <Notice tone="error">{dict.share.copyFailed}</Notice> : null}
     </>
   );
 }
@@ -84,7 +83,6 @@ interface ShareDialogProps {
  */
 export function ShareDialog({ record, onClose }: Readonly<ShareDialogProps>) {
   const { dict } = useLocale();
-  const s = dict.share;
   const baseId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [link, setLink] = useState<string | null>(null);
@@ -117,11 +115,11 @@ export function ShareDialog({ record, onClose }: Readonly<ShareDialogProps>) {
       aria-describedby={`${baseId}-intro`}
       onClose={onClose}
     >
-      <h2 id={`${baseId}-h`}>{s.heading}</h2>
-      <p id={`${baseId}-intro`}>{s.intro}</p>
+      <h2 id={`${baseId}-h`}>{dict.share.heading}</h2>
+      <p id={`${baseId}-intro`}>{dict.share.intro}</p>
       {link === null && !broken && !tooLong ? <p>{dict.common.loading}</p> : null}
-      {broken ? <Notice tone="error">{s.failed}</Notice> : null}
-      {tooLong ? <Notice tone="error">{s.tooLong}</Notice> : null}
+      {broken ? <Notice tone="error">{dict.share.failed}</Notice> : null}
+      {tooLong ? <Notice tone="error">{dict.share.tooLong}</Notice> : null}
       {link === null ? null : <ShareLink link={link} title={record.brief.title} />}
       <form method="dialog">
         <button type="submit" className="btn btn-quiet">

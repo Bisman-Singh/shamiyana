@@ -7,11 +7,11 @@ import { LIMITS, VENDOR_STATUSES } from "@/lib/plan/constants";
 import { setVendor } from "@/lib/plan/record";
 import type { VendorProgress } from "@/lib/plan/schema";
 import type { VendorCard } from "@/lib/plan/vendors";
-import { useLocale, useMoney } from "../locale-provider";
+import { useLocale, useMoney } from "@/components/locale-provider";
 import { SelectField } from "@/components/ui/select-field";
 import { TextArea } from "@/components/ui/text-area";
-import { Template } from "../ui/template";
-import type { Update } from "./types";
+import { Template } from "@/components/ui/template";
+import type { Update } from "@/components/planner/types";
 import { VendorAmountField } from "./vendor-amount-field";
 
 interface QuestionsProps {

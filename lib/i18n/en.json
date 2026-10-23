@@ -183,7 +183,7 @@
     "overdue": "Overdue",
     "vendorsBooked": "Vendors booked",
     "expected": "Guests expected",
-    "of": "{a} of {b}",
+    "of": "{count} of {total}",
     "next": "Next up",
     "allDone": "Every task is done. Enjoy the day.",
     "risks": "Watch out for",

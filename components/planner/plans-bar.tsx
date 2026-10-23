@@ -24,13 +24,13 @@ function PlanPicker({ plans, initial, onSelect }: Readonly<PlanPickerProps>) {
       <select
         id={selectId}
         value={choice}
-        onChange={(e) => {
-          setChoice(e.target.value);
+        onChange={(event) => {
+          setChoice(event.target.value);
         }}
       >
-        {plans.map((p) => (
-          <option key={p.id} value={p.id} lang={langOf(p.brief.title, locale)}>
-            {p.brief.title}
+        {plans.map((plan) => (
+          <option key={plan.id} value={plan.id} lang={langOf(plan.brief.title, locale)}>
+            {plan.brief.title}
           </option>
         ))}
       </select>

@@ -5,10 +5,10 @@ import type { Tab } from "@/components/ui/tabs";
 import { BudgetPanel } from "@/components/planner/budget/budget-panel";
 import { GuestsPanel } from "@/components/planner/guests/guests-panel";
 import { IdeasPanel } from "@/components/planner/ideas/ideas-panel";
-import { OverviewPanel } from "@/components/planner/overview-panel";
+import { OverviewPanel } from "@/components/planner/overview/overview-panel";
 import { TimelinePanel } from "@/components/planner/timeline/timeline-panel";
 import type { PlanView, Update } from "@/components/planner/types";
-import { VendorsPanel } from "@/components/planner/vendors-panel";
+import { VendorsPanel } from "@/components/planner/vendors/vendors-panel";
 
 export type TabId = "overview" | "budget" | "timeline" | "vendors" | "guests" | "ideas";
 

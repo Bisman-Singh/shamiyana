@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { readRupees } from "@/lib/plan/amounts";
-import { useLocale } from "../locale-provider";
+import { useLocale } from "@/components/locale-provider";
 import { TextField } from "@/components/ui/text-field";
 
 interface VendorAmountFieldProps {
