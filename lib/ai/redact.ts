@@ -28,8 +28,9 @@ const PATTERNS: readonly RegExp[] = [
   // voter ID, then passport
   /\b[A-Z]{3}\d{7}\b/gi,
   /\b[A-Z]\d{7}\b/gi,
-  // a card number of 13 to 19 digits in any grouping, before the 12-digit Aadhaar
-  /(?<!\d)(?:\d[\s-]?){12,18}\d(?!\d)/g,
+  // card numbers as printed, 4-4-4-4 or Amex 4-6-5, before the 12-digit Aadhaar; dates never group this way
+  /(?<!\d)\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}(?!\d)/g,
+  /(?<!\d)\d{4}[\s-]?\d{6}[\s-]?\d{5}(?!\d)/g,
   /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g,
   /(?<!\d)(?:\+?91[\s-]?|0)?[6-9](?:[\s-]?\d){9}(?!\d)/g,
   /(?<!\d)0\d{2,4}[\s-]?\d{3,4}[\s-]?\d{4}(?!\d)/g,

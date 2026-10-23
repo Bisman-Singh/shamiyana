@@ -42,5 +42,7 @@ describe("redact", () => {
   it("leaves dates, money and guest counts alone", () => {
     const text = "250 guests on 2027-02-14, budget 1800000, start 7:30 pm";
     expect(redact(text)).toBe(text);
+    expect(redact("haldi 2026-12-10 2026-12-11")).toBe("haldi 2026-12-10 2026-12-11");
+    expect(redact("from 10-12-2026 11-12-2026")).toBe("from 10-12-2026 11-12-2026");
   });
 });
