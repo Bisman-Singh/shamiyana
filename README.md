@@ -132,7 +132,7 @@ only. The key is never sent to the browser.
 - Domain logic is pure functions in `lib/plan`, one concern per file. Every edit
   to a plan is a function from one record to the next, which makes undo a
   matter of keeping the previous value.
-- Route logic takes its dependencies as arguments (`lib/server/handlers.ts`), so
+- Route logic takes its dependencies as arguments (`lib/server/deps.ts`), so
   tests drive it with a mock model and a fixed clock.
 
 ### Security

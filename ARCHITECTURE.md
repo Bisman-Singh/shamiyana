@@ -10,9 +10,9 @@ browser                                        server (Vercel functions)
 brief form ──► lib/plan (budget, timeline,     proxy.ts: nonce CSP on pages
                vendors, guests) ──► screen
      │                                         /api/plan    ─┐
-     └─ facts only ──► useObject, api.ts ───►  /api/refine  ─┼─► lib/server/handlers.ts
+     └─ facts only ──► useObject, api.ts ───►  /api/refine  ─┼─► lib/server/*-handler.ts
                                                /api/vision  ─┘        │
-local storage ◄── sanitized answer ◄──────────  stream or JSON ◄── lib/ai/run.ts ──► Gemini
+local storage ◄── sanitized answer ◄──────────  stream or JSON ◄── lib/ai ──► Gemini
 (lib/client/plan-store.ts)                                     shared limits ──► Upstash Redis
 ```
 
@@ -29,7 +29,8 @@ local storage ◄── sanitized answer ◄──────────  stre
 4. The route handler checks same origin, content type, the per-minute limit
    and the body size, then the strict request schema. A repeat brief is served
    from the answer cache. Otherwise the daily cap is taken and the model chain
-   is tried in order (`lib/server/handlers.ts`, `lib/ai/fallback.ts`).
+   is tried in order (`lib/server/plan-handler.ts`, `lib/ai/plan-stream.ts`,
+   `lib/ai/fallback.ts`).
 5. The answer streams back as JSON text. The page shows it as it arrives,
    sanitized on every chunk, and saves the final sanitized version with the
    facts and language it was made for (`components/planner/use-enrichment.ts`,
