@@ -180,10 +180,16 @@ function refineBody(view: PlanView, locale: Locale, turns: readonly Turn[], mess
   };
 }
 
-export function RefineChat({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+/** Turns kept on screen; the model sees only the last few. */
+const TURNS_KEPT = 12;
+
+/**
+ * The chat's state: the conversation, the request in flight and the changes
+ * the assistant proposed. Nothing is applied until the user ticks it.
+ */
+function useRefineChat(view: PlanView, update: Update) {
   const { dict, locale } = useLocale();
   const r = dict.refine;
-  const baseId = useId();
   const [message, setMessage] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [pending, setPending] = useState(false);
@@ -220,7 +226,7 @@ export function RefineChat({ view, update }: Readonly<{ view: PlanView; update: 
         ...t,
         { id: newId(), role: "user" as const, text },
         { id: newId(), role: "assistant" as const, text: result.data.reply },
-      ].slice(-12),
+      ].slice(-TURNS_KEPT),
     );
     const weeks = wholeWeeks(view.today, view.record.brief.date);
     const items = fitChanges(result.data.changes, weeks).map((change) => ({
@@ -239,6 +245,40 @@ export function RefineChat({ view, update }: Readonly<{ view: PlanView; update: 
     update((rec, now) => applyChanges(rec, chosen, newId, now), note);
     setProposal(null);
   }
+
+  return {
+    message,
+    setMessage,
+    turns,
+    pending,
+    error,
+    proposal,
+    setProposal,
+    quiet,
+    inputRef,
+    send,
+    apply,
+  };
+}
+
+/** Plan changes asked for in plain words, proposed as tickable changes. */
+export function RefineChat({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+  const { dict } = useLocale();
+  const r = dict.refine;
+  const baseId = useId();
+  const {
+    message,
+    setMessage,
+    turns,
+    pending,
+    error,
+    proposal,
+    setProposal,
+    quiet,
+    inputRef,
+    send,
+    apply,
+  } = useRefineChat(view, update);
 
   return (
     <section aria-labelledby={`${baseId}-h`} className="refine">

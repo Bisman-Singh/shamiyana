@@ -200,6 +200,59 @@ function useView() {
   };
 }
 
+/** The open plan, or the form that makes a new one or edits the open one. */
+function PlanOrForm({
+  active,
+  mode,
+  today,
+  focus,
+  actions,
+  go,
+}: Readonly<{
+  active: PlanRecord | null;
+  mode: Mode;
+  today: string;
+  focus: boolean;
+  actions: ReturnType<typeof useActions>;
+  go: (mode: Mode) => void;
+}>) {
+  if (mode === "plan" && active) {
+    return (
+      <Workspace
+        key={active.id}
+        record={active}
+        today={today}
+        onSave={actions.save}
+        findPlan={actions.findPlan}
+        focusOnOpen={focus}
+        onEdit={() => {
+          go("edit");
+        }}
+      />
+    );
+  }
+  const editing = mode === "edit" && active !== null;
+  return (
+    <PlanForm
+      active={editing ? active : null}
+      today={today}
+      focusOnOpen={focus}
+      onCreate={actions.create}
+      onSave={(record) => {
+        actions.save(record);
+        go("plan");
+      }}
+      onCancel={
+        active
+          ? () => {
+              go("plan");
+            }
+          : null
+      }
+    />
+  );
+}
+
 export function Planner({ store }: Readonly<{ store?: PlanStore }>) {
   const plans = store ?? sharedStore();
   const snapshot = useSyncExternalStore(
@@ -217,7 +270,6 @@ export function Planner({ store }: Readonly<{ store?: PlanStore }>) {
   const { data } = snapshot;
   const active = activePlan(data);
   const full = !canAddPlan(data);
-  const editing = mode === "edit" && active !== null;
 
   return (
     <div className="planner">
@@ -253,37 +305,14 @@ export function Planner({ store }: Readonly<{ store?: PlanStore }>) {
             : null
         }
       />
-      {mode === "plan" && active ? (
-        <Workspace
-          key={active.id}
-          record={active}
-          today={today}
-          onSave={actions.save}
-          findPlan={actions.findPlan}
-          focusOnOpen={view.focus}
-          onEdit={() => {
-            go("edit");
-          }}
-        />
-      ) : (
-        <PlanForm
-          active={editing ? active : null}
-          today={today}
-          focusOnOpen={view.focus}
-          onCreate={actions.create}
-          onSave={(record) => {
-            actions.save(record);
-            go("plan");
-          }}
-          onCancel={
-            active
-              ? () => {
-                  go("plan");
-                }
-              : null
-          }
-        />
-      )}
+      <PlanOrForm
+        active={active}
+        mode={mode}
+        today={today}
+        focus={view.focus}
+        actions={actions}
+        go={go}
+      />
     </div>
   );
 }

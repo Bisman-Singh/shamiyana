@@ -45,10 +45,10 @@ export default defineConfig([
       "@typescript-eslint/no-unused-vars": ["error", { ignoreRestSiblings: true }],
       "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
       "@typescript-eslint/switch-exhaustiveness-check": "error",
-      complexity: ["error", 12],
+      complexity: ["error", 10],
       eqeqeq: ["error", "always"],
       "max-depth": ["error", 3],
-      "max-lines-per-function": ["error", { max: 90, skipBlankLines: true, skipComments: true }],
+      "max-lines-per-function": ["error", { max: 80, skipBlankLines: true, skipComments: true }],
       "no-console": ["error", { allow: ["warn", "error"] }],
       "no-restricted-syntax": [
         "error",

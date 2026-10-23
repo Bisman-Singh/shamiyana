@@ -100,11 +100,15 @@ function PhotoPreview({ state }: Readonly<{ state: State }>) {
   return <img src={state.photo.url} alt={alt} className="photo-preview" width={320} height={240} />;
 }
 
-export function PhotoIdeas({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+/**
+ * The photo flow: choose a file, shrink it in the browser, then send it once
+ * for ideas. Choosing a new photo cancels a request still in flight, and each
+ * preview URL is released when its photo is replaced.
+ */
+function usePhotoIdeas(view: PlanView) {
   const { dict, locale } = useLocale();
   const p = dict.photo;
   const announce = useAnnounce();
-  const headingId = useId();
   const [state, setState] = useState<State>({ phase: "empty" });
   const photo = "photo" in state ? state.photo : undefined;
   const requests = useRequestSignal();
@@ -149,6 +153,16 @@ export function PhotoIdeas({ view, update }: Readonly<{ view: PlanView; update: 
         : { phase: "error", message: dict.ai.errors[result.error], photo: current },
     );
   }
+
+  return { state, photo, choose, analyse };
+}
+
+/** Ideas from a venue, decor or outfit photo; the photo is sent once and not kept. */
+export function PhotoIdeas({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
+  const { dict } = useLocale();
+  const p = dict.photo;
+  const headingId = useId();
+  const { state, photo, choose, analyse } = usePhotoIdeas(view);
 
   return (
     <section aria-labelledby={headingId} className="photo-ideas">

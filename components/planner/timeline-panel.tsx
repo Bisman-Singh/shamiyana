@@ -5,6 +5,7 @@ import { langOf } from "@/lib/i18n/lang";
 import { buildIcs } from "@/lib/export/ics";
 import { fileName, googleCalendarUrl } from "@/lib/export/links";
 import { downloadText } from "@/lib/client/files";
+import type { Dictionary } from "@/lib/i18n/en";
 import { format, formatDate, plural } from "@/lib/i18n/format";
 import { LIMITS, TASK_AREAS, type TaskArea } from "@/lib/plan/constants";
 import { daysBetween, isIsoDate } from "@/lib/plan/dates";
@@ -17,6 +18,22 @@ import { SelectField, TextField } from "../ui/field";
 import { focusOpenPanel } from "../ui/tabs";
 import { areaName, taskTitle } from "./task-title";
 import type { PlanView, Update } from "./types";
+
+/** A new task needs a title within the limit and a date from today up to the event. */
+function checkTask(
+  input: { title: string; date: string },
+  today: string,
+  eventDate: string,
+  t: Dictionary["timeline"],
+) {
+  const named = customTaskSchema.shape.title.safeParse(input.title);
+  const lead = isIsoDate(input.date) ? daysBetween(input.date, eventDate) : -1;
+  const errors = {
+    title: named.success ? undefined : t.addTitleError,
+    date: lead < 0 || daysBetween(today, input.date) < 0 ? t.addDateError : undefined,
+  };
+  return { errors, clean: named.success ? named.data : "", lead };
+}
 
 function AddTask({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict } = useLocale();
@@ -31,13 +48,7 @@ function AddTask({ view, update }: Readonly<{ view: PlanView; update: Update }>)
 
   function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    const named = customTaskSchema.shape.title.safeParse(title);
-    const clean = named.success ? named.data : "";
-    const lead = isIsoDate(date) ? daysBetween(date, brief.date) : -1;
-    const next = {
-      title: named.success ? undefined : t.addTitleError,
-      date: lead < 0 || daysBetween(view.today, date) < 0 ? t.addDateError : undefined,
-    };
+    const { errors: next, clean, lead } = checkTask({ title, date }, view.today, brief.date, t);
     setErrors(next);
     if (next.title ?? next.date) {
       document.getElementById(next.title ? `${baseId}-title` : `${baseId}-date`)?.focus();
