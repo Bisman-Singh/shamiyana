@@ -5,7 +5,7 @@ import type { VisionResult } from "@/lib/ai/vision-result";
 import { langOf } from "@/lib/i18n/lang";
 import type { PlanRecord } from "@/lib/plan/schema";
 import { requestVision } from "@/lib/client/api";
-import { ACCEPTED_IMAGES, prepareImage } from "@/lib/client/files";
+import { ACCEPTED_IMAGES, prepareImage, UnsupportedImageError } from "@/lib/client/files";
 import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
@@ -133,7 +133,7 @@ function usePhotoIdeas(view: PlanView) {
     } catch (error) {
       setState({
         phase: "error",
-        message: error instanceof TypeError ? p.errors.type : p.errors.read,
+        message: error instanceof UnsupportedImageError ? p.errors.type : p.errors.read,
       });
     }
   }

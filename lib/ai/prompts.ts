@@ -9,7 +9,7 @@ import {
 import { LIMITS, type CategoryId, type Locale, type TurnRole } from "@/lib/plan/constants";
 import type { BudgetLine } from "@/lib/plan/budget";
 import { daysBetween, wholeWeeks } from "@/lib/plan/dates";
-import type { EventFacts, PlanRecord } from "@/lib/plan/schema";
+import type { EventFacts, Factors } from "@/lib/plan/schema";
 import { dropInjections } from "./guard";
 import { redact } from "./redact";
 
@@ -62,14 +62,14 @@ ${SHARED_RULES}
 - Write every text field in ${LANGUAGE[locale]}. Keep category, area, op and cost values exactly as the given codes.`;
 }
 
-function variantLine(brief: EventFacts): string {
-  switch (brief.type) {
+function variantLine(facts: EventFacts): string {
+  switch (facts.type) {
     case "wedding":
-      return `Functions: ${brief.functions.join(", ")}`;
+      return `Functions: ${facts.functions.join(", ")}`;
     case "birthday":
-      return `Birthday of: ${brief.honoree}`;
+      return `Birthday of: ${facts.honoree}`;
     case "community":
-      return `Kind of community event: ${brief.kind}`;
+      return `Kind of community event: ${facts.kind}`;
   }
 }
 
@@ -84,16 +84,16 @@ export function weeksLeft(facts: EventFacts, today: string): number {
 }
 
 /** Catering money per plate, counting smaller functions such as haldi at part of the guest list. */
-function perPlate(brief: EventFacts, lines: readonly BudgetLine[]): string | null {
+function perPlate(facts: EventFacts, lines: readonly BudgetLine[]): string | null {
   const catering = lines.find((l) => l.category === "catering");
   if (!catering) return null;
-  if (brief.type !== "wedding" || brief.functions.length === 1) {
-    return `Catering: about ${inr(Math.round(catering.amount / brief.guests))} a plate`;
+  if (facts.type !== "wedding" || facts.functions.length === 1) {
+    return `Catering: about ${inr(Math.round(catering.amount / facts.guests))} a plate`;
   }
-  const share = brief.functions.reduce((acc, fn) => acc + FUNCTION_HEADCOUNT[fn], 0);
-  const plates = Math.round(brief.guests * share);
+  const share = facts.functions.reduce((acc, fn) => acc + FUNCTION_HEADCOUNT[fn], 0);
+  const plates = Math.round(facts.guests * share);
   const each = inr(Math.round(catering.amount / plates));
-  return `Catering: ${inr(catering.amount)} for about ${String(plates)} plates across ${String(brief.functions.length)} functions, about ${each} a plate`;
+  return `Catering: ${inr(catering.amount)} for about ${String(plates)} plates across ${String(facts.functions.length)} functions, about ${each} a plate`;
 }
 
 function weights(entries: readonly (readonly [string, number])[]): string {
@@ -102,34 +102,34 @@ function weights(entries: readonly (readonly [string, number])[]): string {
 
 /** The facts every prompt starts from: the event, the computed budget lines and the time left. */
 export function describeEvent(
-  brief: EventFacts,
+  facts: EventFacts,
   lines: readonly BudgetLine[],
   today: string,
 ): string {
-  const month = MONTH.format(new Date(`${brief.date}T00:00:00Z`));
-  const days = daysBetween(today, brief.date);
-  const preset = Object.entries(variantFactors(brief)).filter(([, w]) => w !== 0 && w !== 1);
+  const month = MONTH.format(new Date(`${facts.date}T00:00:00Z`));
+  const days = daysBetween(today, facts.date);
+  const preset = Object.entries(variantFactors(facts)).filter(([, w]) => w !== 0 && w !== 1);
   return [
-    `Event type: ${brief.type}`,
-    variantLine(brief),
-    `City: <user_text>${fence(brief.city)}</user_text>`,
-    `Date: ${brief.date} (${month}, ${days} days from today, ${today})`,
-    `Weeks left: ${String(weeksLeft(brief, today))}`,
-    `Guests: ${brief.guests}`,
-    `Budget: ${inr(brief.budget)} in total, about ${inr(Math.round(brief.budget / brief.guests))} per guest`,
-    perPlate(brief, lines),
-    `Style: ${brief.style}`,
-    `Food preference: ${brief.food}`,
+    `Event type: ${facts.type}`,
+    variantLine(facts),
+    `City: <user_text>${fence(facts.city)}</user_text>`,
+    `Date: ${facts.date} (${month}, ${days} days from today, ${today})`,
+    `Weeks left: ${String(weeksLeft(facts, today))}`,
+    `Guests: ${facts.guests}`,
+    `Budget: ${inr(facts.budget)} in total, about ${inr(Math.round(facts.budget / facts.guests))} per guest`,
+    perPlate(facts, lines),
+    `Style: ${facts.style}`,
+    `Food preference: ${facts.food}`,
     `Budget lines: ${lines.map((l) => l.category + " " + inr(l.amount)).join("; ")}`,
     `Already built into the budget lines above, not shifts: ${weights(preset)}`,
-    brief.notes === "" ? "Notes: none" : `Notes: <user_text>${fence(brief.notes)}</user_text>`,
+    facts.notes === "" ? "Notes: none" : `Notes: <user_text>${fence(facts.notes)}</user_text>`,
   ]
     .filter((line) => line !== null)
     .join("\n");
 }
 
-function checklist(brief: EventFacts): string {
-  return tasksFor(brief)
+function checklist(facts: EventFacts): string {
+  return tasksFor(facts)
     .map((t) => `- ${messageOr(TASK_TITLES, t.id, t.id)}`)
     .join("\n");
 }
@@ -144,12 +144,12 @@ function askedAlready(lines: readonly BudgetLine[]): string {
 }
 
 /** The plan route's prompt: the event plus what is already built in and may be shifted. */
-export function planPrompt(brief: EventFacts, lines: readonly BudgetLine[], today: string): string {
-  return `${describeEvent(brief, lines, today)}
-Categories you may shift: ${shiftableCategories(brief).join(", ")}
+export function planPrompt(facts: EventFacts, lines: readonly BudgetLine[], today: string): string {
+  return `${describeEvent(facts, lines, today)}
+Categories you may shift: ${shiftableCategories(facts).join(", ")}
 
 Already on the checklist:
-${checklist(brief)}
+${checklist(facts)}
 
 Questions the app already asks vendors:
 ${askedAlready(lines)}
@@ -182,7 +182,7 @@ export interface Turn {
 
 export interface RefineContext {
   facts: EventFacts;
-  factors: PlanRecord["factors"];
+  factors: Factors;
   today: string;
   history: readonly Turn[];
   message: string;
@@ -222,11 +222,11 @@ ${SHARED_RULES}
 
 /** The photo route's prompt: the event the photo is for. */
 export function visionPrompt(
-  brief: EventFacts,
+  facts: EventFacts,
   lines: readonly BudgetLine[],
   today: string,
 ): string {
-  return `${describeEvent(brief, lines, today)}
+  return `${describeEvent(facts, lines, today)}
 
 Suggest how this photo can shape the event.`;
 }

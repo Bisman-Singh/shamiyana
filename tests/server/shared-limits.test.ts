@@ -1,7 +1,8 @@
 import { Ratelimit } from "@upstash/ratelimit";
-import { DailyCap, RateLimiter } from "@/lib/server/rate-limit";
+import { DailyCap, RATE_WINDOW_MS, RateLimiter } from "@/lib/server/rate-limit";
 import {
   SharedDailyCap,
+  SHARED_WINDOW,
   SharedRateLimiter,
   connectRedis,
   pseudonym,
@@ -45,6 +46,12 @@ class FakeScript implements ScriptClient {
     return Promise.resolve(1);
   }
 }
+
+describe("SHARED_WINDOW", () => {
+  it("is the same window as the memory limits", () => {
+    expect(SHARED_WINDOW).toBe(`${String(RATE_WINDOW_MS / 1000)} s`);
+  });
+});
 
 describe("pseudonymKey", () => {
   it("derives a stable key that does not reveal the API key", () => {

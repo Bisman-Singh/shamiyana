@@ -1,6 +1,17 @@
 // @vitest-environment jsdom
-import { errorCode, errorFromMessage, requestRefine, requestVision } from "@/lib/client/api";
-import { downloadText, prepareImage, readTextFile } from "@/lib/client/files";
+import {
+  errorCode,
+  errorFromMessage,
+  requestRefine,
+  requestVision,
+  type RefineRequest,
+} from "@/lib/client/api";
+import {
+  UnsupportedImageError,
+  downloadText,
+  prepareImage,
+  readTextFile,
+} from "@/lib/client/files";
 import {
   EMPTY_STORE,
   PlanStore,
@@ -19,7 +30,7 @@ import {
   writeStore,
 } from "@/lib/client/plan-store";
 import { LIMITS } from "@/lib/plan/constants";
-import { TODAY, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
+import { TODAY, recordFor, sampleEnrichment, weddingBrief, weddingFacts } from "../fixtures";
 import { stubCanvas, stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { MemoryStorage } from "../helpers/storage";
@@ -167,7 +178,7 @@ describe("files", () => {
 
   it("refuses non-images and fails cleanly without a canvas", async () => {
     await expect(prepareImage(new File(["p"], "a.svg", { type: "image/svg+xml" }))).rejects.toThrow(
-      TypeError,
+      UnsupportedImageError,
     );
     stubCanvas();
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
@@ -192,6 +203,15 @@ describe("api client", () => {
     expect(errorFromMessage("Failed to fetch")).toBe("network");
   });
 
+  const refineBody: RefineRequest = {
+    facts: weddingFacts,
+    factors: {},
+    locale: "en",
+    today: TODAY,
+    history: [],
+    message: "Fewer guests",
+  };
+
   it("validates a refine answer and keeps only valid changes", async () => {
     mockFetch({
       "/api/refine": () =>
@@ -200,7 +220,7 @@ describe("api client", () => {
           changes: [{ op: "set_guests", count: 90 }, { op: "nope" }],
         }),
     });
-    const result = await requestRefine({}, ["venue"], TODAY);
+    const result = await requestRefine(refineBody, ["venue"], TODAY);
     expect(result).toEqual({
       ok: true,
       data: { reply: "Done.", changes: [{ op: "set_guests", count: 90 }] },
@@ -212,14 +232,14 @@ describe("api client", () => {
       "/api/refine": () => Response.json({ reply: 5 }),
       "/api/vision": () => Response.json({ kind: "x" }),
     });
-    expect(await requestRefine({}, [], TODAY)).toEqual({ ok: false, error: "ai_failed" });
+    expect(await requestRefine(refineBody, [], TODAY)).toEqual({ ok: false, error: "ai_failed" });
     expect(await requestVision(new FormData())).toEqual({ ok: false, error: "ai_failed" });
     mockFetch({
       "/api/vision": () => jsonError("rate_limited", 429),
       "/api/refine": () => new Response("oops", { status: 500 }),
     });
     expect(await requestVision(new FormData())).toEqual({ ok: false, error: "rate_limited" });
-    expect(await requestRefine({}, [], TODAY)).toEqual({ ok: false, error: "ai_failed" });
+    expect(await requestRefine(refineBody, [], TODAY)).toEqual({ ok: false, error: "ai_failed" });
     vi.stubGlobal(
       "fetch",
       vi.fn(() => Promise.reject(new TypeError("offline"))),

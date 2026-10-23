@@ -137,6 +137,9 @@ export const planRecordSchema = z.strictObject({
 });
 export type PlanRecord = z.infer<typeof planRecordSchema>;
 
+/** Budget weights the user set per category; a missing category means 1. */
+export type Factors = PlanRecord["factors"];
+
 export const storeSchema = z.strictObject({
   version: z.literal(1),
   activeId: id.nullable(),

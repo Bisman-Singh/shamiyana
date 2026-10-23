@@ -1,11 +1,11 @@
 "use client";
 
 import { useId } from "react";
-import { format, formatDate, formatMoney, formatNumber } from "@/lib/i18n/format";
+import { format, formatDate, formatNumber } from "@/lib/i18n/format";
 import { langOf } from "@/lib/i18n/lang";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { vendorTally } from "@/lib/plan/vendors";
-import { useLocale } from "../locale-provider";
+import { useLocale, useMoney } from "../locale-provider";
 import { taskTitle } from "./task-title";
 import type { PlanView } from "./types";
 
@@ -19,6 +19,7 @@ interface KeyFiguresProps {
 /** The six numbers that say where the plan stands. */
 function KeyFigures({ view }: Readonly<KeyFiguresProps>) {
   const { dict, locale } = useLocale();
+  const money = useMoney();
   const o = dict.overview;
   const { budget, timeline, guests } = view;
   const tally = vendorTally(view.vendors);
@@ -27,13 +28,11 @@ function KeyFigures({ view }: Readonly<KeyFiguresProps>) {
     <dl className="ledger">
       <div>
         <dt>{o.leftToCommit}</dt>
-        <dd className={budget.remaining < 0 ? "is-over" : undefined}>
-          {formatMoney(budget.remaining, locale)}
-        </dd>
+        <dd className={budget.remaining < 0 ? "is-over" : undefined}>{money(budget.remaining)}</dd>
       </div>
       <div>
         <dt>{o.committed}</dt>
-        <dd>{formatMoney(budget.committed, locale)}</dd>
+        <dd>{money(budget.committed)}</dd>
       </div>
       <div>
         <dt>{o.tasksDone}</dt>

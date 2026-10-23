@@ -34,7 +34,7 @@ export function logEvent(fields: LogFields): void {
   else console.info(line(fields));
 }
 
-export type Notice =
+export type ConfigNotice =
   | { event: "ai_off"; reason: "no_api_key" }
   | { event: "limits_local"; reason: "redis_unavailable" };
 
@@ -42,6 +42,6 @@ export type Notice =
  * A configuration warning, such as the AI being off for want of a key, or a
  * request limited in memory because Redis did not answer.
  */
-export function logNotice(notice: Notice): void {
+export function logNotice(notice: ConfigNotice): void {
   console.warn(line(notice));
 }

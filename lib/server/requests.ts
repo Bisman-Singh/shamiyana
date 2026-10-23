@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { LIMITS, LOCALES, TURN_ROLES } from "@/lib/plan/constants";
-import { daysBetween, isIsoDate } from "@/lib/plan/dates";
+import { daysBetween, isIsoDate, utcDay } from "@/lib/plan/dates";
 import { factorsSchema, factsSchema } from "@/lib/plan/schema";
 import { cleanText } from "@/lib/shared/plain-text";
 
@@ -13,7 +13,7 @@ import { cleanText } from "@/lib/shared/plain-text";
  */
 
 function dated(serverNow: Date) {
-  const utc = serverNow.toISOString().slice(0, 10);
+  const utc = utcDay(serverNow);
   return z
     .string()
     .refine(isIsoDate, { message: "invalid_date", abort: true })

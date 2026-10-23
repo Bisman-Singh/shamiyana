@@ -26,9 +26,19 @@ export function isIsoDate(value: string): boolean {
   return toDayNumber(value) !== null;
 }
 
+/** The UTC calendar day of a moment, as YYYY-MM-DD. */
+export function utcDay(at: Date | number): string {
+  return new Date(at).toISOString().slice(0, 10);
+}
+
+/** Whole seconds from `now` until `at`, at least one, as a Retry-After header wants. */
+export function secondsUntil(at: number, now: number): number {
+  return Math.max(1, Math.ceil((at - now) / 1000));
+}
+
 /** The ISO date for a day number counted from 1970-01-01. */
 export function fromDayNumber(day: number): string {
-  return new Date(day * DAY_MS).toISOString().slice(0, 10);
+  return utcDay(day * DAY_MS);
 }
 
 function dayOf(iso: string): number {

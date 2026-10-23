@@ -16,7 +16,7 @@ import { parseChanges, type Change } from "@/lib/plan/changes";
 import { LIMITS, type Locale } from "@/lib/plan/constants";
 import { isEmptyEnrichment, sanitizeEnrichment } from "@/lib/plan/enrichment";
 import { parseObject, type Loose } from "@/lib/shared/untrusted";
-import type { EventFacts, PlanRecord } from "@/lib/plan/schema";
+import type { EventFacts } from "@/lib/plan/schema";
 import { clip } from "@/lib/shared/plain-text";
 import { cacheKey, type AnswerCache } from "./cache";
 import { firstSuccess, firstWorking } from "./fallback";
@@ -29,7 +29,7 @@ import {
   refineSystem,
   visionPrompt,
   visionSystem,
-  type Turn,
+  type RefineContext,
 } from "./prompts";
 import { enrichmentOutputSchema, refineOutputSchema, visionOutputSchema } from "./schemas";
 import { sanitizeVision, type VisionResult } from "./vision-result";
@@ -143,7 +143,7 @@ export function textStream(text: string): ReadableStream<string> {
 function cacheWhenComplete(
   cache: AnswerCache,
   key: string,
-  brief: EventFacts,
+  facts: EventFacts,
 ): TransformStream<string, string> {
   let text = "";
   return new TransformStream<string, string>({
@@ -152,7 +152,7 @@ function cacheWhenComplete(
       controller.enqueue(chunk);
     },
     flush() {
-      const clean = sanitizeEnrichment(parseObject(text), shiftableCategories(brief));
+      const clean = sanitizeEnrichment(parseObject(text), shiftableCategories(facts));
       if (!isEmptyEnrichment(clean)) cache.set(key, text);
     },
   });
@@ -224,13 +224,9 @@ export async function streamPlan(
   };
 }
 
-export interface RefineInput {
-  facts: EventFacts;
-  factors: PlanRecord["factors"];
+/** What the refine route runs on: the prompt's context plus the reply language. */
+export interface RefineInput extends RefineContext {
   locale: Locale;
-  today: string;
-  history: readonly Turn[];
-  message: string;
 }
 
 export interface RefineAnswer {

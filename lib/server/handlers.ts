@@ -21,8 +21,14 @@ import {
   type ErrorCode,
   type GuardOptions,
 } from "./http";
-import { logEvent, type LogRoute } from "./log";
-import { DailyCap, RateLimiter, type DailyAllowance, type RequestLimiter } from "./rate-limit";
+import { logEvent, type LogFields, type LogRoute } from "./log";
+import {
+  DailyCap,
+  RATE_WINDOW_MS,
+  RateLimiter,
+  type DailyAllowance,
+  type RequestLimiter,
+} from "./rate-limit";
 import {
   connectRedis,
   pseudonymKey,
@@ -74,7 +80,7 @@ const PER_MINUTE: Record<LimitedRoute, number> = { plan: 8, refine: 20, vision: 
  */
 function limitsFor(env: ServerEnv): Pick<AiDeps, "limiters" | "daily"> {
   const memory = (route: LimitedRoute) =>
-    new RateLimiter({ limit: PER_MINUTE[route], windowMs: 60_000 });
+    new RateLimiter({ limit: PER_MINUTE[route], windowMs: RATE_WINDOW_MS });
   const daily = new DailyCap(env.AI_DAILY_REQUEST_CAP, env.AI_DAILY_CLIENT_CAP);
   const apiKey = env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!env.redis || apiKey === undefined) {
@@ -116,34 +122,31 @@ export function liveDeps(): AiDeps {
   return live;
 }
 
+/** Logs one line per outcome for a request, each with the route and the time since it started. */
 function reporter(route: LogRoute) {
   const started = Date.now();
+  const emit = (fields: Omit<LogFields, "route" | "ms">) => {
+    logEvent({ route, ms: Date.now() - started, ...fields });
+  };
   return {
     fail: (code: ErrorCode, headers?: Record<string, string>): Response => {
       const response = errorResponse(code, headers);
-      logEvent({ route, outcome: code, status: response.status, ms: Date.now() - started });
+      emit({ outcome: code, status: response.status });
       return response;
     },
     ok: (response: Response, model: string, cached = false): Response => {
-      logEvent({
-        route,
-        outcome: "ok",
-        status: response.status,
-        ms: Date.now() - started,
-        model,
-        cached,
-      });
+      emit({ outcome: "ok", status: response.status, model, cached });
       return response;
     },
     modelFailed: (model: string): void => {
-      logEvent({ route, outcome: "model_failed", status: 502, ms: Date.now() - started, model });
+      emit({ outcome: "model_failed", status: 502, model });
     },
     screened: (response: Response): Response => {
-      logEvent({ route, outcome: "screened", status: response.status, ms: Date.now() - started });
+      emit({ outcome: "screened", status: response.status });
       return response;
     },
     cutOff: (model: string): void => {
-      logEvent({ route, outcome: "cut_off", status: 200, ms: Date.now() - started, model });
+      emit({ outcome: "cut_off", status: 200, model });
     },
   };
 }
@@ -220,7 +223,6 @@ export function planHandler(deps: () => AiDeps) {
       planRequestSchema(d.now()),
     );
     if (!input.ok) return log.fail(input.code, input.headers);
-    if (!d.chain) return log.fail("ai_unavailable");
     const { key, hit } = await lookupPlan(d.cache, input.data);
     if (hit !== null) {
       return log.ok(

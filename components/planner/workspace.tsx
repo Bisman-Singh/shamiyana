@@ -5,7 +5,7 @@ import { langOf } from "@/lib/i18n/lang";
 import { downloadText } from "@/lib/client/files";
 import { fileName } from "@/lib/export/links";
 import type { Dictionary } from "@/lib/i18n/en";
-import { formatDate, formatMoney, plural } from "@/lib/i18n/format";
+import { formatDate, plural } from "@/lib/i18n/format";
 import { planBudget, summariseBudget } from "@/lib/plan/budget";
 import type { Locale } from "@/lib/plan/constants";
 import type { Enrichment } from "@/lib/plan/enrichment";
@@ -14,7 +14,7 @@ import { withEnrichment } from "@/lib/plan/record";
 import type { PlanRecord } from "@/lib/plan/schema";
 import { buildTimeline } from "@/lib/plan/timeline";
 import { buildVendors } from "@/lib/plan/vendors";
-import { useLocale } from "../locale-provider";
+import { useLocale, useMoney } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { useFocusOnMount } from "../ui/focus";
 import { Notice } from "../ui/notice";
@@ -58,6 +58,7 @@ interface PlanHeaderProps {
 
 function PlanHeader({ titleId, view, focusOnOpen, onEdit, onShare }: Readonly<PlanHeaderProps>) {
   const { dict, locale } = useLocale();
+  const money = useMoney();
   const titleRef = useFocusOnMount<HTMLHeadingElement>(focusOnOpen);
   const w = dict.workspace;
   const { brief } = view.record;
@@ -73,7 +74,7 @@ function PlanHeader({ titleId, view, focusOnOpen, onEdit, onShare }: Readonly<Pl
           <span>{formatDate(brief.date, locale, true)}</span>
           <span>{brief.city}</span>
           <span>{plural(locale, w.guests, brief.guests)}</span>
-          <span>{formatMoney(brief.budget, locale)}</span>
+          <span>{money(brief.budget)}</span>
         </p>
         <p className={days < 0 ? "countdown is-over" : "countdown"}>{when}</p>
       </div>

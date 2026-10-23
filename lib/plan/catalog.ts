@@ -86,17 +86,17 @@ function weddingTilts(functions: readonly WeddingFunction[], guests: number): Sh
 }
 
 /** How the event's details tilt the base split before it is renormalised. */
-export function variantFactors(brief: EventFacts): Shares {
-  switch (brief.type) {
+export function variantFactors(facts: EventFacts): Shares {
+  switch (facts.type) {
     case "wedding":
-      return weddingTilts(brief.functions, brief.guests);
+      return weddingTilts(facts.functions, facts.guests);
     case "birthday":
       return {
         child: { entertainment: 1.3, gifts: 1.3 },
         teen: { entertainment: 1.2 },
         adult: { catering: 1.1 },
         milestone: { photo: 1.3, decor: 1.2 },
-      }[brief.honoree];
+      }[facts.honoree];
     case "community":
       return {
         festival: { decor: 1.3, permits: 1.2 },
@@ -111,7 +111,7 @@ export function variantFactors(brief: EventFacts): Shares {
           venue: 0.2,
           rituals: 0,
         },
-      }[brief.kind];
+      }[facts.kind];
   }
 }
 
@@ -128,15 +128,16 @@ export interface TaskTemplate {
   area: TaskArea;
   /** Days before the event this is ideally done by. */
   leadDays: number;
-  when?: (brief: EventFacts) => boolean;
+  when?: (facts: EventFacts) => boolean;
 }
 
-const wedding = (brief: EventFacts, fn: string) =>
-  brief.type === "wedding" && brief.functions.some((f) => f === fn);
+const wedding = (facts: EventFacts, fn: string) =>
+  facts.type === "wedding" && facts.functions.some((f) => f === fn);
 
-const birthdayFor = (b: EventFacts, honoree: string) =>
-  b.type === "birthday" && b.honoree === honoree;
-const communityKind = (b: EventFacts, kind: string) => b.type === "community" && b.kind === kind;
+const birthdayFor = (facts: EventFacts, honoree: string) =>
+  facts.type === "birthday" && facts.honoree === honoree;
+const communityKind = (facts: EventFacts, kind: string) =>
+  facts.type === "community" && facts.kind === kind;
 
 export const TASKS: Record<EventType, readonly TaskTemplate[]> = {
   wedding: [

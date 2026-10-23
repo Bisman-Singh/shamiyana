@@ -3,6 +3,7 @@ import { visionResultSchema, type VisionResult } from "@/lib/ai/vision-result";
 import { parseChanges, type Change } from "@/lib/plan/changes";
 import { LIMITS, type CategoryId } from "@/lib/plan/constants";
 import { isRecord } from "@/lib/shared/untrusted";
+import type { refineRequestSchema } from "@/lib/server/requests";
 
 /**
  * Browser calls to the AI routes. Every failure becomes one of the error
@@ -59,6 +60,9 @@ const refineAnswer = z.object({
   changes: z.array(z.unknown()),
 });
 
+/** The refine route's body, as its own schema reads it, so the page can't send something else. */
+export type RefineRequest = z.input<ReturnType<typeof refineRequestSchema>>;
+
 export interface RefineReply {
   reply: string;
   changes: Change[];
@@ -66,7 +70,7 @@ export interface RefineReply {
 
 /** Sends a refine message and returns the reply with only the changes this plan allows. */
 export async function requestRefine(
-  body: unknown,
+  body: RefineRequest,
   categories: readonly CategoryId[],
   today: string,
   signal?: AbortSignal,

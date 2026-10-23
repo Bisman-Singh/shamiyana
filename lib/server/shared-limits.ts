@@ -1,14 +1,15 @@
 import "server-only";
+import { secondsUntil, utcDay } from "@/lib/plan/dates";
 import { createHmac } from "node:crypto";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { logNotice } from "./log";
-import type {
-  DailyAllowance,
-  DailyCap,
-  RateLimiter,
-  RateResult,
-  RequestLimiter,
+import {
+  type DailyAllowance,
+  type DailyCap,
+  type RateLimiter,
+  type RateResult,
+  type RequestLimiter,
 } from "./rate-limit";
 
 /**
@@ -69,7 +70,7 @@ export class SharedRateLimiter implements RequestLimiter {
       const result = await this.window.limit(pseudonym(this.secret, key));
       if (result.reason === "timeout") return this.local(key);
       if (result.success) return { ok: true, retryAfter: 0 };
-      return { ok: false, retryAfter: Math.max(1, Math.ceil((result.reset - this.now()) / 1000)) };
+      return { ok: false, retryAfter: secondsUntil(result.reset, this.now()) };
     } catch {
       return this.local(key);
     }
@@ -81,11 +82,14 @@ export class SharedRateLimiter implements RequestLimiter {
   }
 }
 
+/** RATE_WINDOW_MS in the form Upstash takes; a test keeps the two equal. */
+export const SHARED_WINDOW = "60 s";
+
 /** A sliding window of `limit` requests a minute per client, shared through Redis. */
 export function sharedWindow(redis: Redis, name: string, limit: number): WindowClient {
   return new Ratelimit({
     redis,
-    limiter: Ratelimit.slidingWindow(limit, "60 s"),
+    limiter: Ratelimit.slidingWindow(limit, SHARED_WINDOW),
     prefix: `${PREFIX}:rate:${name}`,
     ephemeralCache: false,
     analytics: false,
@@ -124,7 +128,7 @@ export class SharedDailyCap implements DailyAllowance {
   ) {}
 
   async take(client = ""): Promise<boolean> {
-    const day = new Date(this.now()).toISOString().slice(0, 10);
+    const day = utcDay(this.now());
     const midnight = Date.parse(day) / 1000 + DAY_SECONDS;
     const total = `${PREFIX}:daily:${day}`;
     try {

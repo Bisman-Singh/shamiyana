@@ -1,4 +1,5 @@
 import "server-only";
+import { secondsUntil, utcDay } from "@/lib/plan/dates";
 import { BoundedMap } from "./bounded-map";
 
 /**
@@ -9,6 +10,9 @@ import { BoundedMap } from "./bounded-map";
  * limits are per server instance; `shared-limits.ts` holds the same limits in
  * Redis for every instance and falls back to these.
  */
+
+/** The window every per-minute limit counts over. */
+export const RATE_WINDOW_MS = 60_000;
 
 export interface RateResult {
   ok: boolean;
@@ -55,7 +59,7 @@ export class RateLimiter implements RequestLimiter {
       const oldest = recent[0] ?? now;
       return {
         ok: false,
-        retryAfter: Math.max(1, Math.ceil((oldest + this.windowMs - now) / 1000)),
+        retryAfter: secondsUntil(oldest + this.windowMs, now),
       };
     }
     recent.push(now);
@@ -89,7 +93,7 @@ export class DailyCap implements DailyAllowance {
   }
 
   take(client = ""): boolean {
-    const today = new Date(this.now()).toISOString().slice(0, 10);
+    const today = utcDay(this.now());
     if (today !== this.day) {
       this.day = today;
       this.count = 0;

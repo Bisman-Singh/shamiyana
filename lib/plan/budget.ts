@@ -1,3 +1,4 @@
+import type { Factors } from "@/lib/plan/schema";
 import { BASE_SHARES, variantFactors } from "./catalog";
 import type { CategoryId, VendorStatus } from "./constants";
 import { clampFactor } from "./factors";
@@ -57,12 +58,9 @@ export function allocate(
 }
 
 /** The plan's categories with their weights after event details and user shifts. */
-export function weightsFor(
-  brief: EventFacts,
-  factors: PlanRecord["factors"],
-): (readonly [CategoryId, number])[] {
-  const variant = variantFactors(brief);
-  const shares = BASE_SHARES[brief.type];
+export function weightsFor(facts: EventFacts, factors: Factors): (readonly [CategoryId, number])[] {
+  const variant = variantFactors(facts);
+  const shares = BASE_SHARES[facts.type];
   // Contingency keeps its share however the other lines are tilted.
   const reserve = shares.contingency;
   const raw = Object.entries(shares).map(([key, base]) => {
@@ -76,8 +74,8 @@ export function weightsFor(
 }
 
 /** The budget split for an event, weighted by its details and the user's shifts, in round hundreds. */
-export function planBudget(brief: EventFacts, factors: PlanRecord["factors"]): BudgetLine[] {
-  return allocate(brief.budget, weightsFor(brief, factors));
+export function planBudget(facts: EventFacts, factors: Factors): BudgetLine[] {
+  return allocate(facts.budget, weightsFor(facts, factors));
 }
 
 /** A line's rupees now and with its shift set to `factor`. */
@@ -90,9 +88,9 @@ export type ShiftPreview = (
  * Shows a shift in rupees. A shift scales a line's share and the rest make
  * room, so ×1.2 is not exactly 20% more money; the user should see the money.
  */
-export function previewShifts(brief: EventFacts, factors: PlanRecord["factors"]): ShiftPreview {
-  const amount = (f: PlanRecord["factors"], category: CategoryId) =>
-    planBudget(brief, f).find((l) => l.category === category)?.amount ?? 0;
+export function previewShifts(facts: EventFacts, factors: Factors): ShiftPreview {
+  const amount = (f: Factors, category: CategoryId) =>
+    planBudget(facts, f).find((l) => l.category === category)?.amount ?? 0;
   return (category, factor) => ({
     before: amount(factors, category),
     after: amount({ ...factors, [category]: factor }, category),
@@ -123,7 +121,7 @@ export interface BudgetSummary {
 /** Budget lines with vendor status, quotes and payments, and the totals the panel shows. */
 export function summariseBudget(
   lines: readonly BudgetLine[],
-  brief: EventFacts,
+  facts: EventFacts,
   vendors: PlanRecord["vendors"],
 ): BudgetSummary {
   const rows = lines.map((line) => {
@@ -141,11 +139,11 @@ export function summariseBudget(
   const catering = lines.find((l) => l.category === "catering");
   return {
     rows,
-    total: brief.budget,
+    total: facts.budget,
     committed,
     paid: rows.reduce((acc, r) => acc + r.paid, 0),
-    remaining: brief.budget - committed,
-    perGuestCatering: catering ? Math.round(catering.amount / brief.guests) : null,
+    remaining: facts.budget - committed,
+    perGuestCatering: catering ? Math.round(catering.amount / facts.guests) : null,
     overCategories: rows.filter((r) => r.variance > 0).map((r) => r.category),
   };
 }

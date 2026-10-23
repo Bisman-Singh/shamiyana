@@ -11,7 +11,7 @@ import {
   savePlan,
   selectPlan,
   sharedStore,
-  type Notice,
+  type StorageIssue,
   type PlanStore,
 } from "@/lib/client/plan-store";
 import { recordFromShare, type SharedPlan } from "@/lib/export/share";
@@ -23,17 +23,11 @@ import type { Brief, PlanRecord } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { BriefForm } from "./brief-form";
-import {
-  MessageNotice,
-  PlannerSkeleton,
-  PlansBar,
-  SharedImport,
-  StoreNotice,
-  useIncomingShare,
-  useToday,
-  type Incoming,
-  type Message,
-} from "./planner-parts";
+import { MessageNotice, SharedImport, StoreNotice, type Message } from "./planner-notices";
+import { PlannerSkeleton } from "./planner-skeleton";
+import { PlansBar } from "./plans-bar";
+import { useIncomingShare, type Incoming } from "./use-incoming-share";
+import { useToday } from "./use-today";
 import { Workspace } from "./workspace";
 
 const BACKUP_MAX_BYTES = 1_000_000;
@@ -106,7 +100,7 @@ function useActions(
 
 interface PlannerNoticesProps {
   store: PlanStore;
-  notice: Notice | null;
+  notice: StorageIssue | null;
   incoming: Incoming;
   full: boolean;
   message: Message | null;

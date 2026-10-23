@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, renderHook, screen } from "@testing-library/react";
 import { useLocale } from "@/components/locale-provider";
-import { useToday } from "@/components/planner/planner-parts";
+import { useToday } from "@/components/planner/use-today";
 import { taskTitle } from "@/components/planner/task-title";
 import { CheckGroup, RadioGroup, SelectField, TextArea, TextField } from "@/components/ui/field";
 import { nextTabIndex } from "@/components/ui/tabs";

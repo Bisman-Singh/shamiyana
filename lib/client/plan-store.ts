@@ -12,19 +12,20 @@ import { planRecordSchema, storeSchema, type PlanRecord, type Store } from "@/li
 export const STORE_KEY = "shamiyana:v1";
 export const QUARANTINE_KEY = "shamiyana:unreadable";
 
-export type Notice = "blocked" | "full" | "recovered";
+/** Why saved plans could not be read or written as usual. */
+export type StorageIssue = "blocked" | "full" | "recovered";
 
 export interface Snapshot {
   ready: boolean;
   data: Store;
-  notice: Notice | null;
+  notice: StorageIssue | null;
 }
 
 export const EMPTY_STORE: Store = { version: 1, activeId: null, plans: [] };
 const SERVER_SNAPSHOT: Snapshot = { ready: false, data: EMPTY_STORE, notice: null };
 
 /** Reads saved plans; anything unreadable is set aside, not lost. */
-export function readStore(storage: Storage | null): { data: Store; notice: Notice | null } {
+export function readStore(storage: Storage | null): { data: Store; notice: StorageIssue | null } {
   if (!storage) return { data: EMPTY_STORE, notice: "blocked" };
   const raw = storage.getItem(STORE_KEY);
   if (raw === null) return { data: EMPTY_STORE, notice: null };
@@ -44,7 +45,7 @@ export function readStore(storage: Storage | null): { data: Store; notice: Notic
 }
 
 /** Saves plans and reports when the browser refuses. */
-export function writeStore(storage: Storage | null, data: Store): Notice | null {
+export function writeStore(storage: Storage | null, data: Store): StorageIssue | null {
   if (!storage) return "blocked";
   try {
     storage.setItem(STORE_KEY, JSON.stringify(data));

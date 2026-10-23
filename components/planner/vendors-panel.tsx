@@ -4,13 +4,13 @@ import { langOf } from "@/lib/i18n/lang";
 import { mapsSearchUrl } from "@/lib/export/links";
 import { checklistRows } from "@/lib/export/sheets";
 import { downloadCsv } from "@/lib/client/files";
-import { format, formatMoney } from "@/lib/i18n/format";
+import { format } from "@/lib/i18n/format";
 import { LIMITS, VENDOR_STATUSES } from "@/lib/plan/constants";
 import { readAmount } from "@/lib/plan/draft";
 import { setVendor } from "@/lib/plan/record";
 import type { VendorProgress } from "@/lib/plan/schema";
 import { vendorTally, type VendorCard } from "@/lib/plan/vendors";
-import { useLocale } from "../locale-provider";
+import { useLocale, useMoney } from "../locale-provider";
 import { SelectField, TextArea, TextField } from "../ui/field";
 import type { PanelProps, Update } from "./types";
 
@@ -52,7 +52,8 @@ interface CardProps {
 }
 
 function Card({ card, city, update }: Readonly<CardProps>) {
-  const { dict, locale } = useLocale();
+  const { dict } = useLocale();
+  const money = useMoney();
   const v = dict.vendors;
   const name = dict.categories[card.category];
   const id = `vendor-${card.category}`;
@@ -67,9 +68,7 @@ function Card({ card, city, update }: Readonly<CardProps>) {
         <summary>
           <span className="vendor-name">{name}</span>
           <span className="tag">{v.statuses[card.progress.status]}</span>
-          <span className="hint">
-            {format(v.planned, { amount: formatMoney(card.planned, locale) })}
-          </span>
+          <span className="hint">{format(v.planned, { amount: money(card.planned) })}</span>
         </summary>
         <div className="vendor-body">
           <div className="form-row">

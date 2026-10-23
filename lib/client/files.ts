@@ -26,6 +26,11 @@ export function downloadCsv(
 export const ACCEPTED_IMAGES = ["image/jpeg", "image/png", "image/webp"] as const;
 const MAX_SIDE = 1600;
 
+/** A file that is not one of the photo types the app takes. */
+export class UnsupportedImageError extends Error {
+  override name = "UnsupportedImageError";
+}
+
 /**
  * Redraws a photo onto a canvas, at most 1600px on its longer side, and
  * re-encodes it as JPEG. Uploads get smaller and faster, and the EXIF block
@@ -33,7 +38,7 @@ const MAX_SIDE = 1600;
  * copies it.
  */
 export async function prepareImage(file: File): Promise<Blob> {
-  if (!ACCEPTED_IMAGES.some((t) => t === file.type)) throw new TypeError("type");
+  if (!ACCEPTED_IMAGES.some((t) => t === file.type)) throw new UnsupportedImageError(file.type);
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");

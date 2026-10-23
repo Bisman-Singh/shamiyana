@@ -5,12 +5,12 @@ import { langOf } from "@/lib/i18n/lang";
 import { budgetRows } from "@/lib/export/sheets";
 import { downloadCsv } from "@/lib/client/files";
 import { format } from "@/lib/i18n/format";
-import { previewShifts, type BudgetRow as Row, type ShiftPreview } from "@/lib/plan/budget";
+import { previewShifts, type BudgetRow, type ShiftPreview } from "@/lib/plan/budget";
 import { clampFactor } from "@/lib/plan/factors";
 import { LIMITS, type CategoryId } from "@/lib/plan/constants";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { setFactor } from "@/lib/plan/record";
-import { factsOf } from "@/lib/plan/schema";
+import { factsOf, type Factors } from "@/lib/plan/schema";
 import { useLocale, useMoney } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import type { PlanView, Update } from "./types";
@@ -27,7 +27,7 @@ export function nudge(current: number, direction: 1 | -1): number {
 type Shift = (category: CategoryId, factor: number | null) => void;
 
 interface StepperProps {
-  row: Row;
+  row: BudgetRow;
   factor: number;
   shift: Shift;
 }
@@ -82,14 +82,15 @@ function Stepper({ row, factor, shift }: Readonly<StepperProps>) {
   );
 }
 
-interface BudgetLineProps {
-  row: Row;
+interface BudgetLineRowProps {
+  row: BudgetRow;
   widest: number;
   factor: number;
   shift: Shift;
 }
 
-function BudgetLine({ row, widest, factor, shift }: Readonly<BudgetLineProps>) {
+/** One budget line as a table row, with its share bar and weight stepper. */
+function BudgetLineRow({ row, widest, factor, shift }: Readonly<BudgetLineRowProps>) {
   const { dict } = useLocale();
   const money = useMoney();
   const b = dict.budget;
@@ -121,7 +122,7 @@ function BudgetLine({ row, widest, factor, shift }: Readonly<BudgetLineProps>) {
 
 interface SuggestionsProps {
   ideas: Enrichment;
-  factors: PlanView["record"]["factors"];
+  factors: Factors;
   preview: ShiftPreview;
   shift: Shift;
 }
@@ -210,7 +211,7 @@ function BudgetTable({ view, shift }: Readonly<BudgetTableProps>) {
         </thead>
         <tbody>
           {budget.rows.map((row) => (
-            <BudgetLine
+            <BudgetLineRow
               key={row.category}
               row={row}
               widest={widest}
