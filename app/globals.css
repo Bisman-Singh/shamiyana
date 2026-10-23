@@ -905,6 +905,7 @@ section + section {
 }
 
 .task-title {
+  display: block;
   margin: 0;
   font-weight: 600;
 }

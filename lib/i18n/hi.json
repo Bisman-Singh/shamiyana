@@ -252,7 +252,7 @@
     },
     "by": "{date} तक",
     "overdue": "देर हो चुकी",
-    "markDone": "पूरा: {title}",
+    "donePrefix": "पूरा:",
     "remove": "{title} हटाएँ",
     "removed": "“{title}” हटाया गया।",
     "calendar": "Google Calendar में जोड़ें",

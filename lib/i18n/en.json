@@ -252,7 +252,7 @@
     },
     "by": "By {date}",
     "overdue": "Overdue",
-    "markDone": "Done: {title}",
+    "donePrefix": "Done:",
     "remove": "Remove {title}",
     "removed": "Removed “{title}”.",
     "calendar": "Add to Google Calendar",

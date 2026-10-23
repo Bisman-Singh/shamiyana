@@ -7,7 +7,68 @@ import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 
-/** A modal with the share link. The native dialog traps focus and closes on Escape. */
+/** The link with Copy and, where the browser has one, its share sheet. Copy takes focus when the link appears. */
+function ShareLink({ link, title }: Readonly<{ link: string; title: string }>) {
+  const { dict } = useLocale();
+  const s = dict.share;
+  const id = useId();
+  const announce = useAnnounce();
+  const copyRef = useRef<HTMLButtonElement>(null);
+  const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
+
+  useEffect(() => {
+    copyRef.current?.focus();
+  }, []);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(link);
+      setStatus("copied");
+      announce(s.copied);
+    } catch {
+      setStatus("failed");
+    }
+  }
+
+  const canShare = typeof navigator !== "undefined" && "share" in navigator;
+
+  return (
+    <>
+      <label htmlFor={id}>{s.label}</label>
+      <input
+        id={id}
+        readOnly
+        value={link}
+        onFocus={(e) => {
+          e.target.select();
+        }}
+      />
+      <div className="actions">
+        <button ref={copyRef} type="button" className="btn btn-primary" onClick={() => void copy()}>
+          {s.copy}
+        </button>
+        {canShare ? (
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              navigator.share({ title, url: link }).catch(() => undefined);
+            }}
+          >
+            {s.native}
+          </button>
+        ) : null}
+      </div>
+      {status === "copied" ? <Notice tone="success">{s.copied}</Notice> : null}
+      {status === "failed" ? <Notice tone="error">{s.copyFailed}</Notice> : null}
+    </>
+  );
+}
+
+/**
+ * A modal with the share link. The native dialog makes the page behind it
+ * inert and closes on Escape; its description is the privacy note.
+ */
 export function ShareDialog({
   record,
   onClose,
@@ -19,8 +80,6 @@ export function ShareDialog({
   const [link, setLink] = useState<string | null>(null);
   const [broken, setBroken] = useState(false);
   const [tooLong, setTooLong] = useState(false);
-  const announce = useAnnounce();
-  const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -40,56 +99,20 @@ export function ShareDialog({
     };
   }, [record]);
 
-  async function copy(text: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      setStatus("copied");
-      announce(s.copied);
-    } catch {
-      setStatus("failed");
-    }
-  }
-
-  const canShare = typeof navigator !== "undefined" && "share" in navigator;
-
   return (
-    <dialog ref={dialogRef} className="dialog" aria-labelledby={`${baseId}-h`} onClose={onClose}>
+    <dialog
+      ref={dialogRef}
+      className="dialog"
+      aria-labelledby={`${baseId}-h`}
+      aria-describedby={`${baseId}-intro`}
+      onClose={onClose}
+    >
       <h2 id={`${baseId}-h`}>{s.heading}</h2>
-      <p>{s.intro}</p>
+      <p id={`${baseId}-intro`}>{s.intro}</p>
       {link === null && !broken && !tooLong ? <p>{dict.common.loading}</p> : null}
       {broken ? <Notice tone="error">{s.failed}</Notice> : null}
       {tooLong ? <Notice tone="error">{s.tooLong}</Notice> : null}
-      {link !== null ? (
-        <>
-          <label htmlFor={`${baseId}-link`}>{s.label}</label>
-          <input
-            id={`${baseId}-link`}
-            readOnly
-            value={link}
-            onFocus={(e) => {
-              e.target.select();
-            }}
-          />
-          <div className="actions">
-            <button type="button" className="btn btn-primary" onClick={() => void copy(link)}>
-              {s.copy}
-            </button>
-            {canShare ? (
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  navigator.share({ title: record.brief.title, url: link }).catch(() => undefined);
-                }}
-              >
-                {s.native}
-              </button>
-            ) : null}
-          </div>
-          {status === "copied" ? <Notice tone="success">{s.copied}</Notice> : null}
-          {status === "failed" ? <Notice tone="error">{s.copyFailed}</Notice> : null}
-        </>
-      ) : null}
+      {link === null ? null : <ShareLink link={link} title={record.brief.title} />}
       <form method="dialog">
         <button type="submit" className="btn btn-quiet">
           {dict.common.close}

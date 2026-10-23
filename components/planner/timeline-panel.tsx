@@ -100,22 +100,23 @@ function TaskRow({
   const { dict, locale } = useLocale();
   const t = dict.timeline;
   const title = taskTitle(item, dict);
+  const checkId = useId();
   return (
     <li className={item.done ? "task is-done" : "task"}>
-      <label className="task-check">
+      <div className="task-check">
         <input
+          id={checkId}
           type="checkbox"
           checked={item.done}
           onChange={() => {
             update((r, now) => toggleTask(r, item.id, now));
           }}
         />
-        <span className="visually-hidden">{format(t.markDone, { title })}</span>
-      </label>
+      </div>
       <div className="task-body">
-        <p className="task-title" aria-hidden="true">
-          {title}
-        </p>
+        <label htmlFor={checkId} className="task-title">
+          <span className="visually-hidden">{t.donePrefix}</span> <span>{title}</span>
+        </label>
         <p className="task-meta">
           <span>{format(t.by, { date: formatDate(item.due, locale) })}</span>
           <span>{areaName(item.area, dict)}</span>

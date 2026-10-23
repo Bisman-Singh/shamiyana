@@ -57,6 +57,8 @@ describe("share dialog limits", () => {
     expect(await screen.findByLabelText("Share link")).toHaveValue(
       `${window.location.origin}/#plan=${"x".repeat(MAX_ENCODED)}`,
     );
+    expect(screen.getByRole("dialog")).toHaveAccessibleDescription(/anyone with it can open/);
+    expect(screen.getByRole("button", { name: "Copy link" })).toHaveFocus();
     encoded.value = "x".repeat(40_000);
   });
 
