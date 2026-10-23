@@ -143,7 +143,7 @@ test(
     await page.getByRole("tab", { name: "Ideas" }).click();
     const panel = page.getByRole("tabpanel");
     await panel.getByLabel("Choose a photo").setInputFiles("e2e/fixtures/venue.jpg");
-    await expect(panel.getByRole("img", { name: "The photo you chose" })).toBeVisible();
+    await expect(panel.getByRole("img", { name: "The photo you chose, venue.jpg" })).toBeVisible();
     await panel.getByRole("button", { name: "Get ideas from this photo" }).click();
     await expect(panel.locator(".idea-title").filter({ hasText: "Lantern path" })).toBeVisible();
     await expect(panel.getByRole("img", { name: "Venue: Open lawn at dusk" })).toBeVisible();

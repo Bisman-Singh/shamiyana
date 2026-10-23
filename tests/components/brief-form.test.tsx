@@ -11,6 +11,7 @@ describe("BriefForm", () => {
     const onSubmit = vi.fn();
     const { container } = renderIn(<BriefForm today={TODAY} editing={false} onSubmit={onSubmit} />);
     await expectAccessible(container);
+    expect(screen.getByText("Every field is needed unless it says optional.")).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "Make my plan" }));
     const summary = await screen.findByRole("alert");
     expect(summary).toHaveTextContent("Please fix 5 fields.");

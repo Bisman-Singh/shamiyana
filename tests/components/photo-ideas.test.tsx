@@ -95,7 +95,7 @@ describe("photo ideas", () => {
     await openTab("Ideas");
     const p = panel();
     await userEvent.upload(p.getByLabelText("Choose a photo"), photo());
-    expect(await p.findByRole("img", { name: "The photo you chose" })).toHaveAttribute(
+    expect(await p.findByRole("img", { name: "The photo you chose, venue.png" })).toHaveAttribute(
       "src",
       "blob:preview",
     );

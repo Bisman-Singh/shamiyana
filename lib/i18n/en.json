@@ -47,6 +47,7 @@
     "headingNew": "Plan a celebration",
     "headingEdit": "Edit event details",
     "intro": "Start with the basics. The budget, timeline and checklists appear straight away; AI ideas follow in a few seconds.",
+    "required": "Every field is needed unless it says optional.",
     "typeLegend": "What are you planning?",
     "types": {
       "wedding": "Wedding",
@@ -537,7 +538,7 @@
     "analyse": "Get ideas from this photo",
     "working": "Looking at your photo…",
     "ready": "Ideas from your photo are ready.",
-    "preview": "The photo you chose",
+    "preview": "The photo you chose, {name}",
     "palette": "Colours in the photo",
     "notes": "Things to keep in mind",
     "kinds": {

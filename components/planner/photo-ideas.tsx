@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useState, type ChangeEvent } from "react";
 import type { VisionResult } from "@/lib/ai/vision-result";
+import { format } from "@/lib/i18n/format";
 import { langOf } from "@/lib/i18n/lang";
 import type { PlanRecord } from "@/lib/plan/schema";
 import { requestVision } from "@/lib/client/api";
@@ -17,6 +18,8 @@ import { useRequestSignal } from "./use-request-signal";
 interface Photo {
   blob: Blob;
   url: string;
+  /** The file's own name, which describes the photo until the AI has looked. */
+  name: string;
 }
 
 type State =
@@ -93,13 +96,15 @@ interface PhotoPreviewProps {
   state: State;
 }
 
-/** The chosen photo, described by what the AI saw once it has looked. */
+/** The chosen photo, named by its file until the AI has looked, then described by what it saw. */
 function PhotoPreview({ state }: Readonly<PhotoPreviewProps>) {
   const { dict } = useLocale();
   const p = dict.photo;
   if (!("photo" in state) || !state.photo) return null;
   const alt =
-    state.phase === "done" ? `${p.kinds[state.result.kind]}: ${state.result.mood}` : p.preview;
+    state.phase === "done"
+      ? `${p.kinds[state.result.kind]}: ${state.result.mood}`
+      : format(p.preview, { name: state.photo.name });
   return <img src={state.photo.url} alt={alt} className="photo-preview" width={320} height={240} />;
 }
 
@@ -129,7 +134,10 @@ function usePhotoIdeas(view: PlanView) {
     requests.cancel();
     try {
       const blob = await prepareImage(file);
-      setState({ phase: "ready", photo: { blob, url: URL.createObjectURL(blob) } });
+      setState({
+        phase: "ready",
+        photo: { blob, url: URL.createObjectURL(blob), name: file.name },
+      });
     } catch (error) {
       setState({
         phase: "error",

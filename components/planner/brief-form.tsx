@@ -140,6 +140,7 @@ export function BriefForm({
         {editing ? f.headingEdit : f.headingNew}
       </h1>
       {editing ? null : <p className="lede">{f.intro}</p>}
+      <p className="hint">{f.required}</p>
       <ErrorSummary errors={errors} idOf={idOf} summaryRef={summaryRef} />
       {editing ? null : (
         <Samples

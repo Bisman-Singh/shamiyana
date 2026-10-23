@@ -56,6 +56,8 @@ The target is WCAG 2.2 level AA, in English and Hindi, on a phone and a desktop.
   Saved, keeps focus and uses `aria-disabled` rather than `disabled`.
 - Icon-only controls don't exist. Links that open a new tab say so to screen
   readers.
+- The chosen photo is named by its file until the AI has looked at it, then
+  by the kind and mood the AI saw.
 - Buttons, tabs and footer links are at least 44 px tall. Check boxes and
   radios are 24 px, and a task's title widens its check box's target to the
   whole line.
@@ -79,5 +81,3 @@ The target is WCAG 2.2 level AA, in English and Hindi, on a phone and a desktop.
 
 - No manual screen reader pass is recorded yet. The evidence so far is the
   automated checks above and the semantic structure they verify.
-- Until the AI has looked at it, the chosen photo's text alternative is only
-  "the photo you chose"; after that it is the kind and mood the AI saw.
