@@ -1,4 +1,5 @@
 import { LOCALES, type Locale } from "@/lib/plan/constants";
+import { oneOf } from "@/lib/shared/untrusted";
 import { en, type Dictionary } from "./en";
 import { hi } from "./hi";
 
@@ -13,7 +14,7 @@ export function getDictionary(locale: Locale): Dictionary {
 
 /** Whether a value is a supported language. */
 export function isLocale(value: unknown): value is Locale {
-  return LOCALES.some((l) => l === value);
+  return oneOf(value, LOCALES) !== null;
 }
 
 /** The saved choice first, then the browser's preference, then English. */

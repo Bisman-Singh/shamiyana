@@ -36,51 +36,68 @@ const ENRICHMENT_LIMITS = {
   mitigation: 200,
 } as const;
 
-const L = ENRICHMENT_LIMITS;
-const s = (max: number) => z.string().max(max);
+/** A model-written string the schema caps at this many characters. */
+const boundedText = (max: number) => z.string().max(max);
 
 export const enrichmentSchema = z.strictObject({
-  theme: z.strictObject({ name: s(L.themeName), summary: s(L.themeSummary) }),
+  theme: z.strictObject({
+    name: boundedText(ENRICHMENT_LIMITS.themeName),
+    summary: boundedText(ENRICHMENT_LIMITS.themeSummary),
+  }),
   ideas: z
     .array(
       z.strictObject({
         area: z.enum(IDEA_AREAS),
-        title: s(LIMITS.ideaTitleMax),
-        detail: s(LIMITS.ideaDetailMax),
+        title: boundedText(LIMITS.ideaTitleMax),
+        detail: boundedText(LIMITS.ideaDetailMax),
         cost: z.enum(IDEA_COSTS),
       }),
     )
-    .max(L.ideas),
+    .max(ENRICHMENT_LIMITS.ideas),
   menu: z
-    .array(z.strictObject({ course: s(L.course), dishes: z.array(s(L.dish)).max(L.dishes) }))
-    .max(L.menu),
+    .array(
+      z.strictObject({
+        course: boundedText(ENRICHMENT_LIMITS.course),
+        dishes: z.array(boundedText(ENRICHMENT_LIMITS.dish)).max(ENRICHMENT_LIMITS.dishes),
+      }),
+    )
+    .max(ENRICHMENT_LIMITS.menu),
   shifts: z
     .array(
       z.strictObject({
         category: z.enum(CATEGORY_IDS),
         factor: z.number().min(LIMITS.factorMin).max(LIMITS.factorMax),
-        reason: s(L.reason),
+        reason: boundedText(ENRICHMENT_LIMITS.reason),
       }),
     )
-    .max(L.shifts),
+    .max(ENRICHMENT_LIMITS.shifts),
   tasks: z
     .array(
       z.strictObject({
-        title: s(LIMITS.taskTitleMax),
+        title: boundedText(LIMITS.taskTitleMax),
         area: z.enum(TASK_AREAS),
         weeksBefore: z.int().min(0).max(LIMITS.weeksMax),
       }),
     )
-    .max(L.tasks),
+    .max(ENRICHMENT_LIMITS.tasks),
   questions: z
     .array(
       z.strictObject({
         category: z.enum(CATEGORY_IDS),
-        items: z.array(s(L.question)).max(L.questionItems),
+        items: z
+          .array(boundedText(ENRICHMENT_LIMITS.question))
+          .max(ENRICHMENT_LIMITS.questionItems),
       }),
     )
-    .max(L.questions),
-  risks: z.array(z.strictObject({ risk: s(L.risk), mitigation: s(L.mitigation) })).max(L.risks),
+    .max(ENRICHMENT_LIMITS.questions),
+  risks: z
+    .array(
+      z.strictObject({
+        risk: boundedText(ENRICHMENT_LIMITS.risk),
+        mitigation: boundedText(ENRICHMENT_LIMITS.mitigation),
+      }),
+    )
+    .max(ENRICHMENT_LIMITS.risks),
 });
 export type Enrichment = z.infer<typeof enrichmentSchema>;
 
@@ -93,17 +110,17 @@ function ideas(raw: unknown): Enrichment["ideas"] {
       cost: oneOf(item.cost, IDEA_COSTS) ?? "medium",
     }))
     .filter((idea) => idea.title !== "");
-  return uniqueBy(all, (idea) => idea.title).slice(0, L.ideas);
+  return uniqueBy(all, (idea) => idea.title).slice(0, ENRICHMENT_LIMITS.ideas);
 }
 
 function menu(raw: unknown): Enrichment["menu"] {
   const all = records(raw)
     .map((item) => ({
-      course: clip(item.course, L.course),
-      dishes: texts(item.dishes, L.dish, L.dishes),
+      course: clip(item.course, ENRICHMENT_LIMITS.course),
+      dishes: texts(item.dishes, ENRICHMENT_LIMITS.dish, ENRICHMENT_LIMITS.dishes),
     }))
     .filter((course) => course.course !== "" && course.dishes.length > 0);
-  return uniqueBy(all, (course) => course.course).slice(0, L.menu);
+  return uniqueBy(all, (course) => course.course).slice(0, ENRICHMENT_LIMITS.menu);
 }
 
 function shifts(raw: unknown, allowed: ReadonlySet<CategoryId>): Enrichment["shifts"] {
@@ -116,9 +133,9 @@ function shifts(raw: unknown, allowed: ReadonlySet<CategoryId>): Enrichment["shi
     const factor = clampFactor(value);
     if (category === "contingency" || factor === 1) continue;
     seen.add(category);
-    out.push({ category, factor, reason: clip(item.reason, L.reason) });
+    out.push({ category, factor, reason: clip(item.reason, ENRICHMENT_LIMITS.reason) });
   }
-  return out.slice(0, L.shifts);
+  return out.slice(0, ENRICHMENT_LIMITS.shifts);
 }
 
 function tasks(raw: unknown): Enrichment["tasks"] {
@@ -129,30 +146,30 @@ function tasks(raw: unknown): Enrichment["tasks"] {
       weeksBefore: Math.round(clamp(item.weeksBefore, 0, LIMITS.weeksMax) ?? 0),
     }))
     .filter((task) => task.title !== "");
-  return uniqueBy(all, (task) => task.title).slice(0, L.tasks);
+  return uniqueBy(all, (task) => task.title).slice(0, ENRICHMENT_LIMITS.tasks);
 }
 
 function questions(raw: unknown): Enrichment["questions"] {
   const all = records(raw)
     .map((item) => ({
       category: oneOf(item.category, CATEGORY_IDS),
-      items: texts(item.items, L.question, L.questionItems),
+      items: texts(item.items, ENRICHMENT_LIMITS.question, ENRICHMENT_LIMITS.questionItems),
     }))
     .filter(
       (group): group is Enrichment["questions"][number] =>
         group.category !== null && group.items.length > 0,
     );
-  return uniqueBy(all, (group) => group.category).slice(0, L.questions);
+  return uniqueBy(all, (group) => group.category).slice(0, ENRICHMENT_LIMITS.questions);
 }
 
 function risks(raw: unknown): Enrichment["risks"] {
   const all = records(raw)
     .map((item) => ({
-      risk: clip(item.risk, L.risk),
-      mitigation: clip(item.mitigation, L.mitigation),
+      risk: clip(item.risk, ENRICHMENT_LIMITS.risk),
+      mitigation: clip(item.mitigation, ENRICHMENT_LIMITS.mitigation),
     }))
     .filter((r) => r.risk !== "" && r.mitigation !== "");
-  return uniqueBy(all, (r) => r.risk).slice(0, L.risks);
+  return uniqueBy(all, (item) => item.risk).slice(0, ENRICHMENT_LIMITS.risks);
 }
 
 /**
@@ -164,7 +181,10 @@ export function sanitizeEnrichment(raw: unknown, categories: readonly CategoryId
   const value = isRecord(raw) ? raw : {};
   const theme = isRecord(value.theme) ? value.theme : {};
   return {
-    theme: { name: clip(theme.name, L.themeName), summary: clip(theme.summary, L.themeSummary) },
+    theme: {
+      name: clip(theme.name, ENRICHMENT_LIMITS.themeName),
+      summary: clip(theme.summary, ENRICHMENT_LIMITS.themeSummary),
+    },
     ideas: ideas(value.ideas),
     menu: menu(value.menu),
     shifts: shifts(value.shifts, new Set(categories)),
@@ -175,22 +195,25 @@ export function sanitizeEnrichment(raw: unknown, categories: readonly CategoryId
 }
 
 /** AI tasks moved no earlier than today, so none is overdue the moment it arrives. */
-export function fitTasks(e: Enrichment, weeksLeft: number): Enrichment {
+export function fitTasks(enrichment: Enrichment, weeksLeft: number): Enrichment {
   return {
-    ...e,
-    tasks: e.tasks.map((t) => ({ ...t, weeksBefore: Math.min(t.weeksBefore, weeksLeft) })),
+    ...enrichment,
+    tasks: enrichment.tasks.map((task) => ({
+      ...task,
+      weeksBefore: Math.min(task.weeksBefore, weeksLeft),
+    })),
   };
 }
 
 /** Whether an answer has nothing worth keeping. */
-export function isEmptyEnrichment(e: Enrichment): boolean {
+export function isEmptyEnrichment(enrichment: Enrichment): boolean {
   return (
-    e.theme.name === "" &&
-    e.ideas.length === 0 &&
-    e.menu.length === 0 &&
-    e.shifts.length === 0 &&
-    e.tasks.length === 0 &&
-    e.questions.length === 0 &&
-    e.risks.length === 0
+    enrichment.theme.name === "" &&
+    enrichment.ideas.length === 0 &&
+    enrichment.menu.length === 0 &&
+    enrichment.shifts.length === 0 &&
+    enrichment.tasks.length === 0 &&
+    enrichment.questions.length === 0 &&
+    enrichment.risks.length === 0
   );
 }

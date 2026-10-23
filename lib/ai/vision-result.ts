@@ -6,20 +6,19 @@ import { redact } from "./redact";
 import { VISION_KINDS } from "./schemas";
 
 const VISION_LIMITS = { mood: 200, colourName: 30, colours: 5, ideas: 5, note: 200, notes: 3 };
-const V = VISION_LIMITS;
 
 /** Photo insights as the client receives them: bounded, with colours as checked hex codes. */
 export const visionResultSchema = z.strictObject({
   kind: z.enum(VISION_KINDS),
-  mood: z.string().max(V.mood),
+  mood: z.string().max(VISION_LIMITS.mood),
   palette: z
     .array(
       z.strictObject({
-        name: z.string().max(V.colourName),
+        name: z.string().max(VISION_LIMITS.colourName),
         hex: z.string().regex(/^#[0-9a-f]{6}$/),
       }),
     )
-    .max(V.colours),
+    .max(VISION_LIMITS.colours),
   ideas: z
     .array(
       z.strictObject({
@@ -28,8 +27,8 @@ export const visionResultSchema = z.strictObject({
         detail: z.string().max(LIMITS.ideaDetailMax),
       }),
     )
-    .max(V.ideas),
-  notes: z.array(z.string().max(V.note)).max(V.notes),
+    .max(VISION_LIMITS.ideas),
+  notes: z.array(z.string().max(VISION_LIMITS.note)).max(VISION_LIMITS.notes),
 });
 export type VisionResult = z.infer<typeof visionResultSchema>;
 
@@ -49,13 +48,16 @@ export function sanitizeVision(raw: unknown): VisionResult {
   const value = isRecord(raw) ? raw : {};
   return {
     kind: oneOf(value.kind, VISION_KINDS) ?? "other",
-    mood: clip(scrub(value.mood), V.mood),
+    mood: clip(scrub(value.mood), VISION_LIMITS.mood),
     palette: uniqueBy(
       records(value.palette)
-        .map((c) => ({ name: clip(c.name, V.colourName), hex: hex(c.hex) }))
+        .map((colour) => ({
+          name: clip(colour.name, VISION_LIMITS.colourName),
+          hex: hex(colour.hex),
+        }))
         .filter((c): c is { name: string; hex: string } => c.hex !== null),
       (c) => c.hex,
-    ).slice(0, V.colours),
+    ).slice(0, VISION_LIMITS.colours),
     ideas: uniqueBy(
       records(value.ideas)
         .map((i) => ({
@@ -65,7 +67,11 @@ export function sanitizeVision(raw: unknown): VisionResult {
         }))
         .filter((i) => i.title !== ""),
       (i) => i.title,
-    ).slice(0, V.ideas),
-    notes: texts(Array.isArray(value.notes) ? value.notes.map(scrub) : [], V.note, V.notes),
+    ).slice(0, VISION_LIMITS.ideas),
+    notes: texts(
+      Array.isArray(value.notes) ? value.notes.map(scrub) : [],
+      VISION_LIMITS.note,
+      VISION_LIMITS.notes,
+    ),
   };
 }
