@@ -116,6 +116,17 @@
   border-bottom-color: var(--tab-mark);
 }
 
+/* high contrast mode: only the open tab keeps a visible mark */
+@media (forced-colors: active) {
+  .tab {
+    border-bottom-color: Canvas;
+  }
+
+  .tab[aria-selected="true"] {
+    border-bottom-color: Highlight;
+  }
+}
+
 .tab:focus-visible {
   outline-offset: -3px;
 }

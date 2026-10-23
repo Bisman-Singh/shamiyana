@@ -56,9 +56,13 @@ The target is WCAG 2.2 level AA, in English and Hindi, on a phone and a desktop.
   Saved, keeps focus and uses `aria-disabled` rather than `disabled`.
 - Icon-only controls don't exist. Links that open a new tab say so to screen
   readers.
-- Targets are at least 24 px: check boxes and radios are 24 px, and footer
-  links are 30 px tall at 360 px wide. A task's title widens its check box's
-  target to the whole line.
+- Buttons, tabs and footer links are at least 44 px tall. Check boxes and
+  radios are 24 px, and a task's title widens its check box's target to the
+  whole line.
+- In high contrast mode the open tab keeps its own underline in the system
+  highlight colour, so it still stands out from the others.
+- Saved and Applied, which keep focus once their job is done, stay readable
+  at 4.5:1: they turn muted and dashed instead of fading.
 - The page reflows at 320 px and at 200% text with nothing scrolling sideways;
   the tab list wraps onto a second row instead of scrolling.
 - Colours meet 4.5:1 for text in both themes. Focus is a 3 px outline that

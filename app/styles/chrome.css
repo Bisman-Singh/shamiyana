@@ -62,8 +62,9 @@
 }
 
 .site-footer a {
-  display: inline-block;
-  padding-block: 4px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 .inline-list {
@@ -124,14 +125,17 @@
 }
 
 .btn-small {
-  min-height: 36px;
   padding: 4px 10px;
   font-size: 0.9rem;
 }
 
+/* muted but still readable, since Saved and Applied keep focus and report state */
 .btn:disabled,
 .btn[aria-disabled="true"] {
-  opacity: 0.55;
+  border-style: dashed;
+  border-color: var(--muted);
+  background: transparent;
+  color: var(--muted);
   cursor: not-allowed;
 }
 
