@@ -1,6 +1,8 @@
 import type { MockLanguageModelV4 } from "ai/test";
 import { AnswerCache } from "@/lib/ai/cache";
-import { lookupPlan, runRefine, runVision, streamPlan, type PlanInput } from "@/lib/ai/run";
+import { lookupPlan, streamPlan, type PlanInput } from "@/lib/ai/plan-stream";
+import { runRefine } from "@/lib/ai/refine";
+import { runVision } from "@/lib/ai/vision";
 import { TODAY, weddingFacts } from "../helpers/fixtures";
 import {
   JPEG,

@@ -1,6 +1,7 @@
 import { buildChain } from "@/lib/ai/models";
 import { weeksLeft } from "@/lib/ai/prompts";
-import { lookupPlan, runRefine, streamPlan, type PlanInput } from "@/lib/ai/run";
+import { lookupPlan, streamPlan, type PlanInput } from "@/lib/ai/plan-stream";
+import { runRefine } from "@/lib/ai/refine";
 import { en } from "@/lib/i18n/en";
 import { AnswerCache } from "@/lib/ai/cache";
 import { shiftableCategories, tasksFor } from "@/lib/plan/catalog";

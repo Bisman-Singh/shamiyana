@@ -4,14 +4,10 @@ import type { z } from "zod";
 import { AnswerCache } from "@/lib/ai/cache";
 import { isInjectionAttempt, SCREENED_REPLY } from "@/lib/ai/guard";
 import { buildChain, type ModelSpec } from "@/lib/ai/models";
-import {
-  lookupPlan,
-  runRefine,
-  runVision,
-  streamPlan,
-  textStream,
-  type RunContext,
-} from "@/lib/ai/run";
+import { lookupPlan, streamPlan, textStream } from "@/lib/ai/plan-stream";
+import { runRefine } from "@/lib/ai/refine";
+import type { RunContext } from "@/lib/ai/run";
+import { runVision } from "@/lib/ai/vision";
 import { readEnv, type ServerEnv } from "./env";
 import {
   clientKey,
