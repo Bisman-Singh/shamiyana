@@ -18,8 +18,9 @@ describe("rewording check", () => {
       ["Reconfirm all vendors with their timings and contact numbers", "w_reconfirm"],
       ["Arrange enough toilets and drinking water", "c_toilets_water"],
     ];
-    for (const [task, id] of pairs)
+    for (const [task, id] of pairs) {
       expect({ task, flagged: isRewording(task, title(id)) }).toEqual({ task, flagged: true });
+    }
   });
 
   it("lets new, specific tasks through", () => {

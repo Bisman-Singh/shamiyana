@@ -128,7 +128,10 @@ only. The key is never sent to the browser.
   assertions.
 - ESLint with typescript-eslint strict and stylistic type-checked rules,
   @eslint-react strict, React Hooks, JSX a11y strict and SonarJS, plus a
-  complexity cap of 10 and 80 lines per function. Zero warnings allowed.
+  complexity cap of 10, 80 lines per function, 200 lines per file and no module
+  imported twice. Zero warnings allowed.
+- One component or hook per file, and one folder per planner tab
+  (`components/planner/budget`, `timeline`, `vendors`, `guests`, `ideas`).
 - Domain logic is pure functions in `lib/plan`, one concern per file. Every edit
   to a plan is a function from one record to the next, which makes undo a
   matter of keeping the previous value.

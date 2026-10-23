@@ -1,4 +1,3 @@
-import { factsOf } from "@/lib/plan/schema";
 import { LIMITS } from "@/lib/plan/constants";
 import {
   addTask,
@@ -14,7 +13,7 @@ import {
   upsertGuest,
   withEnrichment,
 } from "@/lib/plan/record";
-import { planRecordSchema, type Guest } from "@/lib/plan/schema";
+import { factsOf, planRecordSchema, type Guest } from "@/lib/plan/schema";
 import { stableId } from "@/lib/shared/ids";
 import { NOW, birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
 

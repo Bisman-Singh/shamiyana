@@ -25,7 +25,10 @@ and the Playwright tests. A change is ready when it passes.
   edit is a function from one record to the next.
 - Server modules import `server-only`. Route handlers take their dependencies
   as arguments so tests can pass a mock model and a fixed clock.
-- Functions stay under 80 lines and a complexity of 10; lint enforces both.
+- Functions stay under 80 lines and a complexity of 10, and files under 200
+  lines; lint enforces all three.
+- One component or hook per file. Planner parts sit in one folder per tab, and
+  anything outside a file's own folder is imported through `@/`.
 - Every string the user sees is in `lib/i18n/en.json` and `lib/i18n/hi.json`.
   A test fails if the two files have different keys.
 - No inline `style` attributes, since the CSP has no `unsafe-inline`, and no

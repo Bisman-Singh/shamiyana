@@ -46,9 +46,12 @@ export default defineConfig([
       "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
       "@typescript-eslint/switch-exhaustiveness-check": "error",
       complexity: ["error", 10],
+      curly: ["error", "multi-line"],
       eqeqeq: ["error", "always"],
       "max-depth": ["error", 3],
+      "max-lines": ["error", { max: 200, skipBlankLines: true, skipComments: true }],
       "max-lines-per-function": ["error", { max: 80, skipBlankLines: true, skipComments: true }],
+      "no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
       "no-console": ["error", { allow: ["warn", "error"] }],
       "no-restricted-syntax": [
         "error",
@@ -64,9 +67,13 @@ export default defineConfig([
     rules: { "no-console": ["error", { allow: ["info", "warn", "error"] }] },
   },
   {
-    files: ["tests/**", "e2e/**", "scripts/**"],
+    files: ["tests/**", "e2e/**"],
     // tests feed documentation-range addresses (RFC 5737, RFC 3849) to the client address parser
-    rules: { "max-lines-per-function": "off", "sonarjs/no-hardcoded-ip": "off" },
+    rules: {
+      "max-lines": ["error", { max: 300, skipBlankLines: true, skipComments: true }],
+      "max-lines-per-function": "off",
+      "sonarjs/no-hardcoded-ip": "off",
+    },
   },
   {
     files: ["**/*.mjs"],
