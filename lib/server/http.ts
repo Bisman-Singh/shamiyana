@@ -11,6 +11,7 @@ import type { RequestLimiter } from "./rate-limit";
 
 export type ErrorCode =
   | "forbidden"
+  | "not_found"
   | "unsupported_media_type"
   | "too_large"
   | "bad_request"
@@ -23,6 +24,7 @@ export type ErrorCode =
 
 const STATUS: Record<ErrorCode, number> = {
   forbidden: 403,
+  not_found: 404,
   unsupported_media_type: 415,
   too_large: 413,
   bad_request: 400,

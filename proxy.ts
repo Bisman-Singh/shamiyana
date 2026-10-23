@@ -41,14 +41,7 @@ export function proxy(request: NextRequest): NextResponse {
   return response;
 }
 
+/** Every page, prefetches and 404s included; the API sets its own policy in `next.config.ts`. */
 export const config = {
-  matcher: [
-    {
-      source: "/((?!api/|_next/static/|_next/image|favicon\\.ico$|icon\\.svg$).*)",
-      missing: [
-        { type: "header", key: "next-router-prefetch" },
-        { type: "header", key: "purpose", value: "prefetch" },
-      ],
-    },
-  ],
+  matcher: [{ source: "/((?!api/|_next/static/|_next/image|icon\\.svg$).*)" }],
 };

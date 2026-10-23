@@ -47,19 +47,22 @@ describe("content security policy", () => {
     expect(csp("http://localhost:3200/")).not.toContain("upgrade-insecure-requests");
   });
 
-  it("puts the CSP on every page, and only skips the API, build assets and the icons", () => {
+  it("puts the CSP on every page, prefetches and 404s included, and only skips the API, build assets and the icon", () => {
     const source = config.matcher[0]?.source ?? "";
     const matches = (path: string) => new RegExp(`^${source}$`).test(path);
-    for (const page of ["/", "/privacy", "/api-docs", "/apix", "/icon.svg.html", "/favicon.icon"]) {
+    expect(config.matcher[0]).toEqual({ source });
+    for (const page of [
+      "/",
+      "/privacy",
+      "/api-docs",
+      "/apix",
+      "/icon.svg.html",
+      "/favicon.icon",
+      "/favicon.ico",
+    ]) {
       expect(matches(page), page).toBe(true);
     }
-    for (const skipped of [
-      "/api/plan",
-      "/_next/static/x.js",
-      "/_next/image",
-      "/favicon.ico",
-      "/icon.svg",
-    ]) {
+    for (const skipped of ["/api/plan", "/_next/static/x.js", "/_next/image", "/icon.svg"]) {
       expect(matches(skipped), skipped).toBe(false);
     }
   });
@@ -77,7 +80,7 @@ describe("content security policy", () => {
 });
 
 describe("static headers", () => {
-  it("sends HSTS, nosniff, frame and referrer policies everywhere and no-store on the API", async () => {
+  it("sends HSTS, nosniff, frame and referrer policies everywhere, and no-store and a deny-all CSP on the API", async () => {
     const keys = securityHeaders.map((h) => h.key);
     expect(keys).toEqual(
       expect.arrayContaining([
@@ -91,12 +94,23 @@ describe("static headers", () => {
     const rules = (await nextConfig.headers?.()) ?? [];
     expect(rules.find((r) => r.source === "/api/:path*")?.headers).toEqual([
       { key: "Cache-Control", value: "no-store" },
+      { key: "Content-Security-Policy", value: "default-src 'none'; frame-ancestors 'none'" },
     ]);
     expect(nextConfig.poweredByHeader).toBe(false);
   });
 });
 
 describe("route files", () => {
+  it("answers a bare JSON 404 for an API path that doesn't exist", async () => {
+    const missing = await import("@/app/api/[...path]/route");
+    for (const handler of [missing.GET, missing.POST, missing.PUT, missing.PATCH, missing.DELETE]) {
+      const response = handler();
+      expect(response.status).toBe(404);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(await response.json()).toEqual({ error: "not_found" });
+    }
+  });
+
   const post = (body: unknown) =>
     new Request("https://plan.test/api/plan", {
       method: "POST",

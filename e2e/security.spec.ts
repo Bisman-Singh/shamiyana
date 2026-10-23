@@ -20,6 +20,20 @@ test("a page whose path only starts with api still gets the CSP", async ({ reque
   expect(response.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
 });
 
+test("an unknown API path answers JSON under a deny-all policy, and a missing icon gets the page CSP", async ({
+  request,
+}) => {
+  const api = await request.get("/api/does-not-exist");
+  expect(api.status()).toBe(404);
+  expect(await api.json()).toEqual({ error: "not_found" });
+  expect(api.headers()["content-security-policy"]).toBe(
+    "default-src 'none'; frame-ancestors 'none'",
+  );
+  const icon = await request.get("/favicon.ico");
+  expect(icon.status()).toBe(404);
+  expect(icon.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+});
+
 test("the page runs with no CSP violations", { tag: "@webkit" }, async ({ page, browserName }) => {
   const violations: string[] = [];
   // WebKit also logs its own controls here; its events below name the directive, so it is read from those.

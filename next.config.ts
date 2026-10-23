@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 /**
- * Static security headers for every response. The Content-Security-Policy is
- * per request because it carries a nonce, so it is set in `proxy.ts`.
+ * Static security headers for every response. A page's Content-Security-Policy
+ * is per request because it carries a nonce, so it is set in `proxy.ts`.
  */
 export const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
@@ -17,13 +17,22 @@ export const securityHeaders = [
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
 ];
 
+/** API responses are JSON and never render, so their policy allows nothing at all. */
+export const API_CSP = "default-src 'none'; frame-ancestors 'none'";
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   headers() {
     return Promise.resolve([
       { source: "/:path*", headers: securityHeaders },
-      { source: "/api/:path*", headers: [{ key: "Cache-Control", value: "no-store" }] },
+      {
+        source: "/api/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store" },
+          { key: "Content-Security-Policy", value: API_CSP },
+        ],
+      },
     ]);
   },
 };
