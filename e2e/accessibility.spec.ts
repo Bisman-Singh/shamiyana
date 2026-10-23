@@ -15,17 +15,19 @@ for (const scheme of ["light", "dark"] as const) {
       await expectNoAxeViolations(page);
     });
 
-    test("every plan tab passes WCAG 2.2 AA", async ({ page }) => {
-      // Six full axe scans, colour contrast included.
-      test.setTimeout(90_000);
-      await mockAi(page);
-      await startSamplePlan(page);
-      await expect(page.getByRole("tabpanel").getByText("Marigold courtyard")).toBeVisible();
-      for (const tab of TABS) {
+    // One test per tab, so each full axe scan, colour contrast included, has its own time.
+    for (const tab of TABS) {
+      test(`the ${tab} tab passes WCAG 2.2 AA`, async ({ page }) => {
+        // a full scan with the experimental rules takes most of the default 30 s on a busy machine
+        test.setTimeout(60_000);
+        await mockAi(page);
+        await startSamplePlan(page);
+        await expect(page.getByRole("tabpanel").getByText("Marigold courtyard")).toBeVisible();
         await page.getByRole("tab", { name: tab }).click();
+        await expect(page.getByRole("tab", { name: tab })).toHaveAttribute("aria-selected", "true");
         await expectNoAxeViolations(page);
-      }
-    });
+      });
+    }
 
     test("policy and error pages pass WCAG 2.2 AA", async ({ page }) => {
       for (const path of ["/privacy", "/terms", "/no-such-page"]) {
