@@ -1,12 +1,50 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { format } from "@/lib/i18n/format";
 import { useLocale } from "../locale-provider";
 import { Notice } from "../ui/notice";
 import type { EnrichmentState } from "./use-enrichment";
 
-/** What the AI is doing right now, with the one action that makes sense for it. */
-export function AiStatus({
+/**
+ * What the AI is doing right now, with the one action that makes sense for it.
+ * A new status can replace the button that had focus, such as Stop giving way
+ * to "Try again", so when focus was in here and fell to the page, it goes to
+ * the new status's button, or to the status itself.
+ */
+export function AiStatus(props: Parameters<typeof StatusLine>[0]) {
+  const slotRef = useRef<HTMLDivElement>(null);
+  const hadFocusRef = useRef(false);
+  const { phase } = props.state;
+  useEffect(() => {
+    const slot = slotRef.current;
+    const enter = () => {
+      hadFocusRef.current = true;
+    };
+    // A removed button takes focus with it and sends no target; a move inside is followed by focusin.
+    const leave = (event: FocusEvent) => {
+      if (event.relatedTarget instanceof Node) hadFocusRef.current = false;
+    };
+    slot?.addEventListener("focusin", enter);
+    slot?.addEventListener("focusout", leave);
+    return () => {
+      slot?.removeEventListener("focusin", enter);
+      slot?.removeEventListener("focusout", leave);
+    };
+  }, []);
+  useEffect(() => {
+    if (!hadFocusRef.current || document.activeElement !== document.body) return;
+    (slotRef.current?.querySelector("button") ?? slotRef.current)?.focus();
+  }, [phase]);
+  return (
+    <div ref={slotRef} tabIndex={-1}>
+      <StatusLine {...props} />
+    </div>
+  );
+}
+
+/** One status, writing, failed or idle, with its one action. */
+function StatusLine({
   state,
   city,
   hasIdeas,

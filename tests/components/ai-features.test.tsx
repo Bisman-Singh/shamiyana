@@ -55,11 +55,39 @@ describe("AI ideas stream", () => {
     await waitFor(() => {
       expect(screen.queryByText("Gemini is writing ideas for Jaipur…")).toBeNull();
     });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Try again" })).toHaveFocus();
+    });
+    // a click on empty page space blurs the button with no new target
+    screen.getByRole("button", { name: "Try again" }).blur();
+    expect(document.body).toHaveFocus();
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "New ideas" })).toHaveFocus();
+    });
     await openTab("Ideas");
     expect(
       await panel().findByText("Marigold canopy", { selector: ".idea-title" }),
     ).toBeInTheDocument();
+  });
+
+  it("keeps focus on the status when a retry ends with no button, and leaves it alone once the user moves on", async () => {
+    let calls = 0;
+    mockFetch({
+      "/api/plan": () => {
+        calls += 1;
+        return calls === 1 ? jsonError("rate_limited", 429) : jsonError("daily_cap", 503);
+      },
+    });
+    renderWorkspace(recordFor(weddingBrief));
+    await userEvent.click(await screen.findByRole("button", { name: "Try again" }));
+    const limit = await screen.findByText(/Today's AI limit has been used up/);
+    await waitFor(() => {
+      expect(document.activeElement?.contains(limit)).toBe(true);
+    });
+    const edit = screen.getByRole("button", { name: "Edit details" });
+    edit.focus();
+    expect(edit).toHaveFocus();
   });
 
   it("asks for fresh ideas, skipping the cache, on request", async () => {
