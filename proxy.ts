@@ -6,9 +6,11 @@ import { NextResponse, type NextRequest } from "next/server";
  * scripts Next.js emits for this response can run, and the app uses no inline
  * style attributes, since bars and swatches are SVG attributes.
  * `connect-src 'self'` means the browser only ever talks to this server;
- * Gemini is reached from the server side.
+ * Gemini is reached from the server side. `upgrade-insecure-requests` goes
+ * only on pages served over https: on a plain http page, such as a local
+ * build, Safari would send every script to https and the page would not start.
  */
-export function buildCsp(nonce: string, isDev: boolean): string {
+export function buildCsp(nonce: string, isDev: boolean, secure: boolean): string {
   const styles = isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`;
   return [
     "default-src 'self'",
@@ -21,14 +23,16 @@ export function buildCsp(nonce: string, isDev: boolean): string {
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    "upgrade-insecure-requests",
+    ...(secure ? ["upgrade-insecure-requests"] : []),
   ].join("; ");
 }
 
 /** Sets a fresh nonce and the CSP on every page request. */
 export function proxy(request: NextRequest): NextResponse {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const csp = buildCsp(nonce, process.env.NODE_ENV === "development");
+  const secure =
+    request.nextUrl.protocol === "https:" || request.headers.get("x-forwarded-proto") === "https";
+  const csp = buildCsp(nonce, process.env.NODE_ENV === "development", secure);
   const headers = new Headers(request.headers);
   headers.set("x-nonce", nonce);
   headers.set("Content-Security-Policy", csp);

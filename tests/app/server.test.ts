@@ -18,7 +18,7 @@ afterEach(() => {
 
 describe("content security policy", () => {
   it("allows only this page's nonce for scripts and styles in production", () => {
-    const csp = buildCsp("abc", false);
+    const csp = buildCsp("abc", false, true);
     expect(csp).toContain("script-src 'self' 'nonce-abc' 'strict-dynamic'");
     expect(csp).toContain("style-src 'self' 'nonce-abc'");
     expect(csp).toContain("connect-src 'self'");
@@ -30,9 +30,21 @@ describe("content security policy", () => {
   });
 
   it("relaxes only what the dev server needs", () => {
-    const csp = buildCsp("abc", true);
+    const csp = buildCsp("abc", true, true);
     expect(csp).toContain("'unsafe-eval'");
     expect(csp).toContain("style-src 'self' 'unsafe-inline'");
+  });
+
+  it("upgrades insecure requests only on pages served over https", () => {
+    expect(buildCsp("abc", false, true)).toContain("upgrade-insecure-requests");
+    expect(buildCsp("abc", false, false)).not.toContain("upgrade-insecure-requests");
+    const csp = (url: string, headers: Record<string, string> = {}) =>
+      proxy(new NextRequest(url, { headers })).headers.get("content-security-policy") ?? "";
+    expect(csp("https://plan.test/")).toContain("upgrade-insecure-requests");
+    expect(csp("http://plan.test/", { "x-forwarded-proto": "https" })).toContain(
+      "upgrade-insecure-requests",
+    );
+    expect(csp("http://localhost:3200/")).not.toContain("upgrade-insecure-requests");
   });
 
   it("puts the CSP on every page, and only skips the API, build assets and the icons", () => {
