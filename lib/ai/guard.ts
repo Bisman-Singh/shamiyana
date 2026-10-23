@@ -8,23 +8,33 @@ import type { Locale } from "@/lib/plan/constants";
  */
 
 /** A non-capturing group of alternatives, so each pattern below reads as its words. */
-function oneOf(...words: string[]): string {
+function alternation(...words: string[]): string {
   return `(?:${words.join("|")})`;
 }
 
-const ADDRESSED = oneOf("all", "any", "every", "the", "your", "my", "these", "those", "previous");
-const EARLIER = oneOf("prior", "above", "earlier", "preceding", "original", "system");
-const RULES = oneOf("instructions?", "prompts?", "rules?", "guidelines?", "directions?");
-const HINDI_RULES = oneOf("निर्देश", "नियम", "आदेश", "हिदायत");
+const ADDRESSED = alternation(
+  "all",
+  "any",
+  "every",
+  "the",
+  "your",
+  "my",
+  "these",
+  "those",
+  "previous",
+);
+const EARLIER = alternation("prior", "above", "earlier", "preceding", "original", "system");
+const RULES = alternation("instructions?", "prompts?", "rules?", "guidelines?", "directions?");
+const HINDI_RULES = alternation("निर्देश", "नियम", "आदेश", "हिदायत");
 
 /** Phrases aimed at the assistant's instructions, in English, Hindi and romanised Hindi. */
 const INJECTION_PATTERNS: readonly RegExp[] = [
   new RegExp(
-    String.raw`\b${oneOf("ignore", "forget", "disregard", "override", "bypass")}(?:\s+${oneOf(ADDRESSED, EARLIER)}){1,4}\s+${RULES}\b`,
+    String.raw`\b${alternation("ignore", "forget", "disregard", "override", "bypass")}(?:\s+${alternation(ADDRESSED, EARLIER)}){1,4}\s+${RULES}\b`,
     "i",
   ),
   new RegExp(
-    String.raw`\b${oneOf("reveal", "print", "show", "repeat", "output", "tell")}(?:\s+me)?\s+${oneOf("your", "the")}\s+${oneOf("system", "hidden", "initial", "original")}\s+${RULES}`,
+    String.raw`\b${alternation("reveal", "print", "show", "repeat", "output", "tell")}(?:\s+me)?\s+${alternation("your", "the")}\s+${alternation("system", "hidden", "initial", "original")}\s+${RULES}`,
     "i",
   ),
   /\bsystem\s+prompt\b|\bjailbreak|\bdeveloper\s+mode\b|\bDAN\s+mode\b/i,
@@ -32,11 +42,11 @@ const INJECTION_PATTERNS: readonly RegExp[] = [
   /\b(?:act|behave)\s+as\s+(?:an?\s+)?(?:unrestricted|unfiltered|different|new)\s+(?:ai|assistant|model|chatbot)\b/i,
   /\b(?:instructions?|rules?|prompts?)\s+(?:ko\s+)?(?:ignore|bhool|bhul)\b/i,
   new RegExp(
-    String.raw`${oneOf("पिछले", "पहले", "ऊपर", "सारे", "सभी", "अपने")}(?:\s+${oneOf("के", "सारे", "सभी")})?\s+${HINDI_RULES}(?:ों)?\s+(?:को\s+)?${oneOf("भूल", "अनदेखा", "नज़रअंदाज़", "नजरअंदाज", "छोड़")}`,
+    String.raw`${alternation("पिछले", "पहले", "ऊपर", "सारे", "सभी", "अपने")}(?:\s+${alternation("के", "सारे", "सभी")})?\s+${HINDI_RULES}(?:ों)?\s+(?:को\s+)?${alternation("भूल", "अनदेखा", "नज़रअंदाज़", "नजरअंदाज", "छोड़")}`,
   ),
   /सिस्टम\s+(?:प्रॉम्प्ट|प्रोम्प्ट|निर्देश)/,
   new RegExp(
-    String.raw`${oneOf("अपने", "अपना", "तुम्हारे", "आपके")}\s+${oneOf(HINDI_RULES, "प्रॉम्प्ट", "प्रोम्प्ट")}\s+${oneOf("बताओ", "बताइए", "बताएँ", "दिखाओ", "दिखाइए", "लिखो")}`,
+    String.raw`${alternation("अपने", "अपना", "तुम्हारे", "आपके")}\s+${alternation(HINDI_RULES, "प्रॉम्प्ट", "प्रोम्प्ट")}\s+${alternation("बताओ", "बताइए", "बताएँ", "दिखाओ", "दिखाइए", "लिखो")}`,
   ),
 ];
 

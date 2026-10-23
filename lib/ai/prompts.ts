@@ -1,4 +1,5 @@
 import { en } from "@/lib/i18n/en";
+import { messageOr } from "@/lib/i18n/messages";
 import {
   FUNCTION_HEADCOUNT,
   shiftableCategories,
@@ -129,7 +130,7 @@ export function describeEvent(
 
 function checklist(brief: EventFacts): string {
   return tasksFor(brief)
-    .map((t) => `- ${TASK_TITLES[t.id as keyof typeof TASK_TITLES]}`)
+    .map((t) => `- ${messageOr(TASK_TITLES, t.id, t.id)}`)
     .join("\n");
 }
 

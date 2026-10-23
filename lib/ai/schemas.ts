@@ -9,7 +9,7 @@ import { CHANGE_OPS } from "@/lib/plan/changes";
  * `parseChanges` and `sanitizeVision` enforce the real bounds afterwards.
  */
 
-const changeAreas = [...new Set<string>([...TASK_AREAS, ...IDEA_AREAS])] as [string, ...string[]];
+const changeAreas = [...TASK_AREAS, ...IDEA_AREAS.filter((a) => !TASK_AREAS.some((t) => t === a))];
 const factorRange = `${String(LIMITS.factorMin)} to ${String(LIMITS.factorMax)}`;
 
 export const enrichmentOutputSchema = z.object({

@@ -1,6 +1,6 @@
 /**
  * Plain-text hygiene for anything typed by a user or written by the model:
- * C0 and C1 controls, DEL and the bidi override and isolate marks are removed, so a
+ * C0 and C1 controls, DEL and the bidi override and isolate marks become spaces, so a
  * string can't hide characters or reorder itself on screen, in a CSV or in a
  * calendar file.
  */

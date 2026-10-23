@@ -12,9 +12,9 @@ export interface ModelSpec {
 }
 
 /**
- * Gemini 2.5 models think by default; a thinking budget of 0 keeps a planning
- * answer fast. Gemini 3 models take a thinking level, left at the provider's
- * default.
+ * Provider options per model. The default chain is Gemini 3, which takes a
+ * thinking level left at the provider's default. A Gemini 2.5 model set in
+ * GEMINI_MODELS thinks by default, so it gets a budget of 0 to stay fast.
  */
 export function providerOptionsFor(id: string): ProviderOptions {
   return id.startsWith("gemini-2.5") ? { google: { thinkingConfig: { thinkingBudget: 0 } } } : {};

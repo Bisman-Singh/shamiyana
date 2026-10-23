@@ -170,7 +170,7 @@ function ChatForm({ message, pending, inputRef, onChange, onSend }: Readonly<Cha
   );
 }
 
-/** What the refine route needs: the facts, never the title or guests, and the last few turns. */
+/** What the refine route needs: the event facts, never its title or guest list, and the last few turns. */
 function refineBody(view: PlanView, locale: Locale, turns: readonly Turn[], message: string) {
   return {
     facts: factsOf(view.record.brief),

@@ -3,8 +3,11 @@ import type { BudgetSummary } from "@/lib/plan/budget";
 import type { Guest } from "@/lib/plan/schema";
 import type { VendorCard } from "@/lib/plan/vendors";
 
-/** Spreadsheet rows for the CSV downloads, headed in the user's language. */
+/*
+ * Spreadsheet rows for the CSV downloads, headed in the user's language.
+ */
 
+/** One CSV row: text and numbers, in column order. */
 type Row = (string | number)[];
 
 /** Budget rows for the CSV export, headed in the chosen language. */

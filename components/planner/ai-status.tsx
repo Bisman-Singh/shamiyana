@@ -12,7 +12,7 @@ import type { EnrichmentState } from "./use-enrichment";
  * to "Try again", so when focus was in here and fell to the page, it goes to
  * the new status's button, or to the status itself.
  */
-export function AiStatus(props: Parameters<typeof StatusLine>[0]) {
+export function AiStatus(props: Readonly<StatusLineProps>) {
   const slotRef = useRef<HTMLDivElement>(null);
   const hadFocusRef = useRef(false);
   const { phase } = props.state;

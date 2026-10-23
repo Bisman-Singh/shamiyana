@@ -97,6 +97,9 @@ export const LIMITS = {
   partyMax: 20,
   guestListMax: 2000,
   customTasksMax: 60,
+  /** Template tasks removed and ticked off, kept as ids in a saved plan. */
+  hiddenTasksMax: 200,
+  doneTasksMax: 400,
   plansMax: 20,
   chatMessageMax: 400,
   chatHistoryMax: 6,

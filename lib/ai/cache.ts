@@ -37,11 +37,8 @@ export class AnswerCache {
     }
     this.entries.set(key, { value, expires: this.now() + this.ttlMs });
     this.chars += value.length;
-    while (this.entries.size > this.maxEntries || this.chars > this.maxChars) {
-      const [oldestKey, oldest] = this.entries.entries().next().value as [
-        string,
-        { value: string },
-      ];
+    for (const [oldestKey, oldest] of this.entries) {
+      if (this.entries.size <= this.maxEntries && this.chars <= this.maxChars) break;
       this.entries.delete(oldestKey);
       this.chars -= oldest.value.length;
     }

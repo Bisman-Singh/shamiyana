@@ -10,6 +10,7 @@ import { TASKS } from "./catalog";
 import { LIMITS } from "./constants";
 import { addDays, daysBetween, isIsoDate, saturdayOnOrBefore } from "./dates";
 import { briefSchema, type Brief } from "./schema";
+import { oneOf } from "@/lib/shared/untrusted";
 
 /**
  * The brief form's working state. Numbers stay as typed text until submit,
@@ -31,7 +32,16 @@ export interface Draft {
   kind: CommunityKind;
 }
 
-export type DraftField = "title" | "date" | "city" | "guests" | "budget" | "functions" | "notes";
+export const DRAFT_FIELDS = [
+  "title",
+  "date",
+  "city",
+  "guests",
+  "budget",
+  "functions",
+  "notes",
+] as const;
+export type DraftField = (typeof DRAFT_FIELDS)[number];
 export type DraftError =
   | "title"
   | "city"
@@ -42,16 +52,6 @@ export type DraftError =
   | "budget"
   | "functions"
   | "notes";
-
-export const DRAFT_FIELDS: readonly DraftField[] = [
-  "title",
-  "date",
-  "city",
-  "guests",
-  "budget",
-  "functions",
-  "notes",
-];
 
 /** A blank draft for an event type. */
 export function emptyDraft(type: EventType = "wedding"): Draft {
@@ -203,7 +203,7 @@ function candidate(draft: Draft): unknown {
   }
 }
 
-const ISSUE_FIELD: Record<string, DraftError> = {
+const ISSUE_FIELD: Partial<Record<DraftField, DraftError>> = {
   title: "title",
   city: "city",
   guests: "guests",
@@ -221,9 +221,9 @@ export function parseDraft(draft: Draft, today: string): DraftResult {
   const parsed = briefSchema.safeParse(candidate(draft));
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
-      const key = String(issue.path[0]);
-      const error = ISSUE_FIELD[key];
-      if (error) errors[key as DraftField] = error;
+      const field = oneOf(issue.path[0], DRAFT_FIELDS);
+      const error = field && ISSUE_FIELD[field];
+      if (field && error) errors[field] = error;
     }
   }
   const date = dateError(draft.date, today);

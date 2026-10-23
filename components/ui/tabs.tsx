@@ -22,12 +22,6 @@ export function nextTabIndex(key: string, index: number, count: number): number 
 }
 
 /**
- * The WAI-ARIA tabs pattern with automatic activation: arrow keys, Home and
- * End move between tabs, Tab moves into the panel. Inactive panels stay
- * mounted but hidden, so their state survives a switch and print can show
- * them all.
- */
-/**
  * For when the focused control goes away, such as a row put back by Undo or a
  * button whose job is done: focus moves to the open panel, not the page.
  */
@@ -44,7 +38,12 @@ interface TabsProps<T extends string> {
   onSelect: (id: T) => void;
 }
 
-/** WAI-ARIA tabs with roving focus, arrow keys, Home and End. */
+/**
+ * The WAI-ARIA tabs pattern with automatic activation: arrow keys, Home and
+ * End move between tabs, Tab moves into the panel. Inactive panels stay
+ * mounted but hidden, so their state survives a switch and print can show
+ * them all.
+ */
 export function Tabs<T extends string>({
   label,
   tabs,
