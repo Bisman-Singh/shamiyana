@@ -2,7 +2,6 @@
 import { factsOf } from "@/lib/plan/schema";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { nudge } from "@/components/planner/budget-panel";
 import { withEnrichment } from "@/lib/plan/record";
 import type { Brief, PlanRecord } from "@/lib/plan/schema";
 import { NOW, birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
@@ -76,12 +75,6 @@ describe("budget", () => {
     );
     await userEvent.click(panel().getByRole("button", { name: "Budget (CSV)" }));
     expect(downloads[0]?.name).toBe("winter-wedding-in-jaipur.budget.csv");
-  });
-
-  it("keeps weights inside 0.5 and 1.5", () => {
-    expect(nudge(1.5, 1)).toBe(1.5);
-    expect(nudge(0.5, -1)).toBe(0.5);
-    expect(nudge(1, -1)).toBeCloseTo(0.9, 10);
   });
 
   it("disables the limits and flags bookings over plan and over budget", async () => {

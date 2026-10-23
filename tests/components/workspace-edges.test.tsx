@@ -103,7 +103,7 @@ describe("budget and photo edges", () => {
     expect(panel().getByText(text)).toBeInTheDocument();
     await userEvent.click(panel().getByRole("button", { name: /^Apply/ }));
     expect(panel().getByText(text)).toBeInTheDocument();
-    const { BudgetPanel } = await import("@/components/planner/budget-panel");
+    const { BudgetPanel } = await import("@/components/planner/budget/budget-panel");
     const { usePlanView } = await import("@/components/planner/workspace/use-plan-view");
     function NoFood() {
       const view = usePlanView(recordFor(weddingBrief), TODAY);

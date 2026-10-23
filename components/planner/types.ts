@@ -1,4 +1,5 @@
 import type { BudgetSummary } from "@/lib/plan/budget";
+import type { CategoryId } from "@/lib/plan/constants";
 import type { GuestTally } from "@/lib/plan/guests";
 import type { PlanRecord } from "@/lib/plan/schema";
 import type { Timeline } from "@/lib/plan/timeline";
@@ -25,3 +26,6 @@ export interface PanelProps {
   view: PlanView;
   update: Update;
 }
+
+/** Sets a budget line's weight, or puts it back to the standard 1 with null. */
+export type Shift = (category: CategoryId, factor: number | null) => void;
