@@ -61,10 +61,13 @@ function MapsSearchLink({ phrase, city }: Readonly<{ phrase: string; city: strin
       target="_blank"
       rel="noopener noreferrer"
     >
-      <Template
-        text={dict.vendors.find}
-        values={{ phrase: <span lang={langOf(phrase, locale)}>{phrase}</span>, city }}
-      />{" "}
+      {/* one span, so the button's flex gap doesn't split the sentence into pieces */}
+      <span>
+        <Template
+          text={dict.vendors.find}
+          values={{ phrase: <span lang={langOf(phrase, locale)}>{phrase}</span>, city }}
+        />
+      </span>{" "}
       <span className="visually-hidden">{dict.common.opensNewTab}</span>
     </a>
   );
