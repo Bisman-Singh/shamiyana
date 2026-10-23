@@ -3,6 +3,7 @@
 import { useEffect, useId, useState, type ChangeEvent } from "react";
 import type { VisionResult } from "@/lib/ai/vision-result";
 import { langOf } from "@/lib/i18n/lang";
+import type { PlanRecord } from "@/lib/plan/schema";
 import { requestVision } from "@/lib/client/api";
 import { ACCEPTED_IMAGES, prepareImage } from "@/lib/client/files";
 import { factsOf } from "@/lib/plan/schema";
@@ -26,11 +27,11 @@ type State =
 
 interface VisionResultViewProps {
   result: VisionResult;
-  saved: ReadonlySet<string>;
+  record: PlanRecord;
   update: Update;
 }
 
-function VisionResultView({ result, saved, update }: Readonly<VisionResultViewProps>) {
+function VisionResultView({ result, record, update }: Readonly<VisionResultViewProps>) {
   const { dict, locale } = useLocale();
   const p = dict.photo;
   return (
@@ -68,7 +69,7 @@ function VisionResultView({ result, saved, update }: Readonly<VisionResultViewPr
               {idea.title}
             </p>
             <p lang={langOf(idea.detail, locale)}>{idea.detail}</p>
-            <SaveIdeaButton idea={idea} saved={saved.has(idea.title)} update={update} />
+            <SaveIdeaButton idea={idea} record={record} update={update} />
           </li>
         ))}
       </ul>
@@ -169,12 +170,15 @@ export function PhotoIdeas({ view, update }: Readonly<PanelProps>) {
   return (
     <section aria-labelledby={headingId} className="photo-ideas">
       <h3 id={headingId}>{p.heading}</h3>
-      <p className="hint">{p.intro}</p>
+      <p className="hint" id={`${headingId}-hint`}>
+        {p.intro}
+      </p>
       <div className="actions">
         <label className="btn file-button">
           {p.choose}
           <input
             type="file"
+            aria-describedby={`${headingId}-hint`}
             accept={ACCEPTED_IMAGES.join(",")}
             className="visually-hidden"
             onChange={(e) => void choose(e)}
@@ -196,11 +200,7 @@ export function PhotoIdeas({ view, update }: Readonly<PanelProps>) {
       <PhotoPreview state={state} />
       {state.phase === "error" ? <Notice tone="error">{state.message}</Notice> : null}
       {state.phase === "done" ? (
-        <VisionResultView
-          result={state.result}
-          saved={new Set(view.record.ideas.map((i) => i.title))}
-          update={update}
-        />
+        <VisionResultView result={state.result} record={view.record} update={update} />
       ) : null}
     </section>
   );

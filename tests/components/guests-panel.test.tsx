@@ -91,15 +91,28 @@ describe("guests", () => {
     expect(saved.current.guests).toEqual([]);
   });
 
-  it("counts a party size that isn't a number as one and stops at the list limit", async () => {
+  it("refuses a missing or too large party size with an error on that field, saving nothing", async () => {
     const { saved } = renderWorkspace(ready());
     await openTab("Guests");
     const p = panel();
     await userEvent.click(p.getByLabelText("Name or household"));
     await userEvent.paste("Nanaji");
+    for (const typed of ["", "50"]) {
+      await userEvent.clear(p.getByLabelText("People"));
+      if (typed) await userEvent.type(p.getByLabelText("People"), typed);
+      await userEvent.click(p.getByRole("button", { name: "Add" }));
+      const people = p.getByLabelText("People");
+      await waitFor(() => {
+        expect(people).toHaveFocus();
+      });
+      expect(people).toHaveAttribute("aria-invalid", "true");
+      expect(people).toHaveAccessibleDescription("Enter a party size from 1 to 20.");
+    }
+    expect(saved.current.guests).toEqual([]);
     await userEvent.clear(p.getByLabelText("People"));
+    await userEvent.type(p.getByLabelText("People"), "20");
     await userEvent.click(p.getByRole("button", { name: "Add" }));
-    expect(saved.current.guests[0]?.party).toBe(1);
+    expect(saved.current.guests[0]?.party).toBe(20);
   });
 
   it("hides the add form when the list is full", async () => {

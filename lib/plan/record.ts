@@ -179,10 +179,14 @@ export function removeGuest(record: PlanRecord, guestId: string, now: string): P
   return touch(record, now, { guests: record.guests.filter((g) => g.id !== guestId) });
 }
 
+/** Whether the plan already holds this idea: the same title for the same area. */
+export function isIdeaSaved(record: PlanRecord, idea: Pick<SavedIdea, "title" | "area">): boolean {
+  return record.ideas.some((i) => i.title === idea.title && i.area === idea.area);
+}
+
 /** The plan with an idea saved, unless it is saved already or the list is full. */
 export function saveIdea(record: PlanRecord, idea: SavedIdea, now: string): PlanRecord {
-  const duplicate = record.ideas.some((i) => i.title === idea.title && i.area === idea.area);
-  if (duplicate || record.ideas.length >= LIMITS.savedIdeasMax) return record;
+  if (isIdeaSaved(record, idea) || record.ideas.length >= LIMITS.savedIdeasMax) return record;
   return touch(record, now, { ideas: [...record.ideas, idea] });
 }
 

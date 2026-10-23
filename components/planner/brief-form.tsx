@@ -14,7 +14,7 @@ import {
 } from "@/lib/plan/draft";
 import type { Brief } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
-import { useFocusOnMount } from "../ui/announcer";
+import { useFocusOnMount } from "../ui/focus";
 import {
   BasicFields,
   EventTypeField,

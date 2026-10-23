@@ -176,6 +176,9 @@ describe("Planner", () => {
     window.history.replaceState(null, "", `/#plan=${await encodeShare(shared)}`);
     const { store, container } = setup();
     expect(await screen.findByRole("heading", { name: "Open a shared plan?" })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("announcer")).toHaveTextContent("Open a shared plan?");
+    });
     expect(window.location.hash).toBe("");
     await expectAccessible(container);
     await userEvent.click(screen.getByRole("button", { name: "Add to my plans" }));

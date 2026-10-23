@@ -133,6 +133,8 @@ function ProposalForm({
 }
 
 interface ChatFormProps {
+  /** The id of the hint that explains what the box is for. */
+  hintId: string;
   message: string;
   pending: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
@@ -140,7 +142,14 @@ interface ChatFormProps {
   onSend: (event: SubmitEvent<HTMLFormElement>) => void;
 }
 
-function ChatForm({ message, pending, inputRef, onChange, onSend }: Readonly<ChatFormProps>) {
+function ChatForm({
+  hintId,
+  message,
+  pending,
+  inputRef,
+  onChange,
+  onSend,
+}: Readonly<ChatFormProps>) {
   const { dict } = useLocale();
   const r = dict.refine;
   const inputId = useId();
@@ -151,6 +160,7 @@ function ChatForm({ message, pending, inputRef, onChange, onSend }: Readonly<Cha
         <input
           ref={inputRef}
           id={inputId}
+          aria-describedby={hintId}
           value={message}
           maxLength={LIMITS.chatMessageMax}
           autoComplete="off"
@@ -285,7 +295,9 @@ export function RefineChat({ view, update }: Readonly<PanelProps>) {
   return (
     <section aria-labelledby={`${baseId}-h`} className="refine">
       <h3 id={`${baseId}-h`}>{r.heading}</h3>
-      <p className="hint">{r.intro}</p>
+      <p className="hint" id={`${baseId}-hint`}>
+        {r.intro}
+      </p>
       <ChatLog turns={turns} />
       {proposal ? (
         <ProposalForm
@@ -304,6 +316,7 @@ export function RefineChat({ view, update }: Readonly<PanelProps>) {
       {quiet ? <p className="hint">{r.noChanges}</p> : null}
       {error ? <Notice tone="error">{error}</Notice> : null}
       <ChatForm
+        hintId={`${baseId}-hint`}
         message={message}
         pending={pending}
         inputRef={inputRef}

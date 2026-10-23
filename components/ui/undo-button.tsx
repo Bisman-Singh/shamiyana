@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale } from "../locale-provider";
-import { useFocusOnMount } from "./announcer";
+import { useFocusOnMount } from "./focus";
 
 interface UndoButtonProps {
   onUndo: () => void;

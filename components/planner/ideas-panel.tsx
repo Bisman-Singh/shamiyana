@@ -3,6 +3,7 @@
 import { useId, type ReactNode } from "react";
 import { langOf } from "@/lib/i18n/lang";
 import type { Enrichment } from "@/lib/plan/enrichment";
+import type { PlanRecord } from "@/lib/plan/schema";
 import { format } from "@/lib/i18n/format";
 import { removeIdea } from "@/lib/plan/record";
 import { useLocale } from "../locale-provider";
@@ -13,11 +14,13 @@ import { SaveIdeaButton } from "./save-idea-button";
 
 interface AiIdeasProps {
   ideas: Enrichment;
-  saved: ReadonlySet<string>;
+  record: PlanRecord;
+  /** While ideas stream in, a half-written idea has no Save button to focus or press. */
+  streaming: boolean;
   update: Update;
 }
 
-function AiIdeas({ ideas, saved, update }: Readonly<AiIdeasProps>) {
+function AiIdeas({ ideas, record, streaming, update }: Readonly<AiIdeasProps>) {
   const { dict, locale } = useLocale();
   const id = useId();
   const i = dict.ideas;
@@ -46,7 +49,7 @@ function AiIdeas({ ideas, saved, update }: Readonly<AiIdeasProps>) {
                   {idea.title}
                 </p>
                 <p lang={langOf(idea.detail, locale)}>{idea.detail}</p>
-                <SaveIdeaButton idea={idea} saved={saved.has(idea.title)} update={update} />
+                {streaming ? null : <SaveIdeaButton idea={idea} record={record} update={update} />}
               </li>
             ))}
           </ul>
@@ -112,21 +115,23 @@ function SavedIdeas({ view, update }: Readonly<PanelProps>) {
 interface IdeasPanelProps {
   view: PlanView;
   ideas: Enrichment | null;
+  streaming: boolean;
   status: ReactNode;
   update: Update;
 }
 
 /** AI ideas and menu, saved ideas, the refine chat and photo ideas. */
-export function IdeasPanel({ view, ideas, status, update }: Readonly<IdeasPanelProps>) {
+export function IdeasPanel({ view, ideas, streaming, status, update }: Readonly<IdeasPanelProps>) {
   const { dict } = useLocale();
-  const saved = new Set(view.record.ideas.map((s) => s.title));
   return (
     <div className="ideas">
       <div className="panel-head">
         <h2>{dict.ideas.heading}</h2>
       </div>
       {status}
-      {ideas ? <AiIdeas ideas={ideas} saved={saved} update={update} /> : null}
+      {ideas ? (
+        <AiIdeas ideas={ideas} record={view.record} streaming={streaming} update={update} />
+      ) : null}
       <RefineChat view={view} update={update} />
       <PhotoIdeas view={view} update={update} />
       <SavedIdeas view={view} update={update} />

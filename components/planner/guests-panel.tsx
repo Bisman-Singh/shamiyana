@@ -2,6 +2,7 @@
 
 import { useId, useState, type SubmitEvent } from "react";
 import { guestRows } from "@/lib/export/sheets";
+import type { Dictionary } from "@/lib/i18n/en";
 import { downloadCsv } from "@/lib/client/files";
 import { format, formatNumber } from "@/lib/i18n/format";
 import {
@@ -19,12 +20,34 @@ import { guestSchema, type Guest } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
+import { focusAfterRender } from "../ui/focus";
 import { focusOpenPanel } from "../ui/tabs";
 import type { PanelProps, Update } from "./types";
 
 interface AddGuestProps {
   update: Update;
   full: boolean;
+}
+
+interface GuestErrors {
+  name?: string;
+  party?: string;
+}
+
+/** A new household needs a name and a party size from 1 to the limit; nothing is clamped quietly. */
+function checkGuest(name: string, party: string, dict: Dictionary) {
+  const g = dict.guests;
+  const named = guestSchema.shape.name.safeParse(name);
+  const size = /^\d{1,3}$/.test(party.trim()) ? Number(party) : 0;
+  const errors: GuestErrors = {
+    name: named.success ? undefined : g.nameError,
+    party:
+      size >= 1 && size <= LIMITS.partyMax
+        ? undefined
+        : format(g.partyError, { max: LIMITS.partyMax }),
+  };
+  const guest = named.success && !errors.party ? { name: named.data, party: size } : null;
+  return { errors, guest };
 }
 
 function AddGuest({ update, full }: Readonly<AddGuestProps>) {
@@ -35,26 +58,23 @@ function AddGuest({ update, full }: Readonly<AddGuestProps>) {
   const [group, setGroup] = useState<GuestGroup>("family");
   const [party, setParty] = useState("1");
   const [diet, setDiet] = useState<Diet>("veg");
-  const [error, setError] = useState<string | undefined>();
+  const [errors, setErrors] = useState<GuestErrors>({});
   const announce = useAnnounce();
 
   function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    const named = guestSchema.shape.name.safeParse(name);
-    if (!named.success) {
-      setError(g.nameError);
-      document.getElementById(`${baseId}-name`)?.focus();
+    const checked = checkGuest(name, party, dict);
+    setErrors(checked.errors);
+    if (!checked.guest) {
+      focusAfterRender(`${baseId}-${checked.errors.name ? "name" : "party"}`);
       return;
     }
-    const clean = named.data;
-    setError(undefined);
-    const size = Math.min(LIMITS.partyMax, Math.max(1, Number.parseInt(party, 10) || 1));
-    const guest: Guest = { id: newId(), name: clean, group, party: size, rsvp: "pending", diet };
+    const guest: Guest = { id: newId(), ...checked.guest, group, rsvp: "pending", diet };
     update((r, now) => upsertGuest(r, guest, now));
-    announce(format(g.added, { name: clean }));
+    announce(format(g.added, { name: guest.name }));
     setName("");
     setParty("1");
-    document.getElementById(`${baseId}-name`)?.focus();
+    focusAfterRender(`${baseId}-name`);
   }
 
   if (full) return <p className="hint">{g.limit}</p>;
@@ -68,7 +88,7 @@ function AddGuest({ update, full }: Readonly<AddGuestProps>) {
           value={name}
           maxLength={LIMITS.guestNameMax}
           autoComplete="off"
-          error={error}
+          error={errors.name}
           onChange={(e) => {
             setName(e.target.value);
           }}
@@ -88,6 +108,7 @@ function AddGuest({ update, full }: Readonly<AddGuestProps>) {
           min={1}
           max={LIMITS.partyMax}
           value={party}
+          error={errors.party}
           onChange={(e) => {
             setParty(e.target.value);
           }}
@@ -140,23 +161,26 @@ function Tallies({ view, update }: Readonly<PanelProps>) {
             .join(", ")}
         </p>
       ) : null}
-      {mismatch ? (
-        <div className="notice notice-info" role="status">
-          <p>{format(g.mismatch, { plan: n(record.brief.guests), list: n(tally.expected) })}</p>
-          <button
-            type="button"
-            className="btn btn-small"
-            onClick={() => {
-              const guests = Math.min(LIMITS.guestsMax, tally.expected);
-              update((r, now) => updateBrief(r, { ...r.brief, guests }, now));
-              announce(format(g.countUsed, { n: n(guests) }));
-              focusOpenPanel();
-            }}
-          >
-            {format(g.useCount, { n: n(tally.expected) })}
-          </button>
-        </div>
-      ) : null}
+      {/* the region is always there, so a mismatch that appears is announced */}
+      <div role="status">
+        {mismatch ? (
+          <div className="notice notice-info">
+            <p>{format(g.mismatch, { plan: n(record.brief.guests), list: n(tally.expected) })}</p>
+            <button
+              type="button"
+              className="btn btn-small"
+              onClick={() => {
+                const guests = Math.min(LIMITS.guestsMax, tally.expected);
+                update((r, now) => updateBrief(r, { ...r.brief, guests }, now));
+                announce(format(g.countUsed, { n: n(guests) }));
+                focusOpenPanel();
+              }}
+            >
+              {format(g.useCount, { n: n(tally.expected) })}
+            </button>
+          </div>
+        ) : null}
+      </div>
     </>
   );
 }

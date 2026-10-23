@@ -54,6 +54,7 @@ describe("a new photo while one is being read", () => {
     renderWorkspace(ready());
     await openTab("Ideas");
     const input = panel().getByLabelText("Choose a photo");
+    expect(input).toHaveAccessibleDescription(/shrunk on your device/);
     await userEvent.upload(input, new File(["a"], "a.jpg", { type: "image/jpeg" }));
     await userEvent.click(
       await panel().findByRole("button", { name: "Get ideas from this photo" }),

@@ -116,22 +116,32 @@ describe("workspace focus and announcements", () => {
     renderWorkspace(ready(communityBrief));
     await openTab("Timeline");
     await userEvent.click(panel().getByRole("button", { name: "Add task" }));
-    expect(panel().getByLabelText("Task")).toHaveFocus();
+    await waitFor(() => {
+      expect(panel().getByLabelText("Task")).toHaveFocus();
+    });
     await userEvent.type(panel().getByLabelText("Task"), "Hire chairs");
     await userEvent.click(panel().getByRole("button", { name: "Add task" }));
-    expect(panel().getByLabelText("Do it by")).toHaveFocus();
+    await waitFor(() => {
+      expect(panel().getByLabelText("Do it by")).toHaveFocus();
+    });
     fireEvent.change(panel().getByLabelText("Do it by"), { target: { value: "2026-11-01" } });
     await userEvent.click(panel().getByRole("button", { name: "Add task" }));
     await announced("Added “Hire chairs”.");
-    expect(panel().getByLabelText("Task")).toHaveFocus();
+    await waitFor(() => {
+      expect(panel().getByLabelText("Task")).toHaveFocus();
+    });
 
     await openTab("Guests");
     await userEvent.click(panel().getByRole("button", { name: "Add" }));
-    expect(panel().getByLabelText("Name or household")).toHaveFocus();
+    await waitFor(() => {
+      expect(panel().getByLabelText("Name or household")).toHaveFocus();
+    });
     await userEvent.type(panel().getByLabelText("Name or household"), "Nani");
     await userEvent.click(panel().getByRole("button", { name: "Add" }));
     await announced("Added Nani.");
-    expect(panel().getByLabelText("Name or household")).toHaveFocus();
+    await waitFor(() => {
+      expect(panel().getByLabelText("Name or household")).toHaveFocus();
+    });
   });
 
   it("keeps focus on buttons that become unavailable, and ignores clicks on them", async () => {

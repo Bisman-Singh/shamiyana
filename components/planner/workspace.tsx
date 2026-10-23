@@ -15,11 +15,12 @@ import type { PlanRecord } from "@/lib/plan/schema";
 import { buildTimeline } from "@/lib/plan/timeline";
 import { buildVendors } from "@/lib/plan/vendors";
 import { useLocale } from "../locale-provider";
-import { useAnnounce, useFocusOnMount } from "../ui/announcer";
+import { useAnnounce } from "../ui/announcer";
+import { useFocusOnMount } from "../ui/focus";
 import { Notice } from "../ui/notice";
 import { UndoButton } from "../ui/undo-button";
 import { focusOpenPanel, Tabs, type Tab } from "../ui/tabs";
-import { AiStatus } from "./ai-status";
+import { AiStatus, useStatusAnnouncements } from "./ai-status";
 import { BudgetPanel } from "./budget-panel";
 import { GuestsPanel } from "./guests-panel";
 import { IdeasPanel } from "./ideas-panel";
@@ -183,12 +184,14 @@ function planTabs({
   w,
   view,
   ideas,
+  streaming,
   status,
   update,
 }: Readonly<{
   w: Dictionary["workspace"];
   view: PlanView;
   ideas: Enrichment | null;
+  streaming: boolean;
   status: ReactNode;
   update: Update;
 }>): Tab<TabId>[] {
@@ -209,7 +212,15 @@ function planTabs({
     {
       id: "ideas",
       label: w.tabs.ideas,
-      panel: <IdeasPanel view={view} ideas={ideas} status={status} update={update} />,
+      panel: (
+        <IdeasPanel
+          view={view}
+          ideas={ideas}
+          streaming={streaming}
+          status={status}
+          update={update}
+        />
+      ),
     },
   ];
 }
@@ -241,6 +252,7 @@ export function Workspace({
     announce(dict.ai.ready);
   });
   const ideas = ai.state.phase === "streaming" ? ai.state.partial : record.enrichment;
+  useStatusAnnouncements(ai.state);
   const status = (
     <AiStatus
       state={ai.state}
@@ -252,7 +264,14 @@ export function Workspace({
     />
   );
 
-  const tabs = planTabs({ w, view, ideas, status: tab === "ideas" ? status : null, update });
+  const tabs = planTabs({
+    w,
+    view,
+    ideas,
+    streaming: ai.state.phase === "streaming",
+    status: tab === "ideas" ? status : null,
+    update,
+  });
   usePageTitle(`${record.brief.title} · ${dict.brand.name}`);
 
   return (

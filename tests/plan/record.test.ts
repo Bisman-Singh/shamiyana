@@ -11,6 +11,7 @@ import {
   removeIdea,
   removeTask,
   restoreHiddenTasks,
+  isIdeaSaved,
   saveIdea,
   setFactor,
   setVendor,
@@ -191,6 +192,8 @@ describe("record helpers", () => {
     const idea = { id: "i1", area: "decor" as const, title: "Diya wall", detail: "" };
     let record = saveIdea(recordFor(weddingBrief), idea, LATER);
     expect(saveIdea(record, { ...idea, id: "i2" }, LATER)).toBe(record);
+    expect(isIdeaSaved(record, idea)).toBe(true);
+    expect(isIdeaSaved(record, { ...idea, area: "food" })).toBe(false);
     expect(removeIdea(record, "i1", LATER).ideas).toEqual([]);
     for (let i = 0; i < LIMITS.savedIdeasMax + 2; i += 1) {
       record = saveIdea(record, { ...idea, id: `n${i}`, title: `Idea ${i}` }, LATER);

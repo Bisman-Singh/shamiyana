@@ -9,6 +9,7 @@ import { LIMITS } from "@/lib/plan/constants";
 import { localToday } from "@/lib/plan/dates";
 import type { PlanRecord } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
+import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 import { UndoButton } from "../ui/undo-button";
 
@@ -89,6 +90,11 @@ interface SharedImportProps {
 export function SharedImport({ incoming, full, onAdd, onDismiss }: Readonly<SharedImportProps>) {
   const { dict } = useLocale();
   const headingId = useId();
+  const announce = useAnnounce();
+  const offered = incoming?.kind === "plan";
+  useEffect(() => {
+    if (offered) announce(dict.imported.heading);
+  }, [offered, announce, dict.imported.heading]);
   if (incoming === null) return null;
   if (incoming.kind === "bad") return <Notice tone="error">{dict.imported.bad}</Notice>;
   return (

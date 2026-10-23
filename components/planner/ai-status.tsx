@@ -3,8 +3,24 @@
 import { useEffect, useRef } from "react";
 import { format } from "@/lib/i18n/format";
 import { useLocale } from "../locale-provider";
+import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 import type { EnrichmentState } from "./use-enrichment";
+
+/**
+ * Says through the page's live region when an answer stops early; nothing
+ * else on the page says it, while errors are alerts and finished ideas are
+ * announced when they are saved. The start of writing is not announced, so it
+ * never talks over the change that set it off. Called once per plan.
+ */
+export function useStatusAnnouncements(state: EnrichmentState): void {
+  const { dict } = useLocale();
+  const announce = useAnnounce();
+  const stoppedEarly = state.phase === "error" && state.error === "partial";
+  useEffect(() => {
+    if (stoppedEarly) announce(dict.ai.errors.partial);
+  }, [stoppedEarly, announce, dict.ai.errors.partial]);
+}
 
 /**
  * What the AI is doing right now, with the one action that makes sense for it.
@@ -66,7 +82,7 @@ function StatusLine({
 
   if (state.phase === "streaming") {
     return (
-      <div className="ai-status" role="status">
+      <div className="ai-status">
         <p>
           <span className="pulse" aria-hidden="true" /> {format(a.writing, { city })}
         </p>

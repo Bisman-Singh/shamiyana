@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  use,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-  type RefObject,
-} from "react";
+import { createContext, use, useCallback, useState, type ReactNode } from "react";
 
 /**
  * One polite live region for the whole app, present from the first paint.
@@ -49,15 +40,4 @@ export function AnnouncerProvider({ children }: Readonly<AnnouncerProviderProps>
 /** Says a message through the live region. */
 export function useAnnounce(): Announce {
   return use(AnnouncerContext);
-}
-
-/** Moves focus to an element once, after it mounts, when asked to. */
-export function useFocusOnMount<T extends HTMLElement>(when: boolean): RefObject<T | null> {
-  const ref = useRef<T>(null);
-  // Read once: later renders must not pull focus back.
-  const focusNowRef = useRef(when);
-  useEffect(() => {
-    if (focusNowRef.current) ref.current?.focus();
-  }, []);
-  return ref;
 }

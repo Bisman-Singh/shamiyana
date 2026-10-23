@@ -96,12 +96,41 @@ describe("AI ideas stream", () => {
     });
   });
 
+  it("offers no Save on ideas that are still being written", async () => {
+    let release: () => void = () => undefined;
+    mockFetch({
+      "/api/plan": () =>
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue(new TextEncoder().encode(answer.slice(0, -1)));
+              release = () => {
+                controller.enqueue(new TextEncoder().encode(answer.slice(-1)));
+                controller.close();
+              };
+            },
+          }),
+        ),
+    });
+    renderWorkspace(recordFor(weddingBrief));
+    await openTab("Ideas");
+    expect(
+      await panel().findByText("Marigold canopy", { selector: ".idea-title" }),
+    ).toBeInTheDocument();
+    expect(panel().queryAllByRole("button", { name: /^Save idea/ })).toHaveLength(0);
+    release();
+    expect(await panel().findAllByRole("button", { name: /^Save idea/ })).not.toHaveLength(0);
+  });
+
   it("keeps what arrived when the answer stops early", async () => {
     mockFetch({ "/api/plan": () => streamed([answer.slice(0, 120)]) });
     const { saved } = renderWorkspace(recordFor(weddingBrief));
     expect(
       await screen.findByText("The answer stopped early. Showing what arrived."),
     ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("announcer")).toHaveTextContent("The answer stopped early.");
+    });
     expect(saved.current.enrichment?.theme.name).toBe("Marigold courtyard");
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
   });

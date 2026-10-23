@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale } from "@/components/locale-provider";
-import { useFocusOnMount } from "@/components/ui/announcer";
+import { useFocusOnMount } from "@/components/ui/focus";
 
 /** The page-level error boundary: focus lands on what happened, with the one useful action next to it. */
 export default function ErrorPage({ reset }: Readonly<{ reset: () => void }>) {

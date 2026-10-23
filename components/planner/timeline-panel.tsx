@@ -15,6 +15,7 @@ import { PHASES, type TimelineItem } from "@/lib/plan/timeline";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
+import { focusAfterRender } from "../ui/focus";
 import { focusOpenPanel } from "../ui/tabs";
 import { areaName, taskTitle } from "./task-title";
 import type { PanelProps, PlanView, Update } from "./types";
@@ -51,14 +52,14 @@ function AddTask({ view, update }: Readonly<PanelProps>) {
     const { errors: next, clean, lead } = checkTask({ title, date }, view.today, brief.date, t);
     setErrors(next);
     if (next.title ?? next.date) {
-      document.getElementById(next.title ? `${baseId}-title` : `${baseId}-date`)?.focus();
+      focusAfterRender(next.title ? `${baseId}-title` : `${baseId}-date`);
       return;
     }
     update((r, now) => addTask(r, { title: clean, area, leadDays: lead }, newId(), now));
     announce(format(t.added, { title: clean }));
     setTitle("");
     setDate("");
-    document.getElementById(`${baseId}-title`)?.focus();
+    focusAfterRender(`${baseId}-title`);
   }
 
   if (view.record.tasks.length >= LIMITS.customTasksMax)

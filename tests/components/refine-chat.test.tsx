@@ -40,6 +40,9 @@ describe("refine chat", () => {
     const { saved, container } = renderWorkspace(ready());
     await openTab("Ideas");
     const p = panel();
+    expect(p.getByLabelText("Your message")).toHaveAccessibleDescription(
+      /Nothing changes until you tick/,
+    );
     await userEvent.click(p.getByLabelText("Your message"));
     await userEvent.paste("Bring it down to 15 lakh");
     await userEvent.click(p.getByRole("button", { name: "Send" }));
