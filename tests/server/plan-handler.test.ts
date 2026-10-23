@@ -4,6 +4,7 @@ import { TODAY, sampleEnrichment, weddingFacts } from "../fixtures";
 import {
   brokenStreamModel,
   cutOffModel,
+  hangingModel,
   jsonPost,
   spec,
   streamingModel,
@@ -142,6 +143,14 @@ describe("POST /api/plan", () => {
     const response = await planHandler(() => deps)(jsonPost(body));
     expect(response.status).toBe(status);
     expect(await response.json()).toEqual({ error: code });
+  });
+
+  it("answers ai_failed when no model starts before the deadline", async () => {
+    const response = await planHandler(() => testDeps([spec(hangingModel())], { deadlineMs: 50 }))(
+      jsonPost(planBody),
+    );
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: "ai_failed" });
   });
 
   it("stops at the daily cap", async () => {

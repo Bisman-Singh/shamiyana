@@ -2,7 +2,14 @@ import { SCREENED_REPLY } from "@/lib/ai/guard";
 import { refineHandler } from "@/lib/server/handlers";
 import { DailyCap } from "@/lib/server/rate-limit";
 import { TODAY, weddingFacts } from "../fixtures";
-import { brokenGenerateModel, generatingModel, jsonPost, spec, testDeps } from "../helpers/ai";
+import {
+  brokenGenerateModel,
+  generatingModel,
+  hangingModel,
+  jsonPost,
+  spec,
+  testDeps,
+} from "../helpers/ai";
 
 /** Info-level log lines from the current test. */
 const infoLines: string[] = [];
@@ -89,6 +96,20 @@ describe("POST /api/refine", () => {
       jsonPost(body),
     );
     expect(await failed.json()).toEqual({ error: "ai_failed" });
+  });
+
+  it("gives up on the whole model chain at the deadline and says so", async () => {
+    const models = [hangingModel(), hangingModel()];
+    const started = Date.now();
+    const response = await refineHandler(() =>
+      testDeps(
+        models.map((m, i) => spec(m, `slow-${String(i)}`)),
+        { deadlineMs: 50 },
+      ),
+    )(jsonPost(body));
+    expect(await response.json()).toEqual({ error: "ai_failed" });
+    expect(Date.now() - started).toBeLessThan(2_000);
+    expect(models[0]?.doGenerateCalls).toHaveLength(1);
   });
 
   it.each([

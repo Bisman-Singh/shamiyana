@@ -68,15 +68,16 @@ user ticks it (`lib/plan/changes.ts`).
 
 ## Limits and timings
 
-| Path            | Limit                                                              |
-| --------------- | ------------------------------------------------------------------ |
-| `/api/plan`     | 8 a minute per client, 8 KB body, first chunk in 15 s, all in 50 s |
-| `/api/refine`   | 20 a minute per client, 16 KB body, 30 s                           |
-| `/api/vision`   | 6 a minute per client, 4 MB image, 40 s                            |
-| All AI routes   | 2000 calls a day in total and 100 per client, by default           |
-| Route functions | 60 s on Vercel                                                     |
-| Redis           | 1 s per call, then the instance's memory limits decide             |
-| Answer cache    | 6 hours, 200 answers or 2 million characters per instance          |
+| Path            | Limit                                                                                              |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| `/api/plan`     | 8 a minute per client, 8 KB body, per model a first chunk in 15 s and the rest in 50 s             |
+| `/api/refine`   | 20 a minute per client, 16 KB body, 30 s                                                           |
+| `/api/vision`   | 6 a minute per client, 4 MB image, 40 s                                                            |
+| All AI routes   | 2000 calls a day in total and 100 per client, by default                                           |
+| Route functions | 60 s on Vercel                                                                                     |
+| Model chain     | 55 s shared by every model one request tries; a failed model hands over to the next, with no retry |
+| Redis           | 1 s per call, then the instance's memory limits decide                                             |
+| Answer cache    | 6 hours, 200 answers or 2 million characters per instance                                          |
 
 The budget, timeline and checklists never wait for the model; ideas fill in
 as they stream.

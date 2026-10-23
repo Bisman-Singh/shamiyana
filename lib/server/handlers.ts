@@ -43,7 +43,12 @@ export interface AiDeps {
   limiters: Record<LimitedRoute, RequestLimiter>;
   daily: DailyAllowance;
   now: () => Date;
+  /** Time every model attempt of one request shares, so the reply beats the route's own limit. */
+  deadlineMs: number;
 }
+
+/** Routes may run for 60 s on Vercel; the models get 55 s of it between them, so a slow chain ends in a proper error. */
+const DEADLINE_MS = 55_000;
 
 /** Request body caps. The photo route's text part is capped on its own. */
 const BODY_LIMITS = {
@@ -89,6 +94,7 @@ function createDeps(env = readEnv()): AiDeps {
     cache: new AnswerCache(),
     ...limitsFor(env),
     now: () => new Date(),
+    deadlineMs: DEADLINE_MS,
   };
 }
 
@@ -153,7 +159,7 @@ function route(
 type Checked<T> =
   { ok: true; data: T } | { ok: false; code: ErrorCode; headers?: Record<string, string> };
 
-/** Guard, parse and validate a JSON body against a schema built for this moment. */
+/** Guard, parse and validate a JSON body; the schema is built per request because it checks dates against the server's today. */
 async function readJson<T>(
   request: Request,
   options: Omit<GuardOptions, "type">,
@@ -178,7 +184,7 @@ async function admit(
   return {
     ctx: {
       chain: d.chain,
-      signal: request.signal,
+      signal: AbortSignal.any([request.signal, AbortSignal.timeout(d.deadlineMs)]),
       onFail: log.modelFailed,
       onCutOff: log.cutOff,
     },

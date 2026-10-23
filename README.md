@@ -173,13 +173,13 @@ only. The key is never sent to the browser.
 
 ### Testing
 
-- 490 unit and component tests with 100% statement, branch, function and line
+- 493 unit and component tests with 100% statement, branch, function and line
   coverage enforced in CI (`vitest.config.mts`).
 - Property-style tests for the money split, adversarial tests for every input
   schema, model output sanitizer, upload sniffer, CSV guard and share link
   decoder, and route tests against a mock Gemini model for streaming, fallback,
   caching and every error path.
-- 41 Playwright tests on desktop and a 360 px phone against the production
+- 61 Playwright tests on desktop and a 360 px phone against the production
   build, with AI responses mocked at the network layer.
 - More in [TESTING.md](TESTING.md).
 

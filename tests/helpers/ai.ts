@@ -85,6 +85,18 @@ export function generatingModel(text: string): MockLanguageModelV4 {
   });
 }
 
+/** A model that never answers, and gives up only when its call is aborted. */
+export function hangingModel(): MockLanguageModelV4 {
+  const wait = ({ abortSignal }: { abortSignal?: AbortSignal }) =>
+    new Promise<never>((_resolve, reject) => {
+      if (abortSignal?.aborted) reject(new Error("aborted"));
+      abortSignal?.addEventListener("abort", () => {
+        reject(new Error("aborted"));
+      });
+    });
+  return new MockLanguageModelV4({ doGenerate: wait, doStream: wait });
+}
+
 export function brokenGenerateModel(): MockLanguageModelV4 {
   return new MockLanguageModelV4({ doGenerate: () => Promise.reject(new Error("upstream 500")) });
 }
@@ -106,6 +118,7 @@ export function testDeps(chain: readonly ModelSpec[] | null, patch: Partial<AiDe
     },
     daily: new DailyCap(1_000),
     now: () => FIXED_NOW,
+    deadlineMs: 55_000,
     ...patch,
   };
 }
