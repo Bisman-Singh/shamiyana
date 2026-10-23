@@ -33,8 +33,11 @@ function line(fields: object): string {
 
 /** Failures and cut-off answers at error level, everything else as information. */
 export function logEvent(fields: LogFields): void {
-  if (fields.status >= 500 || fields.outcome === "cut_off") console.error(line(fields));
-  else console.info(line(fields));
+  if (fields.status >= 500 || fields.outcome === "cut_off") {
+    console.error(line(fields));
+  } else {
+    console.info(line(fields));
+  }
 }
 
 export type ConfigNotice =

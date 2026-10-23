@@ -36,10 +36,12 @@ async function readUpload(request: Request, deps: AiDeps): Promise<Upload> {
   const form = await readForm(guarded.bytes, guarded.contentType);
   const image = form?.get("image");
   const fields = form?.get("fields");
-  if (!(image instanceof File) || typeof fields !== "string")
+  if (!(image instanceof File) || typeof fields !== "string") {
     return { ok: false, code: "bad_request" };
-  if (image.size > IMAGE_MAX_BYTES || fields.length > BODY_LIMITS.visionFields)
+  }
+  if (image.size > IMAGE_MAX_BYTES || fields.length > BODY_LIMITS.visionFields) {
     return { ok: false, code: "too_large" };
+  }
   const parsedFields = parseJson(new TextEncoder().encode(fields));
   if (parsedFields === undefined) return { ok: false, code: "bad_request" };
   const bytes = new Uint8Array(await image.arrayBuffer());

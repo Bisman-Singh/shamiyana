@@ -24,9 +24,11 @@ describe("POST /api/vision", () => {
 
   function form(image: Uint8Array | string | null, extra?: string) {
     const data = new FormData();
-    if (image instanceof Uint8Array)
+    if (image instanceof Uint8Array) {
       data.set("image", new File([image as BlobPart], "x.jpg", { type: "image/png" }));
-    else if (image !== null) data.set("image", image);
+    } else if (image !== null) {
+      data.set("image", image);
+    }
     data.set("fields", extra ?? fields);
     return data;
   }
