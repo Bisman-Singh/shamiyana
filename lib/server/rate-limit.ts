@@ -1,5 +1,5 @@
 import "server-only";
-import { secondsUntil, utcDay } from "@/lib/plan/dates";
+import { utcDay } from "@/lib/plan/dates";
 import { BoundedMap } from "./bounded-map";
 
 /**
@@ -18,6 +18,11 @@ export interface RateResult {
   ok: boolean;
   /** Seconds until the next request would be allowed; 0 when allowed. */
   retryAfter: number;
+}
+
+/** Whole seconds from `now` until `at`, at least one, as a Retry-After header wants. */
+export function secondsUntil(at: number, now: number): number {
+  return Math.max(1, Math.ceil((at - now) / 1000));
 }
 
 /** A per-client request limit, held in memory or shared. */
