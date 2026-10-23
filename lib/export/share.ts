@@ -6,8 +6,10 @@ import { readAtMost } from "@/lib/shared/byte-stream";
 /**
  * Share links carry the plan in the URL fragment, deflated and base64url
  * encoded. A fragment never reaches any server, so sharing needs no account
- * and no storage. The guest list and vendor notes are left out: they are about
- * other people and stay on the device they were typed on.
+ * and no storage. The guest list and vendor notes are left out, since they are
+ * about other people and stay on the device they were typed on, and so are the
+ * event notes for the AI and the AI ideas, which the copy makes again. Old
+ * links still carry empty AI fields, so the format keeps them.
  */
 
 export const SHARE_KEY = "plan";

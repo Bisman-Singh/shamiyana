@@ -23,4 +23,3 @@ next-env.d.ts
 .DS_Store
 *.log
 *.tsbuildinfo
-/video-build

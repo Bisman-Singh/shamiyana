@@ -26,8 +26,11 @@ npm run eval            # live prompt checks, needs GOOGLE_GENERATIVE_AI_API_KEY
 - Coverage is 100% for statements, branches, functions and lines across `app`,
   `components`, `lib`, `proxy.ts` and `next.config.ts`. Branches that could not
   happen were removed from the code rather than excluded from coverage.
-- One test file per module or panel, in folders that mirror the source, none
-  over 300 lines.
+- Test folders are named after the source folders. Most `lib` modules have a
+  test file of the same name; the rest are tables, types and small helpers
+  covered by the tests of the code that uses them. A panel's test renders it
+  through the workspace, so it also covers the parts the panel is split into.
+  No test file is over 300 lines, and lint keeps it that way.
 - WebKit draws each `<select>` with an internal style attribute and reports it
   as a `style-src-attr` violation, though the control looks the same. The
   WebKit run ignores that one directive; Chromium checks it strictly, and the

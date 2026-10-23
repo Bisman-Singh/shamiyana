@@ -29,8 +29,13 @@ and the Playwright tests. A change is ready when it passes.
   lines; lint enforces all three.
 - One component or hook per file. Planner parts sit in one folder per tab, and
   anything outside a file's own folder is imported through `@/`.
-- Every string the user sees is in `lib/i18n/en.json` and `lib/i18n/hi.json`.
-  A test fails if the two files have different keys.
+- Every string the user sees is in `lib/i18n/en.json` and `lib/i18n/hi.json`,
+  and a test fails if the two files have different keys. The exceptions are
+  deliberate: the policy pages (`lib/i18n/legal.ts`), the fixed reply to a
+  screened chat message (`lib/ai/guard.ts`), the Maps search phrases, which
+  stay in English because that finds the most listings
+  (`lib/plan/vendor-search.ts`), and the crash page, which renders without the
+  language providers (`app/global-error.tsx`).
 - No inline `style` attributes, since the CSP has no `unsafe-inline`, and no
   `dangerouslySetInnerHTML`, which lint forbids.
 - Anything sent to the model goes through `factsOf` and `fence`, so the event
@@ -41,7 +46,7 @@ and the Playwright tests. A change is ready when it passes.
 
 ## Tests
 
-- Unit and component tests live in `tests/`, in folders that mirror the source.
+- Unit and component tests live in `tests/`, in folders named after the source.
   Component tests run axe with the WCAG 2.2 AA, best-practice and experimental
   rules.
 - Browser tests live in `e2e/` and run on a desktop and a 360 px phone in
