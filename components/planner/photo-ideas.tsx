@@ -84,6 +84,16 @@ function VisionResultView({
   );
 }
 
+/** The chosen photo, described by what the AI saw once it has looked. */
+function PhotoPreview({ state }: Readonly<{ state: State }>) {
+  const { dict } = useLocale();
+  const p = dict.photo;
+  if (!("photo" in state) || !state.photo) return null;
+  const alt =
+    state.phase === "done" ? `${p.kinds[state.result.kind]}: ${state.result.mood}` : p.preview;
+  return <img src={state.photo.url} alt={alt} className="photo-preview" width={320} height={240} />;
+}
+
 export function PhotoIdeas({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict, locale } = useLocale();
   const p = dict.photo;
@@ -161,9 +171,7 @@ export function PhotoIdeas({ view, update }: Readonly<{ view: PlanView; update: 
           </button>
         ) : null}
       </div>
-      {photo ? (
-        <img src={photo.url} alt={p.preview} className="photo-preview" width={320} height={240} />
-      ) : null}
+      <PhotoPreview state={state} />
       {state.phase === "error" ? <Notice tone="error">{state.message}</Notice> : null}
       {state.phase === "done" ? (
         <VisionResultView

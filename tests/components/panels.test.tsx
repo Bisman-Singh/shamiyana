@@ -63,6 +63,15 @@ describe("overview", () => {
     await expectAccessible(container);
   });
 
+  it("names the browser tab after the open plan and gives the old title back on close", () => {
+    document.title = "Shamiyana";
+    const record = ready();
+    const { unmount } = renderWorkspace(record);
+    expect(document.title).toBe(`${record.brief.title} · Shamiyana`);
+    unmount();
+    expect(document.title).toBe("Shamiyana");
+  });
+
   it("says when everything is done, today, or past", () => {
     const { unmount } = renderWorkspace(recordFor({ ...birthdayBrief, date: "2026-10-21" }));
     expect(screen.getByText("It's today")).toBeInTheDocument();

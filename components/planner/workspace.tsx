@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import { downloadText } from "@/lib/client/files";
 import { fileName } from "@/lib/export/links";
 import type { Dictionary } from "@/lib/i18n/en";
@@ -165,6 +165,17 @@ function countdown(locale: Locale, w: Dictionary["workspace"], days: number): st
   return days === 0 ? w.isToday : w.isPast;
 }
 
+/** Names the browser tab after the open plan, and gives the page its own title back on close. */
+function usePageTitle(title: string) {
+  useEffect(() => {
+    const before = document.title;
+    document.title = title;
+    return () => {
+      document.title = before;
+    };
+  }, [title]);
+}
+
 /** One tab per panel; the AI status sits inside Ideas while that tab is open. */
 function planTabs({
   w,
@@ -239,6 +250,7 @@ export function Workspace({
   );
 
   const tabs = planTabs({ w, view, ideas, status: tab === "ideas" ? status : null, update });
+  usePageTitle(`${record.brief.title} · ${dict.brand.name}`);
 
   return (
     <article className="workspace" aria-labelledby={titleId}>

@@ -322,6 +322,7 @@ describe("photo ideas", () => {
     );
     await userEvent.click(p.getByRole("button", { name: "Get ideas from this photo" }));
     expect(await p.findByText("Open lawn at dusk")).toBeInTheDocument();
+    expect(p.getByRole("img", { name: "Venue: Open lawn at dusk" })).toBeInTheDocument();
     const sent = fetch.bodies["/api/vision"]?.[0] as FormData;
     expect((sent.get("image") as File).type).toBe("image/jpeg");
     expect(JSON.parse(sent.get("fields") as string)).toMatchObject({
