@@ -20,8 +20,7 @@ import { guestSchema, type Guest } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
-import { focusAfterRender } from "../ui/focus";
-import { focusOpenPanel } from "../ui/tabs";
+import { focusAfterRender, focusOpenPanel } from "../ui/focus";
 import type { PanelProps, Update } from "./types";
 
 interface AddGuestProps {

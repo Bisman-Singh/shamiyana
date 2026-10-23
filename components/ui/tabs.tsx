@@ -21,16 +21,6 @@ export function nextTabIndex(key: string, index: number, count: number): number 
   return move ? move(index, count) : null;
 }
 
-/**
- * For when the focused control goes away, such as a row put back by Undo or a
- * button whose job is done: focus moves to the open panel, not the page.
- */
-export function focusOpenPanel(): void {
-  requestAnimationFrame(() => {
-    document.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden])')?.focus();
-  });
-}
-
 interface TabsProps<T extends string> {
   label: string;
   tabs: readonly Tab<T>[];

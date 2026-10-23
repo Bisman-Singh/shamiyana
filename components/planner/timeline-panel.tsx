@@ -15,8 +15,7 @@ import { PHASES, type TimelineItem } from "@/lib/plan/timeline";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
-import { focusAfterRender } from "../ui/focus";
-import { focusOpenPanel } from "../ui/tabs";
+import { focusAfterRender, focusOpenPanel } from "../ui/focus";
 import { areaName, taskTitle } from "./task-title";
 import type { PanelProps, PlanView, Update } from "./types";
 

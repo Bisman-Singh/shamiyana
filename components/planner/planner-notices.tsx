@@ -9,15 +9,9 @@ import type { PlanRecord } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
+import { focusHeading } from "../ui/focus";
 import { UndoButton } from "../ui/undo-button";
 import type { Incoming } from "./use-incoming-share";
-
-/** A dismissed notice takes the focus with it, so focus goes to the page's heading. */
-function focusHeading(): void {
-  requestAnimationFrame(() => {
-    document.querySelector<HTMLElement>("h1")?.focus();
-  });
-}
 
 interface StoreNoticeProps {
   notice: StorageIssue;

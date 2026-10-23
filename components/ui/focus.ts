@@ -21,3 +21,20 @@ export function focusAfterRender(id: string): void {
     document.getElementById(id)?.focus();
   });
 }
+
+/**
+ * For when the focused control goes away, such as a row put back by Undo or a
+ * button whose job is done: focus moves to the open panel, not the page.
+ */
+export function focusOpenPanel(): void {
+  requestAnimationFrame(() => {
+    document.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden])')?.focus();
+  });
+}
+
+/** A dismissed notice takes the focus with it, so focus goes to the page's heading. */
+export function focusHeading(): void {
+  requestAnimationFrame(() => {
+    document.querySelector<HTMLElement>("h1")?.focus();
+  });
+}

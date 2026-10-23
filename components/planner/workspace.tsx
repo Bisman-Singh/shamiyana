@@ -16,10 +16,10 @@ import { buildTimeline } from "@/lib/plan/timeline";
 import { buildVendors } from "@/lib/plan/vendors";
 import { useLocale, useMoney } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
-import { useFocusOnMount } from "../ui/focus";
+import { focusOpenPanel, useFocusOnMount } from "../ui/focus";
 import { Notice } from "../ui/notice";
 import { UndoButton } from "../ui/undo-button";
-import { focusOpenPanel, Tabs, type Tab } from "../ui/tabs";
+import { Tabs, type Tab } from "../ui/tabs";
 import { AiStatus, useStatusAnnouncements } from "./ai-status";
 import { BudgetPanel } from "./budget-panel";
 import { GuestsPanel } from "./guests-panel";
@@ -117,10 +117,14 @@ interface UndoNoticeProps {
   onUndo: () => void;
 }
 
-/** Shown after a removal; its button takes focus, since the removed row took the focus with it. */
+/**
+ * Shown after a removal; its button takes focus, since the removed row took
+ * the focus with it. If the offer ends while Undo has focus, for example when
+ * AI ideas land, focus moves to the open panel rather than the page.
+ */
 function UndoNotice({ message, onUndo }: Readonly<UndoNoticeProps>) {
   return (
-    <Notice tone="success" action={<UndoButton onUndo={onUndo} />}>
+    <Notice tone="success" action={<UndoButton onUndo={onUndo} onVanish={focusOpenPanel} />}>
       {message}
     </Notice>
   );

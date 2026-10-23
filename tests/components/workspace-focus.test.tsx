@@ -10,7 +10,7 @@ import {
   sampleEnrichment,
   weddingBrief,
 } from "../helpers/fixtures";
-import { jsonError, mockFetch } from "../helpers/fetch";
+import { jsonError, mockFetch, streamed } from "../helpers/fetch";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";
 
 /** The announcer's text once its frame-delayed update has landed. */
@@ -51,6 +51,29 @@ describe("workspace focus and announcements", () => {
       panel().getByRole("checkbox", { name: /Done: Form the organising committee/ }),
     );
     expect(screen.queryByRole("button", { name: "Undo" })).toBeNull();
+  });
+
+  it("moves focus from Undo to the open panel when AI ideas land and end the offer", async () => {
+    let release: () => void = () => undefined;
+    mockFetch({
+      "/api/plan": () =>
+        new Promise<Response>((resolve) => {
+          release = () => {
+            resolve(streamed([JSON.stringify(sampleEnrichment)]));
+          };
+        }),
+    });
+    renderWorkspace(recordFor(communityBrief));
+    await openTab("Timeline");
+    await userEvent.click(
+      panel().getByRole("button", { name: "Remove Fix the budget and the sponsorship target" }),
+    );
+    expect(screen.getByRole("button", { name: "Undo" })).toHaveFocus();
+    release();
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: "Undo" })).toBeNull();
+      expect(screen.getByRole("tabpanel")).toHaveFocus();
+    });
   });
 
   it("sends focus to the wrong field, then announces and refocuses after an add", async () => {
