@@ -12,7 +12,8 @@ import {
   type EventType,
 } from "@/lib/plan/constants";
 import { addDays } from "@/lib/plan/dates";
-import { readAmount, type Draft, type DraftField } from "@/lib/plan/draft";
+import { readAmount } from "@/lib/plan/amounts";
+import type { Draft, DraftField } from "@/lib/plan/draft";
 import { useLocale } from "../locale-provider";
 import { CheckGroup, RadioGroup, TextArea, TextField, type Option } from "../ui/field";
 

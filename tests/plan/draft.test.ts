@@ -2,7 +2,6 @@ import {
   diwaliMelaDate,
   emptyDraft,
   parseDraft,
-  readAmount,
   sampleDraft,
   winterWeddingDate,
 } from "@/lib/plan/draft";
@@ -73,14 +72,6 @@ describe("draft", () => {
       }
     }
     expect(getDictionary("hi").form.sampleCities.wedding).toBe("जयपुर");
-  });
-
-  it("reads amounts typed the Indian way", () => {
-    expect(readAmount("₹18,00,000")).toBe(1_800_000);
-    expect(readAmount("18 00 000")).toBe(1_800_000);
-    expect(readAmount("")).toBeNull();
-    expect(readAmount("abc")).toBeNull();
-    expect(readAmount("1234567890123")).toBeNull();
   });
 
   it("dates every example in the future", () => {

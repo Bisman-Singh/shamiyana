@@ -1,132 +1,12 @@
 "use client";
 
-import { langOf } from "@/lib/i18n/lang";
-import { mapsSearchUrl } from "@/lib/export/links";
 import { checklistRows } from "@/lib/export/sheets";
 import { downloadCsv } from "@/lib/client/files";
 import { format } from "@/lib/i18n/format";
-import { LIMITS, VENDOR_STATUSES } from "@/lib/plan/constants";
-import { readAmount } from "@/lib/plan/draft";
-import { setVendor } from "@/lib/plan/record";
-import type { VendorProgress } from "@/lib/plan/schema";
-import { vendorTally, type VendorCard } from "@/lib/plan/vendors";
-import { useLocale, useMoney } from "../locale-provider";
-import { SelectField, TextArea, TextField } from "../ui/field";
-import type { PanelProps, Update } from "./types";
-
-function rupees(text: string): number {
-  return Math.min(LIMITS.budgetMax, readAmount(text) ?? 0);
-}
-
-interface QuestionsProps {
-  title: string;
-  vendor: string;
-  items: readonly string[];
-}
-
-/** A list of questions; its heading names the vendor too, since every card repeats it. */
-function Questions({ title, vendor, items }: Readonly<QuestionsProps>) {
-  const { locale } = useLocale();
-  if (items.length === 0) return null;
-  return (
-    <>
-      <h3 className="subhead">
-        {title}
-        <span className="visually-hidden">, {vendor}</span>
-      </h3>
-      <ul className="plain-list">
-        {items.map((q) => (
-          <li key={q} lang={langOf(q, locale)}>
-            {q}
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-}
-
-interface CardProps {
-  card: VendorCard;
-  city: string;
-  update: Update;
-}
-
-function Card({ card, city, update }: Readonly<CardProps>) {
-  const { dict } = useLocale();
-  const money = useMoney();
-  const v = dict.vendors;
-  const name = dict.categories[card.category];
-  const id = `vendor-${card.category}`;
-  const save = (patch: Partial<VendorProgress>) => {
-    update((r, now) => setVendor(r, card.category, { ...card.progress, ...patch }, now));
-  };
-  const questions = v.questions[card.category];
-
-  return (
-    <li className="vendor">
-      <details>
-        <summary>
-          <span className="vendor-name">{name}</span>
-          <span className="tag">{v.statuses[card.progress.status]}</span>
-          <span className="hint">{format(v.planned, { amount: money(card.planned) })}</span>
-        </summary>
-        <div className="vendor-body">
-          <div className="form-row">
-            <SelectField
-              id={`${id}-status`}
-              label={format(v.statusLabel, { category: name })}
-              value={card.progress.status}
-              options={VENDOR_STATUSES.map((s) => ({ value: s, label: v.statuses[s] }))}
-              onValueChange={(status) => {
-                save({ status });
-              }}
-            />
-            <TextField
-              id={`${id}-quote`}
-              label={v.agreed}
-              inputMode="numeric"
-              value={card.progress.quote === 0 ? "" : String(card.progress.quote)}
-              onChange={(e) => {
-                save({ quote: rupees(e.target.value) });
-              }}
-            />
-            <TextField
-              id={`${id}-paid`}
-              label={v.paid}
-              inputMode="numeric"
-              value={card.progress.paid === 0 ? "" : String(card.progress.paid)}
-              onChange={(e) => {
-                save({ paid: rupees(e.target.value) });
-              }}
-            />
-          </div>
-          <TextArea
-            id={`${id}-note`}
-            label={v.note}
-            hint={v.noteHint}
-            rows={2}
-            maxLength={LIMITS.vendorNoteMax}
-            value={card.progress.note}
-            onChange={(e) => {
-              save({ note: e.target.value.slice(0, LIMITS.vendorNoteMax) });
-            }}
-          />
-          <Questions title={v.ask} vendor={name} items={questions} />
-          <Questions title={v.aiAsk} vendor={name} items={card.aiQuestions} />
-          <a
-            className="btn btn-small btn-quiet"
-            href={mapsSearchUrl(card.search, city)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {format(v.find, { phrase: card.search, city })}{" "}
-            <span className="visually-hidden">{dict.common.opensNewTab}</span>
-          </a>
-        </div>
-      </details>
-    </li>
-  );
-}
+import { vendorTally } from "@/lib/plan/vendors";
+import { useLocale } from "../locale-provider";
+import type { PanelProps } from "./types";
+import { VendorEntry } from "./vendor-entry";
 
 /** One card per vendor with status, price, payments, notes and questions to ask. */
 export function VendorsPanel({ view, update }: Readonly<PanelProps>) {
@@ -162,7 +42,7 @@ export function VendorsPanel({ view, update }: Readonly<PanelProps>) {
       </details>
       <ul className="vendor-list">
         {view.vendors.map((card) => (
-          <Card key={card.category} card={card} city={record.brief.city} update={update} />
+          <VendorEntry key={card.category} card={card} city={record.brief.city} update={update} />
         ))}
       </ul>
     </div>

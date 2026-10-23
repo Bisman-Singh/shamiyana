@@ -384,6 +384,7 @@
     "planned": "Planned {amount}",
     "agreed": "Agreed price (₹)",
     "paid": "Paid so far (₹)",
+    "amountError": "Use digits only, up to ₹50 crore.",
     "note": "Notes",
     "noteHint": "Kept on this device only.",
     "steps": "Before you book",

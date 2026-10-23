@@ -1,16 +1,17 @@
-import type {
-  CommunityKind,
-  EventType,
-  FoodPref,
-  Honoree,
-  Style,
-  WeddingFunction,
-} from "./constants";
+import { oneOf } from "@/lib/shared/untrusted";
+import { readAmount } from "./amounts";
 import { TASKS } from "./catalog";
-import { LIMITS } from "./constants";
+import {
+  LIMITS,
+  type CommunityKind,
+  type EventType,
+  type FoodPref,
+  type Honoree,
+  type Style,
+  type WeddingFunction,
+} from "./constants";
 import { addDays, daysBetween, isIsoDate, saturdayOnOrBefore } from "./dates";
 import { briefSchema, type Brief } from "./schema";
-import { oneOf } from "@/lib/shared/untrusted";
 
 /**
  * The brief form's working state. Numbers stay as typed text until submit,
@@ -165,13 +166,6 @@ export function sampleDraft(type: EventType, today: string, text: SampleText): D
     },
   };
   return samples[type];
-}
-
-/** Digits from typed text: "₹18,00,000" and "18 00 000" both read as 1800000. */
-export function readAmount(text: string): number | null {
-  const digits = text.replace(/[^\d]/g, "");
-  if (digits === "" || digits.length > 12) return null;
-  return Number(digits);
 }
 
 function dateError(date: string, today: string): DraftError | null {
