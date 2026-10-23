@@ -54,7 +54,7 @@ interface PlansBarProps {
   onSelect: (id: string) => void;
   onNew: () => void;
   onRestore: (event: ChangeEvent<HTMLInputElement>) => void;
-  onDelete: (() => void) | null;
+  onDelete?: () => void;
 }
 
 /** Pick, start, restore or delete a saved plan: a group of controls, not a navigation landmark, since it holds no links. */

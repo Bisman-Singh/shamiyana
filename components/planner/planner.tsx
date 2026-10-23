@@ -1,250 +1,15 @@
 "use client";
 
-import { useState, useSyncExternalStore, type ChangeEvent } from "react";
-import { readTextFile } from "@/lib/client/files";
-import {
-  activePlan,
-  canAddPlan,
-  parseBackup,
-  putPlan,
-  removePlan,
-  savePlan,
-  selectPlan,
-  sharedStore,
-  type StorageIssue,
-  type PlanStore,
-} from "@/lib/client/plan-store";
-import { recordFromShare, type SharedPlan } from "@/lib/export/share";
-import { format } from "@/lib/i18n/format";
-import { LIMITS } from "@/lib/plan/constants";
-import { draftFromBrief } from "@/lib/plan/draft";
-import { createRecord, newId, updateBrief } from "@/lib/plan/record";
-import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { useLocale } from "../locale-provider";
-import { useAnnounce } from "../ui/announcer";
-import { BriefForm } from "./brief-form";
-import { MessageNotice, SharedImport, StoreNotice, type Message } from "./planner-notices";
+import { useSyncExternalStore } from "react";
+import { activePlan, canAddPlan, sharedStore, type PlanStore } from "@/lib/client/plan-store";
+import { PlanOrForm } from "./plan-or-form";
+import { PlannerNotices } from "./planner-notices";
 import { PlannerSkeleton } from "./planner-skeleton";
 import { PlansBar } from "./plans-bar";
-import { useIncomingShare, type Incoming } from "./use-incoming-share";
+import { useIncomingShare } from "./use-incoming-share";
+import { usePlanActions } from "./use-plan-actions";
+import { usePlannerView } from "./use-planner-view";
 import { useToday } from "./use-today";
-import { Workspace } from "@/components/planner/workspace/workspace";
-
-const BACKUP_MAX_BYTES = 1_000_000;
-
-type Mode = "plan" | "new" | "edit";
-
-/**
- * Every store change reads the latest data at the moment it is made, never a
- * value captured by an earlier render, so a late AI answer and a user edit
- * can't overwrite each other.
- */
-function useActions(
-  store: PlanStore,
-  go: (m: Mode) => void,
-  setMessage: (m: Message) => void,
-  stayPut: () => void,
-) {
-  const { dict } = useLocale();
-  const latest = () => store.getSnapshot().data;
-  const now = () => new Date().toISOString();
-  return {
-    save: (record: PlanRecord) => {
-      store.commit(savePlan(latest(), record));
-    },
-    findPlan: (id: string) => latest().plans.find((p) => p.id === id) ?? null,
-    create: (brief: Brief) => {
-      store.commit(putPlan(latest(), createRecord(brief, newId(), now())));
-      go("plan");
-    },
-    select: (id: string) => {
-      store.commit(selectPlan(latest(), id));
-      go("plan");
-    },
-    remove: (record: PlanRecord) => {
-      store.commit(removePlan(latest(), record.id));
-      stayPut();
-      setMessage({
-        tone: "success",
-        text: format(dict.plans.deleted, { title: record.brief.title }),
-        undo: record,
-      });
-    },
-    restoreDeleted: (record: PlanRecord) => {
-      store.commit(putPlan(latest(), record));
-      go("plan");
-    },
-    addShared: (plan: SharedPlan) => {
-      store.commit(putPlan(latest(), recordFromShare(plan, newId(), now())));
-      go("plan");
-    },
-    restore: async (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      event.target.value = "";
-      if (!file) return;
-      const result = parseBackup(await readTextFile(file, BACKUP_MAX_BYTES), latest());
-      if (!result.ok) {
-        const text =
-          result.reason === "full"
-            ? format(dict.plans.limit, { n: LIMITS.plansMax })
-            : dict.downloads.badFile;
-        setMessage({ tone: "error", text });
-        return;
-      }
-      store.commit(putPlan(latest(), result.record));
-      go("plan");
-      setMessage({ tone: "success", text: dict.downloads.restored });
-    },
-  };
-}
-
-interface PlannerNoticesProps {
-  store: PlanStore;
-  notice: StorageIssue | null;
-  incoming: Incoming;
-  full: boolean;
-  message: Message | null;
-  onAdd: (plan: SharedPlan) => void;
-  onDismissShare: () => void;
-  onUndo: (record: PlanRecord) => void;
-}
-
-/** Storage problems, an incoming share link and the last action's message, in that order. */
-function PlannerNotices({
-  store,
-  notice,
-  incoming,
-  full,
-  message,
-  onAdd,
-  onDismissShare,
-  onUndo,
-}: Readonly<PlannerNoticesProps>) {
-  return (
-    <>
-      {notice ? (
-        <StoreNotice
-          notice={notice}
-          onDismiss={() => {
-            store.dismissNotice();
-          }}
-        />
-      ) : null}
-      <SharedImport incoming={incoming} full={full} onAdd={onAdd} onDismiss={onDismissShare} />
-      {message ? (
-        <MessageNotice key={message.undo?.id ?? message.text} message={message} onUndo={onUndo} />
-      ) : null}
-    </>
-  );
-}
-
-interface PlanFormProps {
-  active: PlanRecord | null;
-  today: string;
-  focusOnOpen: boolean;
-  onCreate: (brief: Brief) => void;
-  onSave: (record: PlanRecord) => void;
-  onCancel: (() => void) | null;
-}
-
-/** The brief form, new or editing the open plan. */
-function PlanForm({
-  active,
-  today,
-  focusOnOpen,
-  onCreate,
-  onSave,
-  onCancel,
-}: Readonly<PlanFormProps>) {
-  return (
-    <BriefForm
-      key={active ? active.id : "new"}
-      today={today}
-      editing={active !== null}
-      focusOnOpen={focusOnOpen}
-      {...(active ? { initial: draftFromBrief(active.brief) } : {})}
-      onSubmit={(brief) => {
-        if (active) onSave(updateBrief(active, brief, new Date().toISOString()));
-        else onCreate(brief);
-      }}
-      {...(onCancel ? { onCancel } : {})}
-    />
-  );
-}
-
-/**
- * Which view is open and the last action's message. Opening a view from an
- * action moves focus to its heading, as a page change would; the first page
- * load doesn't.
- */
-function useView() {
-  const announce = useAnnounce();
-  const [view, setView] = useState<{ mode: Mode; focus: boolean }>({ mode: "plan", focus: false });
-  const [message, setMessage] = useState<Message | null>(null);
-  return {
-    view,
-    message,
-    go: (mode: Mode) => {
-      setView({ mode, focus: true });
-      setMessage(null);
-    },
-    stayPut: () => {
-      setView((v) => ({ ...v, focus: false }));
-    },
-    show: (next: Message) => {
-      setMessage(next);
-      announce(next.text);
-    },
-  };
-}
-
-interface PlanOrFormProps {
-  active: PlanRecord | null;
-  mode: Mode;
-  today: string;
-  focus: boolean;
-  actions: ReturnType<typeof useActions>;
-  go: (mode: Mode) => void;
-}
-
-/** The open plan, or the form that makes a new one or edits the open one. */
-function PlanOrForm({ active, mode, today, focus, actions, go }: Readonly<PlanOrFormProps>) {
-  if (mode === "plan" && active) {
-    return (
-      <Workspace
-        key={active.id}
-        record={active}
-        today={today}
-        onSave={actions.save}
-        findPlan={actions.findPlan}
-        focusOnOpen={focus}
-        onEdit={() => {
-          go("edit");
-        }}
-      />
-    );
-  }
-  const editing = mode === "edit" && active !== null;
-  return (
-    <PlanForm
-      active={editing ? active : null}
-      today={today}
-      focusOnOpen={focus}
-      onCreate={actions.create}
-      onSave={(record) => {
-        actions.save(record);
-        go("plan");
-      }}
-      onCancel={
-        active
-          ? () => {
-              go("plan");
-            }
-          : null
-      }
-    />
-  );
-}
 
 interface PlannerProps {
   store?: PlanStore;
@@ -260,8 +25,8 @@ export function Planner({ store }: Readonly<PlannerProps>) {
   );
   const today = useToday();
   const [incoming, setIncoming] = useIncomingShare();
-  const { view, go, stayPut, message, show } = useView();
-  const actions = useActions(plans, go, show, stayPut);
+  const { view, go, stayPut, message, show } = usePlannerView();
+  const actions = usePlanActions(plans, go, show, stayPut);
   const { mode } = view;
 
   if (!snapshot.ready) return <PlannerSkeleton />;
@@ -294,13 +59,13 @@ export function Planner({ store }: Readonly<PlannerProps>) {
         onNew={() => {
           go("new");
         }}
-        onRestore={(e) => void actions.restore(e)}
+        onRestore={(event) => void actions.restore(event)}
         onDelete={
           active && mode === "plan"
             ? () => {
                 actions.remove(active);
               }
-            : null
+            : undefined
         }
       />
       <PlanOrForm
