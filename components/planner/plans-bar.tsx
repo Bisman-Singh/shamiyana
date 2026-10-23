@@ -57,7 +57,7 @@ interface PlansBarProps {
   onDelete: (() => void) | null;
 }
 
-/** Pick, start, restore or delete a saved plan. */
+/** Pick, start, restore or delete a saved plan: a group of controls, not a navigation landmark, since it holds no links. */
 export function PlansBar({
   plans,
   active,
@@ -70,7 +70,7 @@ export function PlansBar({
   const { dict } = useLocale();
   const limitId = useId();
   return (
-    <nav className="plans-bar" aria-label={dict.plans.heading}>
+    <div role="group" className="plans-bar" aria-label={dict.plans.heading}>
       {plans[0] ? (
         <PlanPicker
           key={active?.id ?? "none"}
@@ -107,6 +107,6 @@ export function PlansBar({
           {dict.plans.delete}
         </button>
       ) : null}
-    </nav>
+    </div>
   );
 }

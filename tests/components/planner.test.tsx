@@ -112,6 +112,8 @@ describe("Planner", () => {
     await userEvent.click(screen.getByRole("button", { name: "New plan" }));
     await makeSamplePlan(/80th birthday/);
     const picker = await screen.findByLabelText("Saved plans");
+    expect(screen.getByRole("group", { name: "Your plans" })).toContainElement(picker);
+    expect(screen.queryByRole("navigation", { name: "Your plans" })).toBeNull();
     await userEvent.selectOptions(picker, "Winter wedding in Jaipur");
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Dadi turns 80");
     await userEvent.click(screen.getByRole("button", { name: "Open" }));
