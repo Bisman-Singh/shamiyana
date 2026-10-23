@@ -1,7 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { activePlan, canAddPlan, sharedStore, type PlanStore } from "@/lib/client/plan-store";
+import { sharedStore, type PlanStore } from "@/lib/client/plan-store";
+import { activePlan, canAddPlan } from "@/lib/plan/plans";
 import { PlanOrForm } from "./plan-or-form";
 import { PlannerNotices } from "./planner-notices";
 import { PlannerSkeleton } from "./planner-skeleton";

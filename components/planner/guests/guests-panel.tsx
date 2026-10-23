@@ -1,6 +1,6 @@
 "use client";
 
-import { downloadCsv } from "@/lib/client/files";
+import { downloadCsv } from "@/lib/client/download";
 import { guestRows } from "@/lib/export/sheets";
 import { LIMITS } from "@/lib/plan/constants";
 import { useLocale } from "@/components/locale-provider";

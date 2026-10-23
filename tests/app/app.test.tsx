@@ -23,7 +23,6 @@ const { default: ErrorPage } = await import("@/app/error");
 const privacy = await import("@/app/privacy/page");
 const terms = await import("@/app/terms/page");
 const { LanguageSwitch } = await import("@/components/language-switch");
-const { linkify } = await import("@/components/legal/legal-page");
 const { renderIn, expectAccessible } = await import("../helpers/render");
 
 beforeEach(() => {
@@ -100,16 +99,6 @@ describe("pages", () => {
     cookieStore.set("lang", "hi");
     renderIn(await page.default(), "hi");
     expect(screen.getByRole("heading", { level: 1 }).textContent).toMatch(/[ऀ-ॿ]/);
-  });
-});
-
-describe("policy links", () => {
-  it("turns bare https links into link runs", () => {
-    expect(linkify("See https://ai.google.dev/gemini-api/terms for more")).toEqual([
-      { at: 0, text: "See ", link: false },
-      { at: 4, text: "https://ai.google.dev/gemini-api/terms", link: true },
-      { at: 42, text: " for more", link: false },
-    ]);
   });
 });
 

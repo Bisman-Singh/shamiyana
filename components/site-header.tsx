@@ -1,7 +1,21 @@
 import Link from "next/link";
 import type { Dictionary } from "@/lib/i18n/en";
-import { BrandMark, ScallopRule } from "./brand-mark";
+import { BrandMark } from "./brand-mark";
 import { LanguageSwitch } from "./language-switch";
+
+/** A thin row of scallops, the edge of a tent, used under the header. */
+function ScallopRule() {
+  return (
+    <svg className="scallop-rule" width="100%" height="10" aria-hidden="true" focusable="false">
+      <defs>
+        <pattern id="scallop" width="20" height="10" patternUnits="userSpaceOnUse">
+          <path d="M0 1 q5 8 10 0 q5 8 10 0" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="10" fill="url(#scallop)" />
+    </svg>
+  );
+}
 
 interface SiteHeaderProps {
   dict: Dictionary;
@@ -23,31 +37,5 @@ export function SiteHeader({ dict }: Readonly<SiteHeaderProps>) {
       </div>
       <ScallopRule />
     </header>
-  );
-}
-
-interface SiteFooterProps {
-  dict: Dictionary;
-}
-
-/** The AI and storage notes, and links to the policies. */
-export function SiteFooter({ dict }: Readonly<SiteFooterProps>) {
-  return (
-    <footer className="site-footer">
-      <div className="wrap footer-grid">
-        <p>{dict.footer.ai}</p>
-        <p>{dict.footer.local}</p>
-        <nav aria-label={dict.footer.legal}>
-          <ul className="inline-list">
-            <li>
-              <Link href="/privacy">{dict.footer.privacy}</Link>
-            </li>
-            <li>
-              <Link href="/terms">{dict.footer.terms}</Link>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </footer>
   );
 }

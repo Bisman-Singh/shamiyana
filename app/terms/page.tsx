@@ -1,6 +1,12 @@
-import { legalRoute } from "@/components/legal/legal-route";
+import type { Metadata } from "next";
+import { LegalArticle } from "@/components/legal/legal-article";
+import { policyFor } from "@/lib/server/policy";
 
-const { generateMetadata, Page } = legalRoute("terms");
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await policyFor("terms")).title };
+}
 
-export { generateMetadata };
-export default Page;
+/** The terms policy, in the language of the request. */
+export default async function TermsPage() {
+  return <LegalArticle page={await policyFor("terms")} />;
+}

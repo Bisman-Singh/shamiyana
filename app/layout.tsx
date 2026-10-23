@@ -3,7 +3,8 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { requestLocale } from "@/lib/server/locale";
 import { LocaleProvider } from "@/components/locale-provider";
-import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { AnnouncerProvider } from "@/components/ui/announcer";
 
 /** The site title in the visitor's language, with each page's title in front. */

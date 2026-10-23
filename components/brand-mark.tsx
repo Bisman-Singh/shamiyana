@@ -32,17 +32,3 @@ export function BrandMark() {
     </svg>
   );
 }
-
-/** A thin row of scallops, the edge of a tent, used under the header. */
-export function ScallopRule() {
-  return (
-    <svg className="scallop-rule" width="100%" height="10" aria-hidden="true" focusable="false">
-      <defs>
-        <pattern id="scallop" width="20" height="10" patternUnits="userSpaceOnUse">
-          <path d="M0 1 q5 8 10 0 q5 8 10 0" fill="none" stroke="currentColor" strokeWidth="1.5" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="10" fill="url(#scallop)" />
-    </svg>
-  );
-}

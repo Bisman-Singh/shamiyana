@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { downloadText } from "@/lib/client/files";
+import { downloadText } from "@/lib/client/download";
 import { buildIcs } from "@/lib/export/ics";
 import { fileName } from "@/lib/export/links";
 import { format, formatDate, plural } from "@/lib/i18n/format";

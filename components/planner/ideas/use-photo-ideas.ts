@@ -3,7 +3,7 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import type { VisionResult } from "@/lib/ai/vision-result";
 import { requestVision, type ApiError } from "@/lib/client/api";
-import { prepareImage, UnsupportedImageError } from "@/lib/client/files";
+import { prepareImage, UnsupportedImageError } from "@/lib/client/image";
 import { factsOf } from "@/lib/plan/schema";
 import { useLocale } from "@/components/locale-provider";
 import type { PlanView } from "@/components/planner/types";

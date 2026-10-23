@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { ACCEPTED_IMAGES } from "@/lib/client/files";
+import { ACCEPTED_IMAGES } from "@/lib/client/image";
 import type { Dictionary } from "@/lib/i18n/en";
 import { format } from "@/lib/i18n/format";
 import { useLocale } from "@/components/locale-provider";

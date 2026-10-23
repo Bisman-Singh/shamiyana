@@ -1,6 +1,6 @@
 "use client";
 
-import { downloadCsv } from "@/lib/client/files";
+import { downloadCsv } from "@/lib/client/download";
 import { budgetRows } from "@/lib/export/sheets";
 import { format } from "@/lib/i18n/format";
 import { previewShifts } from "@/lib/plan/budget";
