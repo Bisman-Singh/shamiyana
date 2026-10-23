@@ -1,0 +1,42 @@
+/* print */
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .site-header svg.scallop-rule,
+  .lang-switch,
+  .plans-bar,
+  .plan-actions,
+  .tablist,
+  .ai-status,
+  .add-task,
+  .add-guest,
+  .refine,
+  .photo-ideas,
+  .stepper,
+  .task-actions,
+  .btn,
+  .skip-link,
+  .site-footer nav {
+    display: none !important;
+  }
+
+  [role="tabpanel"][hidden] {
+    display: block !important;
+  }
+
+  .panel {
+    break-before: page;
+  }
+
+  details > *:not(summary) {
+    display: block;
+  }
+
+  a {
+    color: #000;
+  }
+}
