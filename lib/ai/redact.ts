@@ -12,7 +12,7 @@ const ZEROS = [0x0966, 0x09e6, 0x0a66, 0x0ae6, 0x0b66, 0x0be6, 0x0c66, 0x0ce6, 0
 function asciiDigits(text: string): string {
   return text.replace(/\p{Nd}/gu, (digit) => {
     const code = digit.charCodeAt(0);
-    const zero = ZEROS.find((z) => code >= z && code <= z + 9);
+    const zero = ZEROS.find((start) => code >= start && code <= start + 9);
     return zero === undefined ? digit : String(code - zero);
   });
 }

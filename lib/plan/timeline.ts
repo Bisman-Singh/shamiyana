@@ -56,37 +56,37 @@ export function buildTimeline(record: PlanRecord, today: string): Timeline {
   const done = new Set(record.done);
   const daysToGo = daysBetween(today, brief.date);
 
-  const templates = tasksFor(brief).map((t) => ({
-    id: t.id,
-    area: t.area,
-    leadDays: t.leadDays,
+  const templates = tasksFor(brief).map((template) => ({
+    id: template.id,
+    area: template.area,
+    leadDays: template.leadDays,
     source: "template" as const,
     title: null,
   }));
   const items = [...templates, ...record.tasks]
-    .filter((t) => !hidden.has(t.id))
-    .map((t, order) => {
-      const due = addDays(brief.date, -t.leadDays);
-      const isDone = done.has(t.id);
+    .filter((task) => !hidden.has(task.id))
+    .map((task, order) => {
+      const due = addDays(brief.date, -task.leadDays);
+      const isDone = done.has(task.id);
       return {
         item: {
-          ...t,
+          ...task,
           due,
-          phase: phaseOf(t.leadDays),
+          phase: phaseOf(task.leadDays),
           done: isDone,
           late: !isDone && daysBetween(today, due) < 0,
         },
         order,
       };
     })
-    .sort((a, b) => b.item.leadDays - a.item.leadDays || a.order - b.order)
+    .sort((left, right) => right.item.leadDays - left.item.leadDays || left.order - right.order)
     .map(({ item }) => item);
 
   return {
     items,
     daysToGo,
-    doneCount: items.filter((i) => i.done).length,
-    lateCount: items.filter((i) => i.late).length,
+    doneCount: items.filter((item) => item.done).length,
+    lateCount: items.filter((item) => item.late).length,
   };
 }
 

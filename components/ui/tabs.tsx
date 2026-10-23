@@ -9,8 +9,8 @@ export interface Tab<T extends string> {
 }
 
 const KEY_MOVES: Record<string, (index: number, count: number) => number> = {
-  ArrowRight: (i, n) => (i + 1) % n,
-  ArrowLeft: (i, n) => (i - 1 + n) % n,
+  ArrowRight: (index, count) => (index + 1) % count,
+  ArrowLeft: (index, count) => (index - 1 + count) % count,
   Home: () => 0,
   End: (_, n) => n - 1,
 };

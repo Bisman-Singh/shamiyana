@@ -35,23 +35,23 @@ export function allocate(
     const raw = (units * w) / sum;
     return { category, share: w / sum, base: Math.floor(raw), frac: raw - Math.floor(raw), order };
   });
-  const left = units - parts.reduce((acc, p) => acc + p.base, 0);
+  const left = units - parts.reduce((acc, part) => acc + part.base, 0);
   const bonus = new Set(
     [...parts]
-      .sort((a, b) => b.frac - a.frac || a.order - b.order)
+      .sort((one, other) => other.frac - one.frac || one.order - other.order)
       .slice(0, left)
-      .map((p) => p.order),
+      .map((part) => part.order),
   );
-  const lines = parts.map((p) => ({
-    category: p.category,
-    share: p.share,
-    amount: (p.base + (bonus.has(p.order) ? 1 : 0)) * step,
+  const lines = parts.map((part) => ({
+    category: part.category,
+    share: part.share,
+    amount: (part.base + (bonus.has(part.order) ? 1 : 0)) * step,
   }));
   const [first, ...others] = lines;
   if (!first) return [];
   const rest = total - units * step;
   const sink =
-    lines.find((l) => l.category === "contingency") ??
+    lines.find((line) => line.category === "contingency") ??
     others.reduce((max, l) => (l.amount > max.amount ? l : max), first);
   sink.amount += rest;
   return lines;
@@ -70,7 +70,10 @@ export function weightsFor(facts: EventFacts, factors: Factors): (readonly [Cate
     return [category, weight] as const;
   });
   const rest = raw.reduce((acc, [c, w]) => (c === "contingency" ? acc : acc + w), 0);
-  return raw.map(([c, w]) => [c, c === "contingency" ? reserve : (w / rest) * (1 - reserve)]);
+  return raw.map(([category, weight]) => [
+    category,
+    category === "contingency" ? reserve : (weight / rest) * (1 - reserve),
+  ]);
 }
 
 /** The budget split for an event, weighted by its details and the user's shifts, in round hundreds. */
@@ -90,7 +93,7 @@ export type ShiftPreview = (
  */
 export function previewShifts(facts: EventFacts, factors: Factors): ShiftPreview {
   const amount = (f: Factors, category: CategoryId) =>
-    planBudget(facts, f).find((l) => l.category === category)?.amount ?? 0;
+    planBudget(facts, f).find((line) => line.category === category)?.amount ?? 0;
   return (category, factor) => ({
     before: amount(factors, category),
     after: amount({ ...factors, [category]: factor }, category),
@@ -135,8 +138,10 @@ export function summariseBudget(
       variance: quote > 0 ? quote - line.amount : 0,
     };
   });
-  const committed = rows.filter((r) => isSecured(r.status)).reduce((acc, r) => acc + r.quote, 0);
-  const catering = lines.find((l) => l.category === "catering");
+  const committed = rows
+    .filter((row) => isSecured(row.status))
+    .reduce((acc, row) => acc + row.quote, 0);
+  const catering = lines.find((line) => line.category === "catering");
   return {
     rows,
     total: facts.budget,
@@ -144,6 +149,6 @@ export function summariseBudget(
     paid: rows.reduce((acc, r) => acc + r.paid, 0),
     remaining: facts.budget - committed,
     perGuestCatering: catering ? Math.round(catering.amount / facts.guests) : null,
-    overCategories: rows.filter((r) => r.variance > 0).map((r) => r.category),
+    overCategories: rows.filter((row) => row.variance > 0).map((row) => row.category),
   };
 }

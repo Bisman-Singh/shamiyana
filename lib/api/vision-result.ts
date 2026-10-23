@@ -55,18 +55,18 @@ export function sanitizeVision(raw: unknown): VisionResult {
           name: clip(colour.name, VISION_LIMITS.colourName),
           hex: hex(colour.hex),
         }))
-        .filter((c): c is { name: string; hex: string } => c.hex !== null),
-      (c) => c.hex,
+        .filter((colour): colour is { name: string; hex: string } => colour.hex !== null),
+      (colour) => colour.hex,
     ).slice(0, VISION_LIMITS.colours),
     ideas: uniqueBy(
       records(value.ideas)
-        .map((i) => ({
-          area: oneOf(i.area, IDEA_AREAS) ?? "decor",
-          title: clip(scrub(i.title), LIMITS.ideaTitleMax),
-          detail: clip(scrub(i.detail), LIMITS.ideaDetailMax),
+        .map((idea) => ({
+          area: oneOf(idea.area, IDEA_AREAS) ?? "decor",
+          title: clip(scrub(idea.title), LIMITS.ideaTitleMax),
+          detail: clip(scrub(idea.detail), LIMITS.ideaDetailMax),
         }))
-        .filter((i) => i.title !== ""),
-      (i) => i.title,
+        .filter((idea) => idea.title !== ""),
+      (idea) => idea.title,
     ).slice(0, VISION_LIMITS.ideas),
     notes: texts(
       Array.isArray(value.notes) ? value.notes.map(scrub) : [],

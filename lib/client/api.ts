@@ -27,7 +27,7 @@ export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: ApiError 
 /** Maps an error body or status to a known code. */
 export function errorCode(body: unknown, status: number): ApiError {
   const code = isRecord(body) ? body.error : undefined;
-  const known = API_ERRORS.find((e) => e === code);
+  const known = API_ERRORS.find((known) => known === code);
   if (known) return known;
   if (status === 429) return "rate_limited";
   if (status >= 400 && status < 500) return "invalid";

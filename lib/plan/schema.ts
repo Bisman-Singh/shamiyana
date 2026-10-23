@@ -22,7 +22,7 @@ import { enrichmentSchema } from "./enrichment";
 const line = (min: number, max: number) =>
   z
     .string()
-    .transform((v) => cleanText(v))
+    .transform((value) => cleanText(value))
     .pipe(z.string().min(min).max(max));
 
 const isoDate = z.string().max(10).refine(isIsoDate, { message: "invalid_date", abort: true });
@@ -37,7 +37,7 @@ const factsBase = {
   food: z.enum(FOOD_PREFS),
   notes: z
     .string()
-    .transform((v) => cleanText(v, true))
+    .transform((value) => cleanText(value, true))
     .pipe(z.string().max(LIMITS.notesMax)),
 };
 

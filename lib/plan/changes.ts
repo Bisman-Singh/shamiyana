@@ -102,8 +102,10 @@ function singleKey(change: Change): string | null {
 
 /** Added tasks moved no earlier than today, so none is overdue the moment it is approved. */
 export function fitChanges(changes: readonly Change[], weeksLeft: number): Change[] {
-  return changes.map((c) =>
-    c.op === "add_task" ? { ...c, weeksBefore: Math.min(c.weeksBefore, weeksLeft) } : c,
+  return changes.map((change) =>
+    change.op === "add_task"
+      ? { ...change, weeksBefore: Math.min(change.weeksBefore, weeksLeft) }
+      : change,
   );
 }
 

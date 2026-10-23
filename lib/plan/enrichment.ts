@@ -168,7 +168,7 @@ function risks(raw: unknown): Enrichment["risks"] {
       risk: clip(item.risk, ENRICHMENT_LIMITS.risk),
       mitigation: clip(item.mitigation, ENRICHMENT_LIMITS.mitigation),
     }))
-    .filter((r) => r.risk !== "" && r.mitigation !== "");
+    .filter((item) => item.risk !== "" && item.mitigation !== "");
   return uniqueBy(all, (item) => item.risk).slice(0, ENRICHMENT_LIMITS.risks);
 }
 

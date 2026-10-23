@@ -9,7 +9,10 @@ import { CATEGORY_IDS, IDEA_AREAS, IDEA_COSTS, LIMITS, TASK_AREAS } from "@/lib/
  * `parseChanges` and `sanitizeVision` enforce the real bounds afterwards.
  */
 
-const changeAreas = [...TASK_AREAS, ...IDEA_AREAS.filter((a) => !TASK_AREAS.some((t) => t === a))];
+const changeAreas = [
+  ...TASK_AREAS,
+  ...IDEA_AREAS.filter((area) => !TASK_AREAS.some((taskArea) => taskArea === area)),
+];
 const factorRange = `${String(LIMITS.factorMin)} to ${String(LIMITS.factorMax)}`;
 
 export const enrichmentOutputSchema = z.object({

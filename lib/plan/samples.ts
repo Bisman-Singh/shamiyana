@@ -15,7 +15,7 @@ const DIWALI = ["2026-11-08", "2027-10-29", "2028-10-17", "2029-11-05"] as const
 
 /** The longest lead time in a checklist: a sample at least this far out opens with nothing overdue. */
 function longestLead(type: EventType): number {
-  return Math.max(...TASKS[type].map((t) => t.leadDays));
+  return Math.max(...TASKS[type].map((task) => task.leadDays));
 }
 
 /**
@@ -27,14 +27,14 @@ export function winterWeddingDate(today: string): string {
   const year = Number(today.slice(0, 4));
   const days = [`${String(year)}-11-25`, `${String(year)}-12-05`, `${String(year + 1)}-02-10`];
   const lead = longestLead("wedding");
-  return days.find((d) => daysBetween(today, d) >= lead) ?? `${String(year + 1)}-11-25`;
+  return days.find((day) => daysBetween(today, day) >= lead) ?? `${String(year + 1)}-11-25`;
 }
 
 /** The Saturday at least six days before the next Diwali that leaves time for every task. */
 export function diwaliMelaDate(today: string): string {
   const lead = longestLead("community");
-  const mela = DIWALI.map((d) => saturdayOnOrBefore(addDays(d, -6))).find(
-    (d) => daysBetween(today, d) >= lead,
+  const mela = DIWALI.map((diwali) => saturdayOnOrBefore(addDays(diwali, -6))).find(
+    (mela) => daysBetween(today, mela) >= lead,
   );
   return mela ?? addDays(today, lead);
 }

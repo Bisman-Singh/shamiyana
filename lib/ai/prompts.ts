@@ -83,7 +83,7 @@ export function weeksLeft(facts: EventFacts, today: string): number {
 
 /** Catering money per plate, counting smaller functions such as haldi at part of the guest list. */
 function perPlate(facts: EventFacts, lines: readonly BudgetLine[]): string | null {
-  const catering = lines.find((l) => l.category === "catering");
+  const catering = lines.find((line) => line.category === "catering");
   if (!catering) return null;
   if (facts.type !== "wedding" || facts.functions.length === 1) {
     return `Catering: about ${inr(Math.round(catering.amount / facts.guests))} a plate`;
@@ -95,7 +95,9 @@ function perPlate(facts: EventFacts, lines: readonly BudgetLine[]): string | nul
 }
 
 function weights(entries: readonly (readonly [string, number])[]): string {
-  return entries.length === 0 ? "none" : entries.map(([c, w]) => `${c} ×${String(w)}`).join(", ");
+  return entries.length === 0
+    ? "none"
+    : entries.map(([category, weight]) => `${category} ×${String(weight)}`).join(", ");
 }
 
 /** The facts every prompt starts from: the event, the computed budget lines and the time left. */
@@ -118,7 +120,7 @@ export function describeEvent(
     perPlate(facts, lines),
     `Style: ${facts.style}`,
     `Food preference: ${facts.food}`,
-    `Budget lines: ${lines.map((l) => l.category + " " + inr(l.amount)).join("; ")}`,
+    `Budget lines: ${lines.map((line) => line.category + " " + inr(line.amount)).join("; ")}`,
     `Already built into the budget lines above, not shifts: ${weights(preset)}`,
     facts.notes === "" ? "Notes: none" : `Notes: <user_text>${fence(facts.notes)}</user_text>`,
   ]
@@ -128,15 +130,15 @@ export function describeEvent(
 
 function checklist(facts: EventFacts): string {
   return tasksFor(facts)
-    .map((t) => `- ${messageOr(TASK_TITLES, t.id, t.id)}`)
+    .map((task) => `- ${messageOr(TASK_TITLES, task.id, task.id)}`)
     .join("\n");
 }
 
 function askedAlready(lines: readonly BudgetLine[]): string {
   return lines
-    .flatMap((l) => {
-      const asked = VENDOR_QUESTIONS[l.category];
-      return asked.length > 0 ? [`- ${l.category}: ${asked.join(" ")}`] : [];
+    .flatMap((line) => {
+      const asked = VENDOR_QUESTIONS[line.category];
+      return asked.length > 0 ? [`- ${line.category}: ${asked.join(" ")}`] : [];
     })
     .join("\n");
 }
@@ -183,11 +185,11 @@ export interface RefineContext {
 /** The refine route's prompt: the plan, the recent turns and the new message, all fenced. */
 export function refinePrompt(input: RefineContext, lines: readonly BudgetLine[]): string {
   const past = input.history
-    .map((t) => `${t.role}: <user_text>${fence(t.text)}</user_text>`)
+    .map((turn) => `${turn.role}: <user_text>${fence(turn.text)}</user_text>`)
     .join("\n");
-  const set = shiftableCategories(input.facts).flatMap((c) => {
-    const weight = input.factors[c];
-    return weight === undefined ? [] : [[c, weight] as const];
+  const set = shiftableCategories(input.facts).flatMap((category) => {
+    const weight = input.factors[category];
+    return weight === undefined ? [] : [[category, weight] as const];
   });
   const earlier = past === "" ? "" : `Earlier conversation:\n${past}\n\n`;
   return `Current plan:

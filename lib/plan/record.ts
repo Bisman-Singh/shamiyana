@@ -43,12 +43,18 @@ function touch(record: PlanRecord, now: string, patch: Partial<PlanRecord>): Pla
 
 function aiTasks(enrichment: Enrichment): CustomTask[] {
   const seen = new Set<string>();
-  return enrichment.tasks.flatMap((t) => {
-    const id = stableId("ai", `${t.title}|${t.area}|${t.weeksBefore}`);
+  return enrichment.tasks.flatMap((task) => {
+    const id = stableId("ai", `${task.title}|${task.area}|${task.weeksBefore}`);
     if (seen.has(id)) return [];
     seen.add(id);
     return [
-      { id, title: t.title, area: t.area, leadDays: t.weeksBefore * 7, source: "ai" as const },
+      {
+        id,
+        title: task.title,
+        area: task.area,
+        leadDays: task.weeksBefore * 7,
+        source: "ai" as const,
+      },
     ];
   });
 }
@@ -64,9 +70,9 @@ export function withEnrichment(
   now: string,
 ): PlanRecord {
   const done = new Set(record.done);
-  const kept = record.tasks.filter((t) => t.source !== "ai" || done.has(t.id));
-  const keptIds = new Set(kept.map((t) => t.id));
-  const fresh = aiTasks(enrichment).filter((t) => !keptIds.has(t.id));
+  const kept = record.tasks.filter((task) => task.source !== "ai" || done.has(task.id));
+  const keptIds = new Set(kept.map((task) => task.id));
+  const fresh = aiTasks(enrichment).filter((task) => !keptIds.has(task.id));
   return touch(record, now, {
     enrichment,
     enrichedFor,
@@ -103,8 +109,8 @@ export function toggleTask(record: PlanRecord, taskId: string, now: string): Pla
 /** Deletes an AI or custom task; hides a template task so it can be restored. */
 export function removeTask(record: PlanRecord, taskId: string, now: string): PlanRecord {
   const done = record.done.filter((id) => id !== taskId);
-  if (record.tasks.some((t) => t.id === taskId)) {
-    return touch(record, now, { tasks: record.tasks.filter((t) => t.id !== taskId), done });
+  if (record.tasks.some((task) => task.id === taskId)) {
+    return touch(record, now, { tasks: record.tasks.filter((task) => task.id !== taskId), done });
   }
   return touch(record, now, { hidden: [...new Set([...record.hidden, taskId])], done });
 }
@@ -152,22 +158,22 @@ export function setFactor(
 
 /** The plan with a guest added or changed, unless the list is full. */
 export function upsertGuest(record: PlanRecord, guest: Guest, now: string): PlanRecord {
-  const exists = record.guests.some((g) => g.id === guest.id);
+  const exists = record.guests.some((other) => other.id === guest.id);
   if (!exists && record.guests.length >= LIMITS.guestListMax) return record;
   const guests = exists
-    ? record.guests.map((g) => (g.id === guest.id ? guest : g))
+    ? record.guests.map((other) => (other.id === guest.id ? guest : other))
     : [...record.guests, guest];
   return touch(record, now, { guests });
 }
 
 /** The plan without a guest. */
 export function removeGuest(record: PlanRecord, guestId: string, now: string): PlanRecord {
-  return touch(record, now, { guests: record.guests.filter((g) => g.id !== guestId) });
+  return touch(record, now, { guests: record.guests.filter((other) => other.id !== guestId) });
 }
 
 /** Whether the plan already holds this idea: the same title for the same area. */
 export function isIdeaSaved(record: PlanRecord, idea: Pick<SavedIdea, "title" | "area">): boolean {
-  return record.ideas.some((i) => i.title === idea.title && i.area === idea.area);
+  return record.ideas.some((saved) => saved.title === idea.title && saved.area === idea.area);
 }
 
 /** The plan with an idea saved, unless it is saved already or the list is full. */
@@ -178,5 +184,5 @@ export function saveIdea(record: PlanRecord, idea: SavedIdea, now: string): Plan
 
 /** The plan without a saved idea. */
 export function removeIdea(record: PlanRecord, ideaId: string, now: string): PlanRecord {
-  return touch(record, now, { ideas: record.ideas.filter((i) => i.id !== ideaId) });
+  return touch(record, now, { ideas: record.ideas.filter((saved) => saved.id !== ideaId) });
 }
