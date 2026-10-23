@@ -128,9 +128,10 @@ only. The key is never sent to the browser.
   assertions.
 - ESLint with typescript-eslint strict and stylistic type-checked rules,
   @eslint-react strict, React Hooks, JSX a11y strict and SonarJS, plus a
-  complexity cap of 10, 80 lines per function, 200 lines per file and no module
-  imported twice. Zero warnings allowed.
-- One component or hook per file, and one folder per planner tab
+  complexity cap of 10, 80 lines per function, 200 lines per file and one import
+  per module, with types apart. Zero warnings allowed.
+- One exported component per file, with only small private parts beside it; a
+  context's provider keeps its hooks with it. One folder per planner tab
   (`components/planner/budget`, `timeline`, `vendors`, `guests`, `ideas`).
 - Domain logic is pure functions in `lib/plan`, one concern per file. Every edit
   to a plan is a function from one record to the next, which makes undo a
@@ -158,7 +159,8 @@ only. The key is never sent to the browser.
   values, never taken from the model.
 - CSV cells that a spreadsheet would run as a formula are neutralised; iCalendar
   text is escaped and folded by bytes.
-- Logs hold route, outcome, status, timing and model only. Errors are short
+- Logs hold route, outcome, status, timing, model, whether the answer came from
+  the cache and, for an unexpected error, its class name only. Errors are short
   codes with no internals. Config is validated at boot.
 - Server code imports `server-only`, so the key and the handlers can never be
   bundled for the browser. `/api/health` says only that the server is up.
@@ -217,7 +219,7 @@ vendor checklists, and personalized ideas".
 
 | Asked for                             | Where                                                                                        |
 | ------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Weddings, birthdays, community events | Three event types with their own functions, honorees and kinds (`lib/plan/shares.ts`)        |
+| Weddings, birthdays, community events | Three event types with their own functions, honorees and kinds (`lib/plan/constants.ts`)     |
 | Budgets                               | Exact split, shifts, agreed and paid tracking (`lib/plan/budget.ts`)                         |
 | Timelines                             | Back-scheduled tasks by phase, calendar export (`lib/plan/timeline.ts`, `lib/export/ics.ts`) |
 | Vendor checklists                     | Per-vendor status, questions and Maps search (`lib/plan/vendors.ts`)                         |
@@ -249,11 +251,13 @@ provider, Zod 4. Tests with Vitest, Testing Library, axe-core and Playwright.
 
 ```text
 app/                 pages, API routes, styles split by area
-components/planner/  the planner, workspace and its panels
-components/ui/       fields, tabs, notices
+components/          site header and footer, language switch, policy article
+components/planner/  the planner, and one folder per tab and for the workspace
+components/ui/       one file per form control, tabs, notices, focus helpers
 lib/plan/            budget, timeline, vendors, guests, schemas, record edits
-lib/shared/          readers for untrusted values, plain-text hygiene, capped byte streams
-lib/ai/              prompts, output schemas, injection guard, model chain, fallback, cache
+lib/api/             request and answer contracts shared by the server and the browser
+lib/shared/          ids, readers for untrusted values, plain-text hygiene, bounded maps
+lib/ai/              prompts, injection guard, redaction, model chain, fallback, cache
 lib/server/          env, request guard, rate limits shared through Redis, route handlers
 lib/client/          API calls, local storage and files in the browser
 lib/export/          iCalendar, CSV, share links, outbound links

@@ -40,8 +40,9 @@ The target is WCAG 2.2 level AA, in English and Hindi, on a phone and a desktop.
   is done, focus moves to a stable place instead of the page: Reset to More,
   "Show removed tasks" and "Use N as the guest count" to the open panel, and
   closing a notice to the page heading.
-- One polite live region exists from the first paint and carries the status
-  messages: ideas ready, an answer that stopped early, a shared plan offered, a
+- One polite live region for the page exists from the first paint and carries
+  the status messages, and two places keep their own, the share dialog for
+  "Link copied" and the guest counts for a mismatch: ideas ready, an answer that stopped early, a shared plan offered, a
   task or guest added, a change applied, a budget line moved, removed tasks
   back, the guest count used, a reply with no changes. The start of AI writing
   is not announced, so it never talks over the change that set it off. The

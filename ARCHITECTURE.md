@@ -88,13 +88,13 @@ as they stream.
 | Folder               | Holds                                                                 |
 | -------------------- | --------------------------------------------------------------------- |
 | `app/`               | pages, the three AI routes, health, styles split by area              |
-| `components/planner` | the planner, the workspace and one file per panel                     |
+| `components/planner` | the planner, and one folder per tab and for the workspace             |
 | `components/ui`      | fields, tabs, notices and the live region                             |
 | `lib/plan`           | the domain: schemas, budget, timeline, vendors, guests, record edits  |
 | `lib/shared`         | readers for untrusted values, plain-text hygiene, capped byte streams |
-| `lib/ai`             | prompts, output schemas, the guard, model chain, fallback and cache   |
+| `lib/ai`             | prompts, the guard, redaction, model chain, fallback and cache        |
 | `lib/server`         | env, request guard, rate limits, shared limits, logging, handlers     |
-| `lib/api`            | request contracts shared by the routes and the browser's calls        |
+| `lib/api`            | request and answer contracts shared by the server and the browser     |
 | `lib/client`         | API calls, local storage and file handling in the browser             |
 | `lib/export`         | iCalendar, CSV, share links and outbound links                        |
 | `lib/i18n`           | English and Hindi messages, formatting, `lang` detection and policies |

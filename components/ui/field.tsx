@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Messages } from "./field-messages";
 
 /**
  * What every labelled control shares. Hint and error are tied to the control
@@ -32,24 +33,6 @@ export interface ChoiceProps<T extends string> {
 function describedBy(id: string, hint: ReactNode, error: string | undefined): string | undefined {
   const ids = [hint ? `${id}-hint` : null, error ? `${id}-error` : null].filter(Boolean);
   return ids.length > 0 ? ids.join(" ") : undefined;
-}
-
-/** The hint and the error under a control, each with the id the control points at. */
-export function Messages({ id, hint, error }: Readonly<Omit<Described, "label">>) {
-  return (
-    <>
-      {hint ? (
-        <p id={`${id}-hint`} className="hint">
-          {hint}
-        </p>
-      ) : null}
-      {error ? (
-        <p id={`${id}-error`} className="field-error">
-          {error}
-        </p>
-      ) : null}
-    </>
-  );
 }
 
 /** The label, the control and its messages, tied together by the control's id. */

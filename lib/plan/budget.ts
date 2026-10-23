@@ -1,7 +1,6 @@
-import type { Factors } from "@/lib/plan/schema";
 import type { CategoryId, VendorStatus } from "./constants";
 import { clampFactor } from "./factors";
-import type { EventFacts, PlanRecord } from "./schema";
+import type { EventFacts, Factors, PlanRecord } from "./schema";
 import { BASE_SHARES, variantFactors } from "./shares";
 import { isSecured } from "./vendor-status";
 

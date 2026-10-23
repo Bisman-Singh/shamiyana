@@ -27,8 +27,9 @@ and the Playwright tests. A change is ready when it passes.
   as arguments so tests can pass a mock model and a fixed clock.
 - Functions stay under 80 lines and a complexity of 10, and files under 200
   lines; lint enforces all three.
-- One component or hook per file. Planner parts sit in one folder per tab, and
-  anything outside a file's own folder is imported through `@/`.
+- One exported component per file, with only small private parts beside it; a
+  context's provider keeps its hooks with it, and other hooks get a file each. Planner parts sit in one folder per tab, and app code imports
+  anything outside its own folder through `@/`.
 - Every string the user sees is in `lib/i18n/en.json` and `lib/i18n/hi.json`,
   and a test fails if the two files have different keys. The exceptions are
   deliberate: the policy pages (`lib/i18n/legal.ts`), the fixed reply to a

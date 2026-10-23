@@ -1,4 +1,5 @@
-import { Messages, type ChoiceProps } from "./field";
+import type { ChoiceProps } from "./field";
+import { Messages } from "./field-messages";
 
 interface CheckGroupProps<T extends string> extends ChoiceProps<T> {
   value: readonly T[];
