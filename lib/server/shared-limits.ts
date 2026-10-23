@@ -1,10 +1,11 @@
 import "server-only";
 import { createHmac } from "node:crypto";
-import { Ratelimit } from "@upstash/ratelimit";
+import { Ratelimit, type Duration } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { utcDay } from "@/lib/plan/dates";
 import { logNotice } from "./log";
 import {
+  RATE_WINDOW_MS,
   secondsUntil,
   type DailyAllowance,
   type DailyCap,
@@ -83,8 +84,8 @@ export class SharedRateLimiter implements RequestLimiter {
   }
 }
 
-/** RATE_WINDOW_MS in the form Upstash takes; a test keeps the two equal. */
-export const SHARED_WINDOW = "60 s";
+/** The memory limits' window in the form Upstash takes, so both count over the same span. */
+export const SHARED_WINDOW: Duration = `${RATE_WINDOW_MS / 1000} s`;
 
 /** A sliding window of `limit` requests a minute per client, shared through Redis. */
 export function sharedWindow(redis: Redis, name: string, limit: number): WindowClient {
