@@ -98,7 +98,7 @@ only. The key is never sent to the browser.
   categories the plan doesn't have dropped, colours checked as hex codes
   (`lib/plan/enrichment.ts`, `lib/plan/changes.ts`, `lib/ai/vision-result.ts`).
 - The event name is never sent, because it often holds a person's name. Emails,
-  UPI IDs, phone numbers, PAN and Aadhaar-shaped numbers are removed from notes and chat
+  UPI IDs, phone and card numbers, PAN, GSTIN, Aadhaar, voter ID and passport numbers are removed from notes and chat
   first (`lib/ai/redact.ts`).
 - A pattern screen in English and Hindi answers a chat message that tries to
   re-instruct the assistant with a fixed reply, and drops such sentences from

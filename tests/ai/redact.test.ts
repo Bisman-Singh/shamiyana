@@ -24,6 +24,16 @@ describe("redact", () => {
     );
   });
 
+  it.each([
+    ["a card number", "card 4111 1111 1111 1111 expires soon", "card [removed] expires soon"],
+    ["an Amex number", "amex 3782-822463-10005", "amex [removed]"],
+    ["a GSTIN", "GSTIN 27AAPFU0939F1ZV on the bill", "GSTIN [removed] on the bill"],
+    ["a voter ID", "voter ID ABC1234567", "voter ID [removed]"],
+    ["a passport number", "passport K1234567 for the visa", "passport [removed] for the visa"],
+  ])("removes all of %s", (_label, text, redacted) => {
+    expect(redact(text)).toBe(redacted);
+  });
+
   it("reads Indian-script digits as digits and keeps other numbers", () => {
     expect(redact("२५० मेहमान")).toBe("250 मेहमान");
     expect(redact("৪০ guests")).toBe("40 guests");

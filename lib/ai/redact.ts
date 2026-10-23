@@ -21,7 +21,15 @@ const PATTERNS: readonly RegExp[] = [
   /[\w.+-]{1,254}@[\w-]{1,63}(?:\.[\w-]{1,63}){1,10}/g,
   // a UPI ID, such as name@oksbi, after emails have gone
   /[\w.-]{2,256}@[a-z]{2,64}\b/gi,
+  // GSTIN, which holds a PAN, so it goes first
+  /\b\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]\b/gi,
+  // PAN
   /\b[A-Z]{5}\d{4}[A-Z]\b/gi,
+  // voter ID, then passport
+  /\b[A-Z]{3}\d{7}\b/gi,
+  /\b[A-Z]\d{7}\b/gi,
+  // a card number of 13 to 19 digits in any grouping, before the 12-digit Aadhaar
+  /(?<!\d)(?:\d[\s-]?){12,18}\d(?!\d)/g,
   /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g,
   /(?<!\d)(?:\+?91[\s-]?|0)?[6-9](?:[\s-]?\d){9}(?!\d)/g,
   /(?<!\d)0\d{2,4}[\s-]?\d{3,4}[\s-]?\d{4}(?!\d)/g,
@@ -30,7 +38,7 @@ const PATTERNS: readonly RegExp[] = [
 
 export const REDACTED = "[removed]";
 
-/** Removes email addresses, UPI IDs, phone numbers and ID numbers in their common formats. */
+/** Removes email addresses, UPI IDs, phone, card and ID numbers in their common formats. */
 export function redact(text: string): string {
   return PATTERNS.reduce((acc, pattern) => acc.replace(pattern, REDACTED), asciiDigits(text));
 }
