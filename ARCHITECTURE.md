@@ -53,7 +53,7 @@ user ticks it (`lib/plan/changes.ts`).
   stores a plan, so there is nothing to breach.
 - **Dependencies are passed in.** Route handlers take the model chain, cache,
   limits and clock as arguments, so tests run every path with a mock model and
-  a fixed date (`tests/server/handlers.test.ts`).
+  a fixed date (`tests/server/plan-handler.test.ts` and the other route tests).
 - **Shared limits, local fallback.** Per-minute limits and daily caps live in
   Upstash Redis so every instance counts together. Redis only ever sees a keyed
   hash of the client address. If it fails or is slow, each instance's memory
