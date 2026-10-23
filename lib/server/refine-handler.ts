@@ -27,8 +27,8 @@ async function handleRefine(request: Request, deps: AiDeps, log: RouteLog): Prom
     return log.screened(Response.json({ reply, changes: [] }, { headers: JSON_HEADERS }));
   }
   const gate = await admit(request, deps, log);
-  if ("refused" in gate) return log.fail(gate.refused);
-  return answered(log, await runRefine(gate.ctx, input.data));
+  if (!gate.ok) return log.fail(gate.code);
+  return answered(log, await runRefine(gate.data, input.data));
 }
 
 /** POST /api/refine: checks the request, screens the message, then returns a reply and proposed changes. */

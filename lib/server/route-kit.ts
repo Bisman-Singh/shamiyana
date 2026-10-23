@@ -115,11 +115,12 @@ export async function admit(
   request: Request,
   deps: AiDeps,
   log: RouteLog,
-): Promise<{ ctx: RunContext } | { refused: ErrorCode }> {
-  if (!deps.chain) return { refused: "ai_unavailable" };
-  if (!(await deps.daily.take(clientKey(request)))) return { refused: "daily_cap" };
+): Promise<Checked<RunContext>> {
+  if (!deps.chain) return { ok: false, code: "ai_unavailable" };
+  if (!(await deps.daily.take(clientKey(request)))) return { ok: false, code: "daily_cap" };
   return {
-    ctx: {
+    ok: true,
+    data: {
       chain: deps.chain,
       signal: AbortSignal.any([request.signal, AbortSignal.timeout(deps.deadlineMs)]),
       onFail: log.modelFailed,

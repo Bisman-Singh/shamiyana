@@ -58,9 +58,9 @@ async function handleVision(request: Request, deps: AiDeps, log: RouteLog): Prom
   const parsed = visionFieldsSchema(deps.now()).safeParse(upload.data.fields);
   if (!parsed.success) return log.fail("invalid");
   const gate = await admit(request, deps, log);
-  if ("refused" in gate) return log.fail(gate.refused);
+  if (!gate.ok) return log.fail(gate.code);
   const { image, mediaType } = upload.data;
-  return answered(log, await runVision(gate.ctx, { ...parsed.data, image, mediaType }));
+  return answered(log, await runVision(gate.data, { ...parsed.data, image, mediaType }));
 }
 
 /** POST /api/vision: checks the upload's real type and size, then returns ideas from the photo. */

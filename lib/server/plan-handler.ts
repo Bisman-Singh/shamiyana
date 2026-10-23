@@ -30,8 +30,8 @@ async function handlePlan(request: Request, deps: AiDeps, log: RouteLog): Promis
   const { key, hit } = await lookupPlan(deps.cache, input.data);
   if (hit !== null) return log.ok(streamed(textStream(hit)), "cache", true);
   const gate = await admit(request, deps, log);
-  if ("refused" in gate) return log.fail(gate.refused);
-  const result = await streamPlan(gate.ctx, deps.cache, key, input.data);
+  if (!gate.ok) return log.fail(gate.code);
+  const result = await streamPlan(gate.data, deps.cache, key, input.data);
   if (!result) return log.fail("ai_failed");
   return log.ok(streamed(result.stream), result.model);
 }
