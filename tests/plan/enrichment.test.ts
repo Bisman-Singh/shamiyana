@@ -5,7 +5,7 @@ import {
   isEmptyEnrichment,
   sanitizeEnrichment,
 } from "@/lib/plan/enrichment";
-import { sampleEnrichment } from "../helpers/fixtures";
+import { sampleEnrichment } from "@/tests/helpers/fixtures";
 
 const CATS: CategoryId[] = ["venue", "catering", "decor", "contingency"];
 

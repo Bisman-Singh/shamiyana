@@ -3,7 +3,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { VendorAmountField } from "@/components/planner/vendors/vendor-amount-field";
-import { renderIn } from "../helpers/render";
+import { renderIn } from "@/tests/helpers/render";
 
 /** The field with its amount held in state, and a button that changes it from elsewhere, as another tab would. */
 function Harness() {

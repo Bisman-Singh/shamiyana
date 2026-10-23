@@ -29,8 +29,8 @@ and the Playwright tests. A change is ready when it passes.
   lines; lint enforces all three.
 - One exported component per file, with only small private parts beside it; a
   context's provider keeps its hooks with it, and other hooks get a file each.
-  Planner parts sit in one folder per tab, and app code imports anything
-  outside its own folder through `@/`.
+  Planner parts sit in one folder per tab, and code and tests import anything
+  outside their own folder through `@/`.
 - Every string the user sees is in `lib/i18n/en.json` and `lib/i18n/hi.json`,
   and a test fails if the two files have different keys. The exceptions are
   deliberate: the policy pages (`lib/i18n/legal.ts`), the fixed reply to a

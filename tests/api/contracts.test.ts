@@ -1,6 +1,6 @@
 import { planRequestSchema } from "@/lib/api/contracts";
-import { FIXED_NOW } from "../helpers/ai";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
+import { FIXED_NOW } from "@/tests/helpers/ai";
+import { TODAY, weddingFacts } from "@/tests/helpers/fixtures";
 
 describe("request schemas", () => {
   it("accepts a device date a day either side of the server", () => {

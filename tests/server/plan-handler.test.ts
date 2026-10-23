@@ -8,8 +8,8 @@ import {
   spec,
   streamingModel,
   testDeps,
-} from "../helpers/ai";
-import { TODAY, sampleEnrichment, weddingFacts } from "../helpers/fixtures";
+} from "@/tests/helpers/ai";
+import { TODAY, sampleEnrichment, weddingFacts } from "@/tests/helpers/fixtures";
 
 const planBody = { facts: weddingFacts, locale: "en", today: TODAY };
 const answer = JSON.stringify(sampleEnrichment);

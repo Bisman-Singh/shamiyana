@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Planner } from "@/components/planner/planner";
 import { PlanStore } from "@/lib/client/plan-store";
-import { recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
-import { mockFetch } from "../helpers/fetch";
-import { renderIn } from "../helpers/render";
-import { MemoryStorage } from "../helpers/storage";
+import { Planner } from "@/components/planner/planner";
+import { mockFetch } from "@/tests/helpers/fetch";
+import { recordFor, sampleEnrichment, weddingBrief } from "@/tests/helpers/fixtures";
+import { renderIn } from "@/tests/helpers/render";
+import { MemoryStorage } from "@/tests/helpers/storage";
 
 afterEach(() => {
   vi.useRealTimers();

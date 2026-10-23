@@ -9,7 +9,7 @@ import {
   savePlan,
   selectPlan,
 } from "@/lib/plan/plans";
-import { recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { recordFor, sampleEnrichment, weddingBrief } from "@/tests/helpers/fixtures";
 
 describe("plans", () => {
   const plan = recordFor(weddingBrief);

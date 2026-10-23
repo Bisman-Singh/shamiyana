@@ -1,7 +1,7 @@
-import { contentWords, isRewording, rewordings } from "@/evals/overlap";
 import { en } from "@/lib/i18n/en";
-import { TASKS } from "@/lib/plan/task-templates";
 import { EVENT_TYPES } from "@/lib/plan/constants";
+import { TASKS } from "@/lib/plan/task-templates";
+import { contentWords, isRewording, rewordings } from "@/evals/overlap";
 
 const title = (id: string) => (en.tasks as Record<string, string>)[id] ?? id;
 

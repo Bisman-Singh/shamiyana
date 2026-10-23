@@ -1,6 +1,6 @@
 import { runVision } from "@/lib/ai/vision";
-import { JPEG, brokenGenerateModel, generatingModel, runContext } from "../helpers/ai";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
+import { JPEG, brokenGenerateModel, generatingModel, runContext } from "@/tests/helpers/ai";
+import { TODAY, weddingFacts } from "@/tests/helpers/fixtures";
 
 describe("runVision", () => {
   it("vision answers from the first model that sees something", async () => {

@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { recordFor, sampleEnrichment, weddingBrief, readyPlan } from "../helpers/fixtures";
-import { stubCanvas, stubObjectUrls } from "../helpers/browser";
-import { jsonError, mockFetch, streamed } from "../helpers/fetch";
-import { openTab, panel, renderWorkspace } from "../helpers/workspace";
+import { stubCanvas, stubObjectUrls } from "@/tests/helpers/browser";
+import { jsonError, mockFetch, streamed } from "@/tests/helpers/fetch";
+import { recordFor, sampleEnrichment, weddingBrief, readyPlan } from "@/tests/helpers/fixtures";
+import { openTab, panel, renderWorkspace } from "@/tests/helpers/workspace";
 
 /** The announcer's text once its frame-delayed update has landed. */
 async function announced(text: string | RegExp) {

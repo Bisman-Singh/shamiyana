@@ -1,8 +1,8 @@
 import "server-only";
 import { createTextStreamResponse } from "ai";
 import { lookupPlan, streamPlan, textStream } from "@/lib/ai/plan-stream";
-import type { AiDeps } from "./deps";
 import { planRequestSchema } from "@/lib/api/contracts";
+import type { AiDeps } from "./deps";
 import {
   admit,
   aiRoute,

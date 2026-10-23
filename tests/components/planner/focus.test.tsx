@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { PlanStore } from "@/lib/client/plan-store";
+import { getDictionary } from "@/lib/i18n/index";
 import ErrorPage from "@/app/error";
 import { LocaleProvider } from "@/components/locale-provider";
 import { Planner } from "@/components/planner/planner";
 import { AnnouncerProvider } from "@/components/ui/announcer";
-import { PlanStore } from "@/lib/client/plan-store";
-import { getDictionary } from "@/lib/i18n";
-import { jsonError, mockFetch } from "../helpers/fetch";
-import { MemoryStorage } from "../helpers/storage";
+import { jsonError, mockFetch } from "@/tests/helpers/fetch";
+import { MemoryStorage } from "@/tests/helpers/storage";
 
 /** The announcer's text once its frame-delayed update has landed. */
 async function announced(text: string | RegExp) {

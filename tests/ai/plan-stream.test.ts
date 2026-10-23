@@ -1,7 +1,7 @@
 import { AnswerCache } from "@/lib/ai/cache";
 import { lookupPlan, streamPlan, type PlanInput } from "@/lib/ai/plan-stream";
-import { cutOffModel, spec, streamingModel } from "../helpers/ai";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
+import { cutOffModel, spec, streamingModel } from "@/tests/helpers/ai";
+import { TODAY, weddingFacts } from "@/tests/helpers/fixtures";
 
 describe("plan streams", () => {
   const input: PlanInput = { facts: weddingFacts, locale: "en", today: TODAY, fresh: true };

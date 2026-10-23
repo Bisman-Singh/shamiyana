@@ -4,11 +4,11 @@ import { lookupPlan, streamPlan, type PlanInput } from "@/lib/ai/plan-stream";
 import { weeksLeft } from "@/lib/ai/prompts";
 import { runRefine } from "@/lib/ai/refine";
 import { en } from "@/lib/i18n/en";
-import { shiftableCategories } from "@/lib/plan/shares";
-import { tasksFor } from "@/lib/plan/task-templates";
 import { localToday } from "@/lib/plan/dates";
 import { isEmptyEnrichment, sanitizeEnrichment, type Enrichment } from "@/lib/plan/enrichment";
 import type { EventFacts } from "@/lib/plan/schema";
+import { shiftableCategories } from "@/lib/plan/shares";
+import { tasksFor } from "@/lib/plan/task-templates";
 import { readEnv } from "@/lib/server/env";
 import { rewordings, type Rewording } from "./overlap";
 

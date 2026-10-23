@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { BriefForm } from "@/components/planner/brief/brief-form";
 import { draftFromBrief } from "@/lib/plan/draft";
-import { TODAY, birthdayBrief, weddingBrief } from "../helpers/fixtures";
-import { expectAccessible, renderIn } from "../helpers/render";
+import { BriefForm } from "@/components/planner/brief/brief-form";
+import { TODAY, birthdayBrief, weddingBrief } from "@/tests/helpers/fixtures";
+import { expectAccessible, renderIn } from "@/tests/helpers/render";
 
 describe("BriefForm", () => {
   it("is accessible and lists every problem when submitted empty", async () => {

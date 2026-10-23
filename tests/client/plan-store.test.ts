@@ -9,8 +9,8 @@ import {
   writeStore,
 } from "@/lib/client/plan-store";
 import { EMPTY_STORE } from "@/lib/plan/plans";
-import { recordFor, weddingBrief } from "../helpers/fixtures";
-import { MemoryStorage } from "../helpers/storage";
+import { recordFor, weddingBrief } from "@/tests/helpers/fixtures";
+import { MemoryStorage } from "@/tests/helpers/storage";
 
 afterEach(() => {
   vi.restoreAllMocks();

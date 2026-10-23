@@ -9,8 +9,8 @@ import {
   spec,
   streamingModel,
   testDeps,
-} from "../helpers/ai";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
+} from "@/tests/helpers/ai";
+import { TODAY, weddingFacts } from "@/tests/helpers/fixtures";
 
 beforeEach(() => {
   vi.spyOn(console, "info").mockImplementation(() => undefined);

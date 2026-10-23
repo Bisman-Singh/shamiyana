@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import userEvent from "@testing-library/user-event";
-import { readyPlan } from "../helpers/fixtures";
-import { stubObjectUrls } from "../helpers/browser";
-import { jsonError, mockFetch } from "../helpers/fetch";
-import { expectAccessible } from "../helpers/render";
-import { openTab, panel, renderWorkspace } from "../helpers/workspace";
+import { stubObjectUrls } from "@/tests/helpers/browser";
+import { jsonError, mockFetch } from "@/tests/helpers/fetch";
+import { readyPlan } from "@/tests/helpers/fixtures";
+import { expectAccessible } from "@/tests/helpers/render";
+import { openTab, panel, renderWorkspace } from "@/tests/helpers/workspace";
 
 const downloads: { name: string; text: string }[] = [];
 

@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { getDictionary } from "@/lib/i18n/index";
 import { describeChange } from "@/components/planner/ideas/describe-change";
-import { getDictionary } from "@/lib/i18n";
-import { readyPlan } from "../helpers/fixtures";
-import { jsonError, mockFetch } from "../helpers/fetch";
-import { expectAccessible } from "../helpers/render";
-import { openTab, panel, renderWorkspace } from "../helpers/workspace";
+import { jsonError, mockFetch } from "@/tests/helpers/fetch";
+import { readyPlan } from "@/tests/helpers/fixtures";
+import { expectAccessible } from "@/tests/helpers/render";
+import { openTab, panel, renderWorkspace } from "@/tests/helpers/workspace";
 
 afterEach(() => {
   vi.restoreAllMocks();

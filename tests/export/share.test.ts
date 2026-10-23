@@ -7,7 +7,7 @@ import {
   shareUrl,
 } from "@/lib/export/share";
 import { planRecordSchema } from "@/lib/plan/schema";
-import { NOW, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { NOW, recordFor, sampleEnrichment, weddingBrief } from "@/tests/helpers/fixtures";
 
 describe("share links", () => {
   const record = recordFor(weddingBrief, {

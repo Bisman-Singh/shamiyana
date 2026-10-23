@@ -1,5 +1,11 @@
 import { buildTimeline, parseNewTask, phaseOf } from "@/lib/plan/timeline";
-import { TODAY, birthdayBrief, communityBrief, recordFor, weddingBrief } from "../helpers/fixtures";
+import {
+  TODAY,
+  birthdayBrief,
+  communityBrief,
+  recordFor,
+  weddingBrief,
+} from "@/tests/helpers/fixtures";
 
 describe("phaseOf", () => {
   it.each([

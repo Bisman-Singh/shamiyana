@@ -6,8 +6,8 @@ import {
   requestVision,
   type RefineRequest,
 } from "@/lib/client/api";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
-import { jsonError, mockFetch } from "../helpers/fetch";
+import { jsonError, mockFetch } from "@/tests/helpers/fetch";
+import { TODAY, weddingFacts } from "@/tests/helpers/fixtures";
 
 afterEach(() => {
   vi.restoreAllMocks();

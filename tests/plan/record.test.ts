@@ -15,7 +15,13 @@ import {
 } from "@/lib/plan/record";
 import { factsOf, planRecordSchema, type Guest } from "@/lib/plan/schema";
 import { stableId } from "@/lib/shared/ids";
-import { NOW, birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import {
+  NOW,
+  birthdayBrief,
+  recordFor,
+  sampleEnrichment,
+  weddingBrief,
+} from "@/tests/helpers/fixtures";
 
 const LATER = "2026-10-22T08:00:00.000Z";
 const FOR = { facts: factsOf(weddingBrief), locale: "en" as const };

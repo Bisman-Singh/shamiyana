@@ -1,7 +1,7 @@
 import { planBudget } from "@/lib/plan/budget";
 import { isSecured } from "@/lib/plan/vendor-status";
 import { EMPTY_PROGRESS, buildVendors, securedCount, vendorTally } from "@/lib/plan/vendors";
-import { birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "@/tests/helpers/fixtures";
 
 describe("buildVendors", () => {
   it("makes a card for every paid category, never for contingency", () => {

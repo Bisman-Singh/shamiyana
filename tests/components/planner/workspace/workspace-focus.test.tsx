@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { communityBrief, recordFor, sampleEnrichment, readyPlan } from "../helpers/fixtures";
-import { jsonError, mockFetch, streamed } from "../helpers/fetch";
-import { openTab, panel, renderWorkspace } from "../helpers/workspace";
+import { jsonError, mockFetch, streamed } from "@/tests/helpers/fetch";
+import { communityBrief, recordFor, sampleEnrichment, readyPlan } from "@/tests/helpers/fixtures";
+import { openTab, panel, renderWorkspace } from "@/tests/helpers/workspace";
 
 /** The announcer's text once its frame-delayed update has landed. */
 async function announced(text: string | RegExp) {

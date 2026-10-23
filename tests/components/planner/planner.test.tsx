@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Planner } from "@/components/planner/planner";
 import { PlanStore, STORE_KEY } from "@/lib/client/plan-store";
 import { encodeShare } from "@/lib/export/share";
 import { LIMITS } from "@/lib/plan/constants";
-import { sampleEnrichment, recordFor, weddingBrief } from "../helpers/fixtures";
-import { jsonError, mockFetch, streamed } from "../helpers/fetch";
-import { expectAccessible, renderIn } from "../helpers/render";
-import { MemoryStorage } from "../helpers/storage";
+import { Planner } from "@/components/planner/planner";
+import { jsonError, mockFetch, streamed } from "@/tests/helpers/fetch";
+import { sampleEnrichment, recordFor, weddingBrief } from "@/tests/helpers/fixtures";
+import { expectAccessible, renderIn } from "@/tests/helpers/render";
+import { MemoryStorage } from "@/tests/helpers/storage";
 
 const enrichment = JSON.stringify(sampleEnrichment);
 

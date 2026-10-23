@@ -1,5 +1,5 @@
 import { buildIcs, escapeText, foldLine } from "@/lib/export/ics";
-import { NOW, TODAY } from "../helpers/fixtures";
+import { NOW, TODAY } from "@/tests/helpers/fixtures";
 
 const octets = (s: string) => new TextEncoder().encode(s).length;
 

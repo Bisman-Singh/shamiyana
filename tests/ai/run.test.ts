@@ -1,5 +1,5 @@
 import { runRefine } from "@/lib/ai/refine";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
+import { TODAY, weddingFacts } from "@/tests/helpers/fixtures";
 
 describe("generateSanitized", () => {
   // through the refine runner, its simplest caller

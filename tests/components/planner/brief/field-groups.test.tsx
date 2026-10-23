@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { renderIn } from "../helpers/render";
+import { renderIn } from "@/tests/helpers/render";
 
 afterEach(() => {
   vi.useRealTimers();

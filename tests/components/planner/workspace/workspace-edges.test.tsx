@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
-import { factsOf } from "@/lib/plan/schema";
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { formatMoney } from "@/lib/i18n/format";
 import { planBudget } from "@/lib/plan/budget";
 import { saveIdea, withEnrichment } from "@/lib/plan/record";
+import { factsOf } from "@/lib/plan/schema";
+import { stubCanvas, stubObjectUrls } from "@/tests/helpers/browser";
+import { jsonError, mockFetch, streamed } from "@/tests/helpers/fetch";
 import {
   NOW,
   TODAY,
@@ -12,11 +14,9 @@ import {
   sampleEnrichment,
   weddingBrief,
   readyPlan,
-} from "../helpers/fixtures";
-import { stubCanvas, stubObjectUrls } from "../helpers/browser";
-import { jsonError, mockFetch, streamed } from "../helpers/fetch";
-import { renderIn } from "../helpers/render";
-import { openTab, panel, renderWorkspace } from "../helpers/workspace";
+} from "@/tests/helpers/fixtures";
+import { renderIn } from "@/tests/helpers/render";
+import { openTab, panel, renderWorkspace } from "@/tests/helpers/workspace";
 
 afterEach(() => {
   vi.useRealTimers();

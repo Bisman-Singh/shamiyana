@@ -1,5 +1,5 @@
 import { briefSchema, guestSchema, storeSchema } from "@/lib/plan/schema";
-import { birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
+import { birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "@/tests/helpers/fixtures";
 
 describe("briefSchema", () => {
   it.each([weddingBrief, birthdayBrief])("accepts a valid $type brief", (brief) => {

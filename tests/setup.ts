@@ -1,5 +1,5 @@
-import { configure } from "@testing-library/dom";
 import "@testing-library/jest-dom/vitest";
+import { configure } from "@testing-library/dom";
 
 // The shared live region repeats visible messages for screen readers; text
 // queries skip it, and announcement tests read it by its test id. findBy and

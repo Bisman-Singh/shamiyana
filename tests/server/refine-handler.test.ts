@@ -8,8 +8,8 @@ import {
   jsonPost,
   spec,
   testDeps,
-} from "../helpers/ai";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
+} from "@/tests/helpers/ai";
+import { TODAY, weddingFacts } from "@/tests/helpers/fixtures";
 
 /** Info-level log lines from the current test. */
 const infoLines: string[] = [];

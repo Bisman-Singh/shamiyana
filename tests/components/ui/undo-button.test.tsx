@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { act, render, screen } from "@testing-library/react";
 import { StrictMode, useState } from "react";
+import { getDictionary } from "@/lib/i18n/index";
+import { LocaleProvider } from "@/components/locale-provider";
 import { focusOpenPanel } from "@/components/ui/focus";
 import { UndoButton } from "@/components/ui/undo-button";
-import { LocaleProvider } from "@/components/locale-provider";
-import { getDictionary } from "@/lib/i18n";
 
 const frames = () =>
   act(

@@ -1,5 +1,6 @@
 import "server-only";
 import { Output, streamText, toTextStream, type TextStreamPart, type ToolSet } from "ai";
+import { enrichmentOutputSchema } from "@/lib/api/output-schemas";
 import { planBudget } from "@/lib/plan/budget";
 import type { Locale } from "@/lib/plan/constants";
 import { isEmptyEnrichment, sanitizeEnrichment } from "@/lib/plan/enrichment";
@@ -10,7 +11,6 @@ import { cacheKey, type AnswerCache } from "./cache";
 import { firstWorking } from "./fallback";
 import { PROMPT_VERSION, planPrompt, planSystem } from "./prompts";
 import { AI_LIMITS, type RunContext } from "./run";
-import { enrichmentOutputSchema } from "@/lib/api/output-schemas";
 
 type Part = TextStreamPart<ToolSet>;
 

@@ -1,8 +1,5 @@
-import { TASK_IDS } from "@/lib/plan/task-templates";
-import { CATEGORY_IDS } from "@/lib/plan/constants";
-import { en } from "@/lib/i18n/en";
-import { hi } from "@/lib/i18n/hi";
 import { getDictionary, isLocale, resolveLocale } from "@/lib/i18n";
+import { en } from "@/lib/i18n/en";
 import {
   amountInWords,
   format,
@@ -12,6 +9,9 @@ import {
   intlLocale,
   plural,
 } from "@/lib/i18n/format";
+import { hi } from "@/lib/i18n/hi";
+import { CATEGORY_IDS } from "@/lib/plan/constants";
+import { TASK_IDS } from "@/lib/plan/task-templates";
 
 function leaves(value: unknown, path = ""): [string, string][] {
   if (typeof value === "string") return [[path, value]];

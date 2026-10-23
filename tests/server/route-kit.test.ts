@@ -2,8 +2,8 @@ import { planHandler } from "@/lib/server/plan-handler";
 import { DailyCap } from "@/lib/server/rate-limit";
 import { refineHandler } from "@/lib/server/refine-handler";
 import { visionHandler } from "@/lib/server/vision-handler";
-import { formPost, generatingModel, jsonPost, spec, testDeps } from "../helpers/ai";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
+import { formPost, generatingModel, jsonPost, spec, testDeps } from "@/tests/helpers/ai";
+import { TODAY, weddingFacts } from "@/tests/helpers/fixtures";
 
 beforeEach(() => {
   vi.spyOn(console, "info").mockImplementation(() => undefined);

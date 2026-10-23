@@ -1,8 +1,8 @@
 import { z } from "zod";
+import type { refineRequestSchema } from "@/lib/api/contracts";
 import { visionResultSchema, type VisionResult } from "@/lib/api/vision-result";
 import { parseChanges, type Change } from "@/lib/plan/changes";
 import { LIMITS, type CategoryId } from "@/lib/plan/constants";
-import type { refineRequestSchema } from "@/lib/api/contracts";
 import { isRecord } from "@/lib/shared/untrusted";
 
 /**

@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { screen, waitFor } from "@testing-library/react";
-import { ShareDialog } from "@/components/planner/workspace/share-dialog";
 import { MAX_ENCODED } from "@/lib/export/share";
 import type * as Share from "@/lib/export/share";
-import { recordFor, weddingBrief } from "../helpers/fixtures";
-import { renderIn } from "../helpers/render";
+import { ShareDialog } from "@/components/planner/workspace/share-dialog";
+import { recordFor, weddingBrief } from "@/tests/helpers/fixtures";
+import { renderIn } from "@/tests/helpers/render";
 
 const encoded = vi.hoisted(() => ({
   value: "x".repeat(40_000),

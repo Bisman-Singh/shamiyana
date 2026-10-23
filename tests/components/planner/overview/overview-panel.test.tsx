@@ -1,17 +1,17 @@
 // @vitest-environment jsdom
 import { screen } from "@testing-library/react";
 import { tasksFor } from "@/lib/plan/task-templates";
+import { stubObjectUrls } from "@/tests/helpers/browser";
+import { jsonError, mockFetch } from "@/tests/helpers/fetch";
 import {
   birthdayBrief,
   birthdayFacts,
   recordFor,
   weddingBrief,
   readyPlan,
-} from "../helpers/fixtures";
-import { stubObjectUrls } from "../helpers/browser";
-import { jsonError, mockFetch } from "../helpers/fetch";
-import { expectAccessible } from "../helpers/render";
-import { panel, renderWorkspace } from "../helpers/workspace";
+} from "@/tests/helpers/fixtures";
+import { expectAccessible } from "@/tests/helpers/render";
+import { panel, renderWorkspace } from "@/tests/helpers/workspace";
 
 beforeEach(() => {
   stubObjectUrls("blob:x");

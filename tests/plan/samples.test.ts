@@ -4,7 +4,7 @@ import { parseDraft } from "@/lib/plan/draft";
 import { createRecord } from "@/lib/plan/record";
 import { diwaliMelaDate, sampleDraft, winterWeddingDate } from "@/lib/plan/samples";
 import { buildTimeline } from "@/lib/plan/timeline";
-import { TODAY } from "../helpers/fixtures";
+import { TODAY } from "@/tests/helpers/fixtures";
 
 const example = { title: "Example", city: "Jaipur", notes: "" };
 

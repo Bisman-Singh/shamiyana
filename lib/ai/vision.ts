@@ -1,12 +1,12 @@
 import "server-only";
 import { Output } from "ai";
+import { visionOutputSchema } from "@/lib/api/output-schemas";
+import { sanitizeVision, type VisionResult } from "@/lib/api/vision-result";
 import { planBudget } from "@/lib/plan/budget";
 import type { Locale } from "@/lib/plan/constants";
 import type { EventFacts } from "@/lib/plan/schema";
 import { visionPrompt, visionSystem } from "./prompts";
 import { AI_LIMITS, generateSanitized, type RunContext } from "./run";
-import { visionOutputSchema } from "@/lib/api/output-schemas";
-import { sanitizeVision, type VisionResult } from "@/lib/api/vision-result";
 
 /** `mediaType` is sniffed from the bytes, never the type the browser declared. */
 export interface VisionInput {

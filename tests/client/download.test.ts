@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { downloadText } from "@/lib/client/download";
-import { stubObjectUrls } from "../helpers/browser";
+import { stubObjectUrls } from "@/tests/helpers/browser";
 
 afterEach(() => {
   vi.restoreAllMocks();

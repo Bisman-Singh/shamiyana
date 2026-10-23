@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { ImageEncodeError, UnsupportedImageError, prepareImage } from "@/lib/client/image";
-import { stubCanvas } from "../helpers/browser";
+import { stubCanvas } from "@/tests/helpers/browser";
 
 afterEach(() => {
   vi.restoreAllMocks();

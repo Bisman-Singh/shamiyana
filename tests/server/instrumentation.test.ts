@@ -1,6 +1,6 @@
-import { register } from "@/instrumentation";
 import { EnvError } from "@/lib/server/env";
 import type * as Log from "@/lib/server/log";
+import { register } from "@/instrumentation";
 
 const logNotice = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/server/log", async (load) => ({ ...(await load<typeof Log>()), logNotice }));

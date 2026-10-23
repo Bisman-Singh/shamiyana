@@ -1,6 +1,6 @@
 import { runRefine } from "@/lib/ai/refine";
-import { brokenGenerateModel, generatingModel, runContext } from "../helpers/ai";
-import { TODAY, weddingFacts } from "../helpers/fixtures";
+import { brokenGenerateModel, generatingModel, runContext } from "@/tests/helpers/ai";
+import { TODAY, weddingFacts } from "@/tests/helpers/fixtures";
 
 describe("runRefine", () => {
   it("refine treats an empty or non-object reply as a failure", async () => {

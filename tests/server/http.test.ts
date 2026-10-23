@@ -9,7 +9,7 @@ import {
   statusOf,
 } from "@/lib/server/http";
 import { RateLimiter } from "@/lib/server/rate-limit";
-import { SAME_ORIGIN, jsonPost } from "../helpers/ai";
+import { SAME_ORIGIN, jsonPost } from "@/tests/helpers/ai";
 
 const req = (headers: Record<string, string>, body?: BodyInit) =>
   new Request("https://plan.test/api/x", { method: "POST", headers, body });

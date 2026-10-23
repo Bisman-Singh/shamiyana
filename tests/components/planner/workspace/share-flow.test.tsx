@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { readyPlan } from "../helpers/fixtures";
-import { renderWorkspace } from "../helpers/workspace";
+import { readyPlan } from "@/tests/helpers/fixtures";
+import { renderWorkspace } from "@/tests/helpers/workspace";
 
 afterEach(() => {
   vi.restoreAllMocks();

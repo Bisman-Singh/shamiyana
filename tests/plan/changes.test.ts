@@ -1,7 +1,7 @@
 import { MAX_CHANGES, applyChanges, fitChanges, parseChanges } from "@/lib/plan/changes";
 import type { CategoryId } from "@/lib/plan/constants";
 import { planRecordSchema } from "@/lib/plan/schema";
-import { TODAY, recordFor, weddingBrief } from "../helpers/fixtures";
+import { TODAY, recordFor, weddingBrief } from "@/tests/helpers/fixtures";
 
 const CATS: CategoryId[] = ["venue", "catering", "decor", "contingency"];
 const parse = (raw: unknown) => parseChanges(raw, CATS, TODAY);

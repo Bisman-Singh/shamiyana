@@ -1,5 +1,5 @@
-import { jsonPost } from "../helpers/ai";
-import { weddingFacts } from "../helpers/fixtures";
+import { jsonPost } from "@/tests/helpers/ai";
+import { weddingFacts } from "@/tests/helpers/fixtures";
 
 const SECRET = "test-token";
 /** Nothing listens on the discard port, so every call to it fails at once. */

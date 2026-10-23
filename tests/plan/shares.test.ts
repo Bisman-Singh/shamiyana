@@ -1,6 +1,6 @@
 import { COMMUNITY_KINDS, EVENT_TYPES, HONOREES } from "@/lib/plan/constants";
 import { BASE_SHARES, shiftableCategories, variantFactors } from "@/lib/plan/shares";
-import { birthdayBrief, communityBrief, weddingBrief } from "../helpers/fixtures";
+import { birthdayBrief, communityBrief, weddingBrief } from "@/tests/helpers/fixtures";
 
 describe("BASE_SHARES", () => {
   it.each(EVENT_TYPES)("splits a %s budget into shares that sum to 1", (type) => {

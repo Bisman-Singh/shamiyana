@@ -1,6 +1,6 @@
-import { emptyDraft, parseDraft } from "@/lib/plan/draft";
+import { draftFromBrief, emptyDraft, parseDraft } from "@/lib/plan/draft";
 import { sampleDraft } from "@/lib/plan/samples";
-import { TODAY } from "../helpers/fixtures";
+import { TODAY, communityBrief } from "@/tests/helpers/fixtures";
 
 const example = { title: "Example", city: "Jaipur", notes: "" };
 
@@ -27,5 +27,11 @@ describe("draft", () => {
         "title",
       ]);
     }
+  });
+});
+
+describe("draftFromBrief", () => {
+  it("keeps a community event's kind when editing", () => {
+    expect(draftFromBrief(communityBrief).kind).toBe("festival");
   });
 });
