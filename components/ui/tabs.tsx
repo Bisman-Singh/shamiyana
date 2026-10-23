@@ -27,6 +27,16 @@ export function nextTabIndex(key: string, index: number, count: number): number 
  * mounted but hidden, so their state survives a switch and print can show
  * them all.
  */
+/**
+ * For when the focused control goes away, such as a row put back by Undo or a
+ * button whose job is done: focus moves to the open panel, not the page.
+ */
+export function focusOpenPanel(): void {
+  requestAnimationFrame(() => {
+    document.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden])')?.focus();
+  });
+}
+
 export function Tabs<T extends string>({
   label,
   tabs,

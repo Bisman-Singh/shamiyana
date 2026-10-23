@@ -19,6 +19,7 @@ import { guestSchema, type Guest } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
+import { focusOpenPanel } from "../ui/tabs";
 import type { PlanView, Update } from "./types";
 
 function AddGuest({ update, full }: Readonly<{ update: Update; full: boolean }>) {
@@ -105,6 +106,7 @@ function Tallies({ view, update }: Readonly<{ view: PlanView; update: Update }>)
   const { dict, locale } = useLocale();
   const g = dict.guests;
   const { record, guests: tally } = view;
+  const announce = useAnnounce();
   const n = (value: number) => formatNumber(value, locale);
   const mismatch = tally.expected > 0 && tally.expected !== record.brief.guests;
   return (
@@ -140,13 +142,10 @@ function Tallies({ view, update }: Readonly<{ view: PlanView; update: Update }>)
             type="button"
             className="btn btn-small"
             onClick={() => {
-              update((r, now) =>
-                updateBrief(
-                  r,
-                  { ...r.brief, guests: Math.min(LIMITS.guestsMax, tally.expected) },
-                  now,
-                ),
-              );
+              const guests = Math.min(LIMITS.guestsMax, tally.expected);
+              update((r, now) => updateBrief(r, { ...r.brief, guests }, now));
+              announce(format(g.countUsed, { n: n(guests) }));
+              focusOpenPanel();
             }}
           >
             {format(g.useCount, { n: n(tally.expected) })}

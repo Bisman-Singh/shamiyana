@@ -226,6 +226,7 @@
     "more": "More",
     "reset": "Reset",
     "shifted": "Weighted ×{factor}",
+    "nowPlanned": "{category} is now planned at {amount}.",
     "suggestions": "AI suggestions",
     "suggestion": "{direction} {category}: {before} to {after}",
     "up": "More for",
@@ -271,6 +272,10 @@
     "restore": {
       "one": "Show {n} removed task",
       "other": "Show {n} removed tasks"
+    },
+    "restored": {
+      "one": "{n} removed task is back on the list.",
+      "other": "{n} removed tasks are back on the list."
     },
     "ics": "Calendar (.ics)",
     "eventDay": "The big day"
@@ -482,6 +487,7 @@
     "foodSplit": "Food split of guests expected",
     "mismatch": "The plan says {plan} guests; your list expects {list}.",
     "useCount": "Use {n} as the guest count",
+    "countUsed": "The plan now counts {n} guests.",
     "empty": "No guests yet. Add households one at a time; the counts update as replies come in.",
     "removeLabel": "Remove {name}",
     "removed": "Removed {name}.",

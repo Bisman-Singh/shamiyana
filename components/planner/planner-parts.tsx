@@ -41,6 +41,13 @@ export function useIncomingShare(): [Incoming, (value: Incoming) => void] {
   return [incoming, setIncoming];
 }
 
+/** A dismissed notice takes the focus with it, so focus goes to the page's heading. */
+function focusHeading(): void {
+  requestAnimationFrame(() => {
+    document.querySelector<HTMLElement>("h1")?.focus();
+  });
+}
+
 export function StoreNotice({
   notice,
   onDismiss,
@@ -53,7 +60,14 @@ export function StoreNotice({
     <Notice
       tone={notice === "full" ? "error" : "info"}
       action={
-        <button type="button" className="btn btn-small btn-quiet" onClick={onDismiss}>
+        <button
+          type="button"
+          className="btn btn-small btn-quiet"
+          onClick={() => {
+            onDismiss();
+            focusHeading();
+          }}
+        >
           {dict.common.close}
         </button>
       }
@@ -94,7 +108,14 @@ export function SharedImport({
         >
           {dict.imported.open}
         </button>
-        <button type="button" className="btn" onClick={onDismiss}>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => {
+            onDismiss();
+            focusHeading();
+          }}
+        >
           {dict.imported.dismiss}
         </button>
       </div>

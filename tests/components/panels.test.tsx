@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { factsOf } from "@/lib/plan/schema";
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { nudge } from "@/components/planner/budget-panel";
 import { tasksFor } from "@/lib/plan/catalog";
@@ -82,6 +82,14 @@ describe("overview", () => {
   });
 });
 
+/** Focus and the live region once their frame-delayed updates land. */
+async function settles(focused: () => HTMLElement, said: string | RegExp) {
+  await waitFor(() => {
+    expect(focused()).toHaveFocus();
+    expect(screen.getByTestId("announcer")).toHaveTextContent(said);
+  });
+}
+
 describe("budget", () => {
   it("nudges a category, resets it and applies an AI suggestion", async () => {
     const { saved, container } = renderWorkspace(ready());
@@ -90,8 +98,13 @@ describe("budget", () => {
     const decor = within(panel().getByRole("group", { name: "Adjust Decor and flowers" }));
     await userEvent.click(decor.getByRole("button", { name: "More" }));
     expect(saved.current.factors).toEqual({ decor: 1.1 });
+    const more = () => decor.getByRole("button", { name: "More" });
+    await settles(more, /^Decor and flowers is now planned at ₹/);
+    const raised = screen.getByTestId("announcer").textContent;
     await userEvent.click(decor.getByRole("button", { name: /Reset/ }));
     expect(saved.current.factors).toEqual({});
+    await settles(more, /^Decor and flowers is now planned at ₹/);
+    expect(screen.getByTestId("announcer").textContent).not.toBe(raised);
     await userEvent.click(panel().getByRole("button", { name: /^Apply/ }));
     expect(saved.current.factors).toEqual({ decor: 1.2 });
     expect(panel().getByRole("button", { name: /^Applied/ })).toHaveAttribute(
@@ -146,6 +159,7 @@ describe("timeline", () => {
     await userEvent.click(p.getByRole("button", { name: "Remove Book the mehndi artist" }));
     await userEvent.click(p.getByRole("button", { name: "Show 1 removed task" }));
     expect(saved.current.hidden).toEqual([]);
+    await settles(() => screen.getByRole("tabpanel"), "1 removed task is back on the list.");
     expect(p.getAllByRole("link", { name: /Add to Google Calendar/ })[0]).toHaveAttribute(
       "target",
       "_blank",
@@ -261,6 +275,7 @@ describe("guests", () => {
     expect(p.getByText(/Jain 4/)).toBeInTheDocument();
     await userEvent.click(p.getByRole("button", { name: "Use 4 as the guest count" }));
     expect(saved.current.brief.guests).toBe(4);
+    await settles(() => screen.getByRole("tabpanel"), "The plan now counts 4 guests.");
     await userEvent.selectOptions(p.getByLabelText("Show"), "no");
     expect(p.queryByText("Mamaji's family")).toBeNull();
     await userEvent.selectOptions(p.getByLabelText("Show"), "all");

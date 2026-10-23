@@ -189,6 +189,9 @@ describe("Planner", () => {
     const first = setup();
     await userEvent.click(await screen.findByRole("button", { name: "Not now" }));
     expect(screen.queryByRole("heading", { name: "Open a shared plan?" })).toBeNull();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1 })).toHaveFocus();
+    });
     first.unmount();
     window.history.replaceState(null, "", "/#plan=broken");
     setup();
@@ -202,6 +205,9 @@ describe("Planner", () => {
     expect(screen.getByText(/blocking storage/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Close" }));
     expect(screen.queryByText(/blocking storage/)).toBeNull();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1 })).toHaveFocus();
+    });
   });
 
   it("says when storage is full instead of losing the change silently", async () => {

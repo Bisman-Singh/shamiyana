@@ -13,6 +13,7 @@ import { PHASES, type TimelineItem } from "@/lib/plan/timeline";
 import { useLocale } from "../locale-provider";
 import { useAnnounce } from "../ui/announcer";
 import { SelectField, TextField } from "../ui/field";
+import { focusOpenPanel } from "../ui/tabs";
 import { areaName, taskTitle } from "./task-title";
 import type { PlanView, Update } from "./types";
 
@@ -158,6 +159,7 @@ function TaskRow({
 export function TimelinePanel({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
   const { dict, locale } = useLocale();
   const t = dict.timeline;
+  const announce = useAnnounce();
   const { timeline, record } = view;
 
   function downloadIcs() {
@@ -213,6 +215,8 @@ export function TimelinePanel({ view, update }: Readonly<{ view: PlanView; updat
           className="btn btn-quiet"
           onClick={() => {
             update((r, now) => restoreHiddenTasks(r, now));
+            announce(plural(locale, t.restored, record.hidden.length));
+            focusOpenPanel();
           }}
         >
           {plural(locale, t.restore, record.hidden.length)}

@@ -17,7 +17,7 @@ import { useLocale } from "../locale-provider";
 import { useAnnounce, useFocusOnMount } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 import { UndoButton } from "../ui/undo-button";
-import { Tabs, type Tab } from "../ui/tabs";
+import { focusOpenPanel, Tabs, type Tab } from "../ui/tabs";
 import { AiStatus } from "./ai-status";
 import { BudgetPanel } from "./budget-panel";
 import { GuestsPanel } from "./guests-panel";
@@ -199,13 +199,6 @@ function planTabs({
       panel: <IdeasPanel view={view} ideas={ideas} status={status} update={update} />,
     },
   ];
-}
-
-/** After an undo the restored row has no focus to return to, so focus goes to the open panel. */
-function focusOpenPanel() {
-  requestAnimationFrame(() => {
-    document.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden])')?.focus();
-  });
 }
 
 export function Workspace({

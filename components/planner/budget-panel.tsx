@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useRef } from "react";
 import { budgetRows } from "@/lib/export/sheets";
 import { downloadCsv } from "@/lib/client/files";
 import { format } from "@/lib/i18n/format";
@@ -11,6 +11,7 @@ import type { Enrichment } from "@/lib/plan/enrichment";
 import { setFactor } from "@/lib/plan/record";
 import { factsOf } from "@/lib/plan/schema";
 import { useLocale, useMoney } from "../locale-provider";
+import { useAnnounce } from "../ui/announcer";
 import type { PlanView, Update } from "./types";
 
 const STEP = 0.1;
@@ -27,6 +28,7 @@ type Shift = (category: CategoryId, factor: number | null) => void;
 function Stepper({ row, factor, shift }: Readonly<{ row: Row; factor: number; shift: Shift }>) {
   const { dict } = useLocale();
   const b = dict.budget;
+  const moreRef = useRef<HTMLButtonElement>(null);
   return (
     <div
       className="stepper"
@@ -45,6 +47,7 @@ function Stepper({ row, factor, shift }: Readonly<{ row: Row; factor: number; sh
         {b.less}
       </button>
       <button
+        ref={moreRef}
         type="button"
         className="btn btn-small"
         aria-disabled={factor >= MAX || undefined}
@@ -61,6 +64,8 @@ function Stepper({ row, factor, shift }: Readonly<{ row: Row; factor: number; sh
           className="btn btn-small btn-quiet"
           onClick={() => {
             shift(row.category, null);
+            // Reset leaves once the weight is back to 1, so focus stays in the stepper on More.
+            moreRef.current?.focus();
           }}
         >
           {b.reset} <span className="hint">{format(b.shifted, { factor: factor.toFixed(1) })}</span>
@@ -235,8 +240,11 @@ export function BudgetPanel({
   const money = useMoney();
   const b = dict.budget;
   const { budget, record } = view;
+  const announce = useAnnounce();
   const shift: Shift = (category, factor) => {
+    const { after } = previewShifts(factsOf(record.brief), record.factors)(category, factor ?? 1);
     update((r, now) => setFactor(r, category, factor, now));
+    announce(format(b.nowPlanned, { category: dict.categories[category], amount: money(after) }));
   };
   const over = budget.remaining < 0;
 
