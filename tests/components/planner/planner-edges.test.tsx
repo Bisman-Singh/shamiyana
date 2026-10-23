@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PlanStore } from "@/lib/client/plan-store";
 import { Planner } from "@/components/planner/planner";
+import { stubObjectUrls } from "@/tests/helpers/browser";
 import { mockFetch } from "@/tests/helpers/fetch";
 import { recordFor, sampleEnrichment, weddingBrief } from "@/tests/helpers/fixtures";
 import { renderIn } from "@/tests/helpers/render";
@@ -28,6 +29,40 @@ describe("planner edges", () => {
       /up to 20 plans/,
     );
     window.history.replaceState(null, "", "/");
+  });
+
+  it("offers to download or delete saved data that couldn't be read", async () => {
+    stubObjectUrls("blob:unreadable");
+    const saved: string[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      saved.push(this.download);
+    });
+    const storage = new MemoryStorage();
+    storage.setItem("shamiyana:v1", "{not json");
+    renderIn(<Planner store={new PlanStore(() => storage)} />);
+    expect(await screen.findByText(/couldn't be read/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Download it" }));
+    expect(saved).toEqual(["shamiyana-unreadable.json"]);
+    await userEvent.click(screen.getByRole("button", { name: "Delete it" }));
+    expect(storage.getItem("shamiyana:unreadable")).toBeNull();
+    expect(screen.queryByText(/couldn't be read/)).toBeNull();
+    await waitFor(() => {
+      expect(screen.getByTestId("announcer")).toHaveTextContent(
+        "The data that couldn't be read was deleted.",
+      );
+    });
+  });
+
+  it("offers only Close when the unreadable data couldn't be kept", async () => {
+    const storage = new MemoryStorage();
+    storage.setItem("shamiyana:v1", "{not json");
+    storage.failWrites = true;
+    renderIn(<Planner store={new PlanStore(() => storage)} />);
+    expect(await screen.findByText(/couldn't be read/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Delete it" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument();
   });
 
   it("ignores a restore with no file chosen", () => {

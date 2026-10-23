@@ -103,6 +103,17 @@ export class PlanStore {
     this.set({ ...this.snapshot, notice: null });
   }
 
+  /** The saved data that was set aside because it couldn't be read, while it is still kept. */
+  readUnreadable(): string | null {
+    return this.storage()?.getItem(QUARANTINE_KEY) ?? null;
+  }
+
+  /** Deletes the set-aside copy for good, and the notice about it. */
+  deleteUnreadable(): void {
+    this.storage()?.removeItem(QUARANTINE_KEY);
+    this.dismissNotice();
+  }
+
   private readonly onStorage = (event: StorageEvent): void => {
     if (event.key === STORE_KEY) this.load();
   };

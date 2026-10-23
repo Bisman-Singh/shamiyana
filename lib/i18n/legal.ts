@@ -21,7 +21,7 @@ const privacyEn: LegalPage = {
       heading: "No accounts, no database",
       body: [
         "Shamiyana has no sign-up and keeps no database of plans. Everything you type, including the guest list, vendor notes and amounts, is saved in your own browser's local storage on this device.",
-        "Deleting a plan in the app, or clearing this site's data in your browser, removes it. We hold no copy to restore.",
+        "Deleting a plan in the app, or clearing this site's data in your browser, removes it. If saved data ever can't be read, the app sets it aside and offers to download or delete it. We hold no copy to restore.",
       ],
     },
     {
@@ -82,7 +82,7 @@ const privacyHi: LegalPage = {
       heading: "न खाता, न डेटाबेस",
       body: [
         "शामियाना में साइन-अप नहीं है और योजनाओं का कोई डेटाबेस नहीं रखा जाता। आप जो भी लिखते हैं, मेहमानों की सूची, वेंडर नोट और रक़में भी, वह इसी डिवाइस पर आपके ब्राउज़र के लोकल स्टोरेज में सहेजा जाता है।",
-        "ऐप में योजना हटाने से, या ब्राउज़र में इस साइट का डेटा साफ़ करने से, वह मिट जाती है। हमारे पास वापस लाने के लिए कोई कॉपी नहीं होती।",
+        "ऐप में योजना हटाने से, या ब्राउज़र में इस साइट का डेटा साफ़ करने से, वह मिट जाती है। अगर सहेजा गया डेटा कभी पढ़ा न जा सके, तो ऐप उसे अलग रखता है और उसे डाउनलोड करने या हटाने का विकल्प देता है। हमारे पास वापस लाने के लिए कोई कॉपी नहीं होती।",
       ],
     },
     {

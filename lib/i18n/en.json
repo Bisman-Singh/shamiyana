@@ -32,7 +32,10 @@
   "storage": {
     "blocked": "This browser is blocking storage, so changes won't be kept after you close the tab.",
     "full": "Browser storage is full, so the last change wasn't saved. Delete an old plan or download a backup.",
-    "recovered": "Some saved data couldn't be read. It was set aside and a fresh start was made."
+    "recovered": "Some saved data couldn't be read. It was set aside and a fresh start was made.",
+    "unreadableDownload": "Download it",
+    "unreadableDelete": "Delete it",
+    "unreadableDeleted": "The data that couldn't be read was deleted."
   },
   "plans": {
     "heading": "Your plans",

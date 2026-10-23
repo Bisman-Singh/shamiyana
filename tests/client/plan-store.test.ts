@@ -53,6 +53,20 @@ describe("plan storage", () => {
     expect(writeStore(full, store)).toBe("full");
   });
 
+  it("reads and deletes the set-aside copy, and does nothing without storage", () => {
+    const storage = new MemoryStorage();
+    storage.setItem(QUARANTINE_KEY, "{not json");
+    const store = new PlanStore(() => storage);
+    expect(store.readUnreadable()).toBe("{not json");
+    store.deleteUnreadable();
+    expect(store.readUnreadable()).toBeNull();
+    const blocked = new PlanStore(() => null);
+    expect(blocked.readUnreadable()).toBeNull();
+    expect(() => {
+      blocked.deleteUnreadable();
+    }).not.toThrow();
+  });
+
   it("detects whether the browser allows storage", () => {
     expect(browserStorage()).toBe(window.localStorage);
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
