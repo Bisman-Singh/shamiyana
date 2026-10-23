@@ -4,7 +4,6 @@ import { useEffect, useId, useRef, useState } from "react";
 import { MAX_ENCODED, encodeShare, shareUrl } from "@/lib/export/share";
 import type { PlanRecord } from "@/lib/plan/schema";
 import { useLocale } from "../locale-provider";
-import { useAnnounce } from "../ui/announcer";
 import { Notice } from "../ui/notice";
 
 interface ShareLinkProps {
@@ -12,12 +11,15 @@ interface ShareLinkProps {
   title: string;
 }
 
-/** The link with Copy and, where the browser has one, its share sheet. Copy takes focus when the link appears. */
+/**
+ * The link with Copy and, where the browser has one, its share sheet. Copy
+ * takes focus when the link appears. The modal hides the page's live region,
+ * so the dialog keeps its own status region for "Link copied."
+ */
 function ShareLink({ link, title }: Readonly<ShareLinkProps>) {
   const { dict } = useLocale();
   const s = dict.share;
   const id = useId();
-  const announce = useAnnounce();
   const copyRef = useRef<HTMLButtonElement>(null);
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
 
@@ -29,7 +31,6 @@ function ShareLink({ link, title }: Readonly<ShareLinkProps>) {
     try {
       await navigator.clipboard.writeText(link);
       setStatus("copied");
-      announce(s.copied);
     } catch {
       setStatus("failed");
     }
@@ -64,7 +65,9 @@ function ShareLink({ link, title }: Readonly<ShareLinkProps>) {
           </button>
         ) : null}
       </div>
-      {status === "copied" ? <Notice tone="success">{s.copied}</Notice> : null}
+      <div role="status">
+        {status === "copied" ? <Notice tone="success">{s.copied}</Notice> : null}
+      </div>
       {status === "failed" ? <Notice tone="error">{s.copyFailed}</Notice> : null}
     </>
   );

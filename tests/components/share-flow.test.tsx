@@ -43,7 +43,7 @@ describe("share dialog", () => {
     await userEvent.click(link);
     await userEvent.click(within(dialog).getByRole("button", { name: "Copy link" }));
     expect(writeText).toHaveBeenCalledWith((link as HTMLInputElement).value);
-    expect(within(dialog).getByText("Link copied.")).toBeInTheDocument();
+    expect(within(dialog).getByRole("status")).toHaveTextContent("Link copied.");
     await userEvent.click(within(dialog).getByRole("button", { name: "Share with an app" }));
     expect(share).toHaveBeenCalled();
     dialog.dispatchEvent(new Event("close"));
