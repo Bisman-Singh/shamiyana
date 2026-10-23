@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useRef, useState } from "react";
-import { Workspace } from "@/components/planner/workspace";
+import { Workspace } from "@/components/planner/workspace/workspace";
 import type { Locale } from "@/lib/plan/constants";
 import type { PlanRecord } from "@/lib/plan/schema";
 import { TODAY } from "./fixtures";

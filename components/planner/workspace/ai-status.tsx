@@ -2,24 +2,17 @@
 
 import { useEffect, useRef } from "react";
 import { format } from "@/lib/i18n/format";
-import { useLocale } from "../locale-provider";
-import { useAnnounce } from "../ui/announcer";
-import { Notice } from "../ui/notice";
+import { useLocale } from "@/components/locale-provider";
+import { Notice } from "@/components/ui/notice";
 import type { EnrichmentState } from "./use-enrichment";
 
-/**
- * Says through the page's live region when an answer stops early; nothing
- * else on the page says it, while errors are alerts and finished ideas are
- * announced when they are saved. The start of writing is not announced, so it
- * never talks over the change that set it off. Called once per plan.
- */
-export function useStatusAnnouncements(state: EnrichmentState): void {
-  const { dict } = useLocale();
-  const announce = useAnnounce();
-  const stoppedEarly = state.phase === "error" && state.error === "partial";
-  useEffect(() => {
-    if (stoppedEarly) announce(dict.ai.errors.partial);
-  }, [stoppedEarly, announce, dict.ai.errors.partial]);
+interface AiStatusProps {
+  state: EnrichmentState;
+  city: string;
+  hasIdeas: boolean;
+  onRegenerate: () => void;
+  onRetry: () => void;
+  onStop: () => void;
 }
 
 /**
@@ -28,10 +21,11 @@ export function useStatusAnnouncements(state: EnrichmentState): void {
  * to "Try again", so when focus was in here and fell to the page, it goes to
  * the new status's button, or to the status itself.
  */
-export function AiStatus(props: Readonly<StatusLineProps>) {
+export function AiStatus(props: Readonly<AiStatusProps>) {
   const slotRef = useRef<HTMLDivElement>(null);
   const hadFocusRef = useRef(false);
   const { phase } = props.state;
+  // DOM listeners rather than JSX handlers: the slot is a focus target, not a control.
   useEffect(() => {
     const slot = slotRef.current;
     const enter = () => {
@@ -59,15 +53,6 @@ export function AiStatus(props: Readonly<StatusLineProps>) {
   );
 }
 
-interface StatusLineProps {
-  state: EnrichmentState;
-  city: string;
-  hasIdeas: boolean;
-  onRegenerate: () => void;
-  onRetry: () => void;
-  onStop: () => void;
-}
-
 /** One status, writing, failed or idle, with its one action. */
 function StatusLine({
   state,
@@ -76,18 +61,17 @@ function StatusLine({
   onRegenerate,
   onRetry,
   onStop,
-}: Readonly<StatusLineProps>) {
+}: Readonly<AiStatusProps>) {
   const { dict } = useLocale();
-  const a = dict.ai;
 
   if (state.phase === "streaming") {
     return (
       <div className="ai-status">
         <p>
-          <span className="pulse" aria-hidden="true" /> {format(a.writing, { city })}
+          <span className="pulse" aria-hidden="true" /> {format(dict.ai.writing, { city })}
         </p>
         <button type="button" className="btn btn-small" onClick={onStop}>
-          {a.stop}
+          {dict.ai.stop}
         </button>
       </div>
     );
@@ -100,20 +84,20 @@ function StatusLine({
         action={
           retryable ? (
             <button type="button" className="btn btn-small" onClick={onRetry}>
-              {a.retry}
+              {dict.ai.retry}
             </button>
           ) : undefined
         }
       >
-        {a.errors[state.error]}
+        {dict.ai.errors[state.error]}
       </Notice>
     );
   }
   return (
     <div className="ai-status">
-      <p className="hint">{a.disclosure}</p>
+      <p className="hint">{dict.ai.disclosure}</p>
       <button type="button" className="btn btn-small" onClick={onRegenerate}>
-        {hasIdeas ? a.regenerate : a.retry}
+        {hasIdeas ? dict.ai.regenerate : dict.ai.retry}
       </button>
     </div>
   );

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { screen, waitFor } from "@testing-library/react";
-import { ShareDialog } from "@/components/planner/share-dialog";
+import { ShareDialog } from "@/components/planner/workspace/share-dialog";
 import { MAX_ENCODED } from "@/lib/export/share";
 import type * as Share from "@/lib/export/share";
 import { recordFor, weddingBrief } from "../helpers/fixtures";

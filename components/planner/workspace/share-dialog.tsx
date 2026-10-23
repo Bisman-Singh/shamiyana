@@ -3,8 +3,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { MAX_ENCODED, encodeShare, shareUrl } from "@/lib/export/share";
 import type { PlanRecord } from "@/lib/plan/schema";
-import { useLocale } from "../locale-provider";
-import { Notice } from "../ui/notice";
+import { useLocale } from "@/components/locale-provider";
+import { Notice } from "@/components/ui/notice";
 
 interface ShareLinkProps {
   link: string;

@@ -28,7 +28,7 @@ import { PlannerSkeleton } from "./planner-skeleton";
 import { PlansBar } from "./plans-bar";
 import { useIncomingShare, type Incoming } from "./use-incoming-share";
 import { useToday } from "./use-today";
-import { Workspace } from "./workspace";
+import { Workspace } from "@/components/planner/workspace/workspace";
 
 const BACKUP_MAX_BYTES = 1_000_000;
 
