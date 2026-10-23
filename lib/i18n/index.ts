@@ -3,7 +3,6 @@ import { en, type Dictionary } from "./en";
 import { hi } from "./hi";
 
 export type { Dictionary };
-export * from "./format";
 
 const DICTIONARIES: Record<Locale, Dictionary> = { en, hi };
 

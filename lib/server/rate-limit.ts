@@ -1,4 +1,5 @@
 import "server-only";
+import { BoundedMap } from "./bounded-map";
 
 /**
  * Sliding-window rate limiting held in memory, one window per client key.
@@ -34,23 +35,21 @@ export interface RateLimiterOptions {
 
 /** A sliding window per client key, held in this instance's memory. */
 export class RateLimiter implements RequestLimiter {
-  private readonly hits = new Map<string, number[]>();
+  private readonly hits: BoundedMap<string, number[]>;
   private readonly limit: number;
   private readonly windowMs: number;
-  private readonly maxKeys: number;
   private readonly now: () => number;
 
   constructor(options: RateLimiterOptions) {
     this.limit = options.limit;
     this.windowMs = options.windowMs;
-    this.maxKeys = options.maxKeys ?? 5_000;
+    this.hits = new BoundedMap(options.maxKeys ?? 5_000);
     this.now = options.now ?? Date.now;
   }
 
   check(key: string): RateResult {
     const now = this.now();
     const recent = (this.hits.get(key) ?? []).filter((t) => now - t < this.windowMs);
-    this.hits.delete(key);
     if (recent.length >= this.limit) {
       this.hits.set(key, recent);
       const oldest = recent[0] ?? now;
@@ -61,10 +60,6 @@ export class RateLimiter implements RequestLimiter {
     }
     recent.push(now);
     this.hits.set(key, recent);
-    for (const stale of this.hits.keys()) {
-      if (this.hits.size <= this.maxKeys) break;
-      this.hits.delete(stale);
-    }
     return { ok: true, retryAfter: 0 };
   }
 
@@ -82,14 +77,16 @@ export class RateLimiter implements RequestLimiter {
 export class DailyCap implements DailyAllowance {
   private day = "";
   private count = 0;
-  private readonly byClient = new Map<string, number>();
+  private readonly byClient: BoundedMap<string, number>;
 
   constructor(
     private readonly cap: number,
     private readonly clientCap: number = cap,
     private readonly now: () => number = Date.now,
-    private readonly maxKeys = 10_000,
-  ) {}
+    maxKeys = 10_000,
+  ) {
+    this.byClient = new BoundedMap(maxKeys);
+  }
 
   take(client = ""): boolean {
     const today = new Date(this.now()).toISOString().slice(0, 10);
@@ -101,12 +98,7 @@ export class DailyCap implements DailyAllowance {
     const used = this.byClient.get(client) ?? 0;
     if (this.count >= this.cap || used >= this.clientCap) return false;
     this.count += 1;
-    this.byClient.delete(client);
     this.byClient.set(client, used + 1);
-    for (const stale of this.byClient.keys()) {
-      if (this.byClient.size <= this.maxKeys) break;
-      this.byClient.delete(stale);
-    }
     return true;
   }
 }

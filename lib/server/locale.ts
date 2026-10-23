@@ -1,6 +1,7 @@
 import "server-only";
 import { cookies, headers } from "next/headers";
-import { LOCALE_COOKIE, getDictionary, resolveLocale, type Dictionary } from "@/lib/i18n";
+import { getDictionary, resolveLocale, type Dictionary } from "@/lib/i18n";
+import { LOCALE_COOKIE } from "@/lib/i18n/format";
 import type { Locale } from "@/lib/plan/constants";
 
 /** The request's language from the saved cookie or the browser's Accept-Language. */

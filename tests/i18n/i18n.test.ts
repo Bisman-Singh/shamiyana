@@ -2,18 +2,16 @@ import { TASK_IDS } from "@/lib/plan/catalog";
 import { CATEGORY_IDS } from "@/lib/plan/constants";
 import { en } from "@/lib/i18n/en";
 import { hi } from "@/lib/i18n/hi";
+import { getDictionary, isLocale, resolveLocale } from "@/lib/i18n";
 import {
   amountInWords,
   format,
   formatDate,
   formatMoney,
   formatNumber,
-  getDictionary,
   intlLocale,
-  isLocale,
   plural,
-  resolveLocale,
-} from "@/lib/i18n";
+} from "@/lib/i18n/format";
 
 function leaves(value: unknown, path = ""): [string, string][] {
   if (typeof value === "string") return [[path, value]];
