@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useState, type ChangeEvent } from "react";
 import type { VisionResult } from "@/lib/ai/vision-result";
+import { langOf } from "@/lib/i18n/lang";
 import { requestVision } from "@/lib/client/api";
 import { ACCEPTED_IMAGES, prepareImage } from "@/lib/client/files";
 import { factsOf } from "@/lib/plan/schema";
@@ -32,12 +33,13 @@ function VisionResultView({
   saved: ReadonlySet<string>;
   update: Update;
 }>) {
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
   const p = dict.photo;
   return (
     <div className="photo-result">
       <p>
-        <span className="tag">{p.kinds[result.kind]}</span> {result.mood}
+        <span className="tag">{p.kinds[result.kind]}</span>{" "}
+        <span lang={langOf(result.mood, locale)}>{result.mood}</span>
       </p>
       {result.palette.length > 0 ? (
         <>
@@ -55,7 +57,7 @@ function VisionResultView({
                     strokeOpacity="0.3"
                   />
                 </svg>
-                <span>{c.name}</span> <code>{c.hex}</code>
+                <span lang={langOf(c.name, locale)}>{c.name}</span> <code>{c.hex}</code>
               </li>
             ))}
           </ul>
@@ -64,8 +66,10 @@ function VisionResultView({
       <ul className="idea-list">
         {result.ideas.map((idea) => (
           <li key={idea.title} className="idea">
-            <p className="idea-title">{idea.title}</p>
-            <p>{idea.detail}</p>
+            <p className="idea-title" lang={langOf(idea.title, locale)}>
+              {idea.title}
+            </p>
+            <p lang={langOf(idea.detail, locale)}>{idea.detail}</p>
             <SaveIdeaButton idea={idea} saved={saved.has(idea.title)} update={update} />
           </li>
         ))}
@@ -75,7 +79,9 @@ function VisionResultView({
           <h4>{p.notes}</h4>
           <ul className="plain-list">
             {result.notes.map((n) => (
-              <li key={n}>{n}</li>
+              <li key={n} lang={langOf(n, locale)}>
+                {n}
+              </li>
             ))}
           </ul>
         </>

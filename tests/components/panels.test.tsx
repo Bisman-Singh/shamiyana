@@ -63,6 +63,25 @@ describe("overview", () => {
     await expectAccessible(container);
   });
 
+  it("marks English AI text and an English title in the Hindi interface", async () => {
+    const { container } = renderWorkspace(ready(), vi.fn(), "hi");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveAttribute("lang", "en");
+    expect(
+      await panel().findByRole("heading", { level: 3, name: "Marigold courtyard" }),
+    ).toHaveAttribute("lang", "en");
+    expect(panel().getByText("February evenings get cold.").closest("li")).toHaveAttribute(
+      "lang",
+      "en",
+    );
+    await expectAccessible(container);
+  });
+
+  it("marks a Hindi title in the English interface and nothing that matches the page", () => {
+    renderWorkspace(recordFor({ ...weddingBrief, title: "रोहन की शादी" }));
+    expect(screen.getByRole("heading", { level: 1 })).toHaveAttribute("lang", "hi");
+    expect(document.querySelectorAll('[lang="en"]')).toHaveLength(0);
+  });
+
   it("names the browser tab after the open plan and gives the old title back on close", () => {
     document.title = "Shamiyana";
     const record = ready();

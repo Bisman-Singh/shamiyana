@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, type ReactNode } from "react";
+import { langOf } from "@/lib/i18n/lang";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { format } from "@/lib/i18n/format";
 import { removeIdea } from "@/lib/plan/record";
@@ -19,7 +20,7 @@ function AiIdeas({
   saved: ReadonlySet<string>;
   update: Update;
 }>) {
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
   const id = useId();
   const i = dict.ideas;
   return (
@@ -27,8 +28,10 @@ function AiIdeas({
       {ideas.theme.name === "" ? null : (
         <section aria-labelledby={`${id}-theme`}>
           <h3 id={`${id}-theme`}>{i.theme}</h3>
-          <h4 className="theme-name">{ideas.theme.name}</h4>
-          <p>{ideas.theme.summary}</p>
+          <h4 className="theme-name" lang={langOf(ideas.theme.name, locale)}>
+            {ideas.theme.name}
+          </h4>
+          <p lang={langOf(ideas.theme.summary, locale)}>{ideas.theme.summary}</p>
         </section>
       )}
       {ideas.ideas.length === 0 ? null : (
@@ -41,8 +44,10 @@ function AiIdeas({
                   <span className="tag">{i.areas[idea.area]}</span>{" "}
                   <span className="hint">{i.cost[idea.cost]}</span>
                 </p>
-                <p className="idea-title">{idea.title}</p>
-                <p>{idea.detail}</p>
+                <p className="idea-title" lang={langOf(idea.title, locale)}>
+                  {idea.title}
+                </p>
+                <p lang={langOf(idea.detail, locale)}>{idea.detail}</p>
                 <SaveIdeaButton idea={idea} saved={saved.has(idea.title)} update={update} />
               </li>
             ))}
@@ -55,8 +60,8 @@ function AiIdeas({
           <dl className="menu">
             {ideas.menu.map((course) => (
               <div key={course.course}>
-                <dt>{course.course}</dt>
-                <dd>{course.dishes.join(", ")}</dd>
+                <dt lang={langOf(course.course, locale)}>{course.course}</dt>
+                <dd lang={langOf(course.dishes.join(" "), locale)}>{course.dishes.join(", ")}</dd>
               </div>
             ))}
           </dl>
@@ -67,7 +72,7 @@ function AiIdeas({
 }
 
 function SavedIdeas({ view, update }: Readonly<{ view: PlanView; update: Update }>) {
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
   const id = useId();
   const i = dict.ideas;
   return (
@@ -82,8 +87,10 @@ function SavedIdeas({ view, update }: Readonly<{ view: PlanView; update: Update 
               <p className="idea-meta">
                 <span className="tag">{i.areas[idea.area]}</span>
               </p>
-              <p className="idea-title">{idea.title}</p>
-              {idea.detail === "" ? null : <p>{idea.detail}</p>}
+              <p className="idea-title" lang={langOf(idea.title, locale)}>
+                {idea.title}
+              </p>
+              {idea.detail === "" ? null : <p lang={langOf(idea.detail, locale)}>{idea.detail}</p>}
               <button
                 type="button"
                 className="btn btn-small btn-quiet"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState, useRef, type RefObject, type SubmitEvent } from "react";
+import { langOf } from "@/lib/i18n/lang";
 import { requestRefine } from "@/lib/client/api";
 import type { Dictionary } from "@/lib/i18n/en";
 import { format, formatDate, formatMoney, plural } from "@/lib/i18n/format";
@@ -58,7 +59,7 @@ export function describeChange(
 }
 
 function ChatLog({ turns }: Readonly<{ turns: readonly Turn[] }>) {
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
   if (turns.length === 0) return null;
   return (
     <ol className="chat">
@@ -67,7 +68,7 @@ function ChatLog({ turns }: Readonly<{ turns: readonly Turn[] }>) {
           <span className="chat-who">
             {turn.role === "user" ? dict.refine.you : dict.refine.assistant}
           </span>
-          <p>{turn.text}</p>
+          <p lang={langOf(turn.text, locale)}>{turn.text}</p>
         </li>
       ))}
     </ol>

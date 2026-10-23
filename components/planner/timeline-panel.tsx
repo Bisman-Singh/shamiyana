@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState, type SubmitEvent } from "react";
+import { langOf } from "@/lib/i18n/lang";
 import { buildIcs } from "@/lib/export/ics";
 import { fileName, googleCalendarUrl } from "@/lib/export/links";
 import { downloadText } from "@/lib/client/files";
@@ -115,7 +116,8 @@ function TaskRow({
       </div>
       <div className="task-body">
         <label htmlFor={checkId} className="task-title">
-          <span className="visually-hidden">{t.donePrefix}</span> <span>{title}</span>
+          <span className="visually-hidden">{t.donePrefix}</span>{" "}
+          <span lang={langOf(title, locale)}>{title}</span>
         </label>
         <p className="task-meta">
           <span>{format(t.by, { date: formatDate(item.due, locale) })}</span>

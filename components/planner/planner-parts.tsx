@@ -4,6 +4,7 @@ import { useEffect, useId, useState, type ChangeEvent } from "react";
 import type { Notice as StoreNoticeKind } from "@/lib/client/plan-store";
 import { decodeShare, readShareHash, type SharedPlan } from "@/lib/export/share";
 import { format } from "@/lib/i18n/format";
+import { langOf } from "@/lib/i18n/lang";
 import { LIMITS } from "@/lib/plan/constants";
 import { localToday } from "@/lib/plan/dates";
 import type { PlanRecord } from "@/lib/plan/schema";
@@ -166,7 +167,7 @@ function PlanPicker({
   initial: PlanRecord;
   onSelect: (id: string) => void;
 }>) {
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
   const selectId = useId();
   const [choice, setChoice] = useState(initial.id);
   return (
@@ -180,7 +181,7 @@ function PlanPicker({
         }}
       >
         {plans.map((p) => (
-          <option key={p.id} value={p.id}>
+          <option key={p.id} value={p.id} lang={langOf(p.brief.title, locale)}>
             {p.brief.title}
           </option>
         ))}

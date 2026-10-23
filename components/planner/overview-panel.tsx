@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import { format, formatDate, formatMoney, formatNumber } from "@/lib/i18n/format";
+import { langOf } from "@/lib/i18n/lang";
 import type { Enrichment } from "@/lib/plan/enrichment";
 import { vendorTally } from "@/lib/plan/vendors";
 import { useLocale } from "../locale-provider";
@@ -79,8 +80,10 @@ export function OverviewPanel({
       {ideas && ideas.theme.name !== "" ? (
         <section aria-labelledby={`${id}-theme`}>
           <h2 id={`${id}-theme`}>{o.theme}</h2>
-          <h3 className="theme-name">{ideas.theme.name}</h3>
-          <p>{ideas.theme.summary}</p>
+          <h3 className="theme-name" lang={langOf(ideas.theme.name, locale)}>
+            {ideas.theme.name}
+          </h3>
+          <p lang={langOf(ideas.theme.summary, locale)}>{ideas.theme.summary}</p>
         </section>
       ) : null}
 
@@ -89,7 +92,7 @@ export function OverviewPanel({
           <h2 id={`${id}-risks`}>{o.risks}</h2>
           <ul className="plain-list">
             {ideas.risks.map((r) => (
-              <li key={r.risk}>
+              <li key={r.risk} lang={langOf(r.risk + r.mitigation, locale)}>
                 <strong>{r.risk}</strong> {r.mitigation}
               </li>
             ))}

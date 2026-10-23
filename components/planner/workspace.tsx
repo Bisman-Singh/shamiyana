@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
+import { langOf } from "@/lib/i18n/lang";
 import { downloadText } from "@/lib/client/files";
 import { fileName } from "@/lib/export/links";
 import type { Dictionary } from "@/lib/i18n/en";
@@ -68,7 +69,7 @@ function PlanHeader({
   return (
     <header className="plan-head">
       <div>
-        <h1 id={titleId} ref={titleRef} tabIndex={-1}>
+        <h1 id={titleId} ref={titleRef} tabIndex={-1} lang={langOf(brief.title, locale)}>
           {brief.title}
         </h1>
         <p className="plan-facts">

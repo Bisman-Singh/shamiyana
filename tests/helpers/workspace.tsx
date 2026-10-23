@@ -2,12 +2,13 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useRef, useState } from "react";
 import { Workspace } from "@/components/planner/workspace";
+import type { Locale } from "@/lib/plan/constants";
 import type { PlanRecord } from "@/lib/plan/schema";
 import { TODAY } from "../fixtures";
 import { renderIn } from "./render";
 
 /** Holds a plan in state the way the planner does, and exposes the latest saved version. */
-export function renderWorkspace(initial: PlanRecord, onEdit = vi.fn()) {
+export function renderWorkspace(initial: PlanRecord, onEdit = vi.fn(), locale: Locale = "en") {
   const saved: { current: PlanRecord } = { current: initial };
   function Harness() {
     const [record, setRecord] = useState(initial);
@@ -27,7 +28,7 @@ export function renderWorkspace(initial: PlanRecord, onEdit = vi.fn()) {
       />
     );
   }
-  const view = renderIn(<Harness />);
+  const view = renderIn(<Harness />, locale);
   return { ...view, saved, onEdit };
 }
 

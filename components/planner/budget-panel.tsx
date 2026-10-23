@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useRef } from "react";
+import { langOf } from "@/lib/i18n/lang";
 import { budgetRows } from "@/lib/export/sheets";
 import { downloadCsv } from "@/lib/client/files";
 import { format } from "@/lib/i18n/format";
@@ -126,7 +127,7 @@ function Suggestions({
   preview: ShiftPreview;
   shift: Shift;
 }>) {
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
   const money = useMoney();
   const id = useId();
   const b = dict.budget;
@@ -151,7 +152,7 @@ function Suggestions({
                     after: money(after),
                   })}
                 </strong>{" "}
-                {s.reason}
+                <span lang={langOf(s.reason, locale)}>{s.reason}</span>
               </p>
               <button
                 type="button"

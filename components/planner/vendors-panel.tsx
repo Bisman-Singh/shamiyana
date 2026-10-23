@@ -1,5 +1,6 @@
 "use client";
 
+import { langOf } from "@/lib/i18n/lang";
 import { mapsSearchUrl } from "@/lib/export/links";
 import { checklistRows } from "@/lib/export/sheets";
 import { downloadCsv } from "@/lib/client/files";
@@ -23,6 +24,7 @@ function Questions({
   vendor,
   items,
 }: Readonly<{ title: string; vendor: string; items: readonly string[] }>) {
+  const { locale } = useLocale();
   if (items.length === 0) return null;
   return (
     <>
@@ -32,7 +34,9 @@ function Questions({
       </h3>
       <ul className="plain-list">
         {items.map((q) => (
-          <li key={q}>{q}</li>
+          <li key={q} lang={langOf(q, locale)}>
+            {q}
+          </li>
         ))}
       </ul>
     </>
