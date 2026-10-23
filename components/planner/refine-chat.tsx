@@ -2,6 +2,7 @@
 
 import { useId, useState, useRef, type RefObject, type SubmitEvent } from "react";
 import { langOf } from "@/lib/i18n/lang";
+import type { Turn as ChatTurn } from "@/lib/ai/prompts";
 import { requestRefine } from "@/lib/client/api";
 import type { Dictionary } from "@/lib/i18n/en";
 import { format, formatDate, formatMoney, plural } from "@/lib/i18n/format";
@@ -18,10 +19,9 @@ import { Notice } from "../ui/notice";
 import type { PanelProps, PlanView, Update } from "./types";
 import { useRequestSignal } from "./use-request-signal";
 
-interface Turn {
+/** A turn on screen: the model's view of it plus a key for the list. */
+interface Turn extends ChatTurn {
   id: string;
-  role: "user" | "assistant";
-  text: string;
 }
 
 interface Proposal {

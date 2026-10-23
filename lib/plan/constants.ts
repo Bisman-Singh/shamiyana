@@ -79,6 +79,10 @@ export type GuestGroup = (typeof GUEST_GROUPS)[number];
 export const LOCALES = ["en", "hi"] as const;
 export type Locale = (typeof LOCALES)[number];
 
+/** Who wrote a turn of the refine chat. */
+export const TURN_ROLES = ["user", "assistant"] as const;
+export type TurnRole = (typeof TURN_ROLES)[number];
+
 /** Input bounds shared by the form, the API schemas and the prompts. */
 export const LIMITS = {
   titleMax: 80,

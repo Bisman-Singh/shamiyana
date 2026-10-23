@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { LIMITS, LOCALES } from "@/lib/plan/constants";
+import { LIMITS, LOCALES, TURN_ROLES } from "@/lib/plan/constants";
 import { daysBetween, isIsoDate } from "@/lib/plan/dates";
 import { factorsSchema, factsSchema } from "@/lib/plan/schema";
 import { cleanText } from "@/lib/shared/plain-text";
@@ -40,7 +40,7 @@ export function planRequestSchema(serverNow: Date) {
 }
 
 const turn = z.strictObject({
-  role: z.enum(["user", "assistant"]),
+  role: z.enum(TURN_ROLES),
   text: z
     .string()
     .transform((v) => cleanText(v))

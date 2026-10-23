@@ -5,7 +5,7 @@ import {
   tasksFor,
   variantFactors,
 } from "@/lib/plan/catalog";
-import { LIMITS, type CategoryId, type Locale } from "@/lib/plan/constants";
+import { LIMITS, type CategoryId, type Locale, type TurnRole } from "@/lib/plan/constants";
 import type { BudgetLine } from "@/lib/plan/budget";
 import { daysBetween, wholeWeeks } from "@/lib/plan/dates";
 import type { EventFacts, PlanRecord } from "@/lib/plan/schema";
@@ -173,8 +173,9 @@ ${SHARED_RULES}
 - Write the reply and every title and detail in ${LANGUAGE[locale]}.`;
 }
 
+/** One turn of the refine chat as the model sees it. */
 export interface Turn {
-  role: "user" | "assistant";
+  role: TurnRole;
   text: string;
 }
 
