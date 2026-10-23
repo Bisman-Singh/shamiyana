@@ -47,6 +47,14 @@ describe("readEnv", () => {
     }
   });
 
+  it("takes TRUST_PROXY as 0 or 1 only, so a typo fails the deploy instead of merging every client", () => {
+    expect(readEnv({ TRUST_PROXY: "1" }).TRUST_PROXY).toBe("1");
+    expect(readEnv({ TRUST_PROXY: "" }).TRUST_PROXY).toBeUndefined();
+    expect(() => readEnv({ TRUST_PROXY: "true" })).toThrow(
+      "Invalid server environment: TRUST_PROXY",
+    );
+  });
+
   it("takes the Redis pair together and over https only, never echoing the token", () => {
     expect(
       readEnv({ KV_REST_API_URL: "https://kv.example.test", KV_REST_API_TOKEN: "tok" }).redis,

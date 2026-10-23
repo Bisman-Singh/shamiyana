@@ -1,3 +1,5 @@
+import "server-only";
+
 /**
  * Model fallback for streams. A stream cannot switch models halfway through
  * an answer, but it can before the answer starts: each attempt is read until
