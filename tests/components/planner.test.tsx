@@ -5,7 +5,7 @@ import { Planner } from "@/components/planner/planner";
 import { PlanStore, STORE_KEY } from "@/lib/client/plan-store";
 import { encodeShare } from "@/lib/export/share";
 import { LIMITS } from "@/lib/plan/constants";
-import { sampleEnrichment, recordFor, weddingBrief } from "../fixtures";
+import { sampleEnrichment, recordFor, weddingBrief } from "../helpers/fixtures";
 import { jsonError, mockFetch, streamed } from "../helpers/fetch";
 import { expectAccessible, renderIn } from "../helpers/render";
 import { MemoryStorage } from "../helpers/storage";

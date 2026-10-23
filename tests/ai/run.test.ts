@@ -1,7 +1,7 @@
 import type { MockLanguageModelV4 } from "ai/test";
 import { AnswerCache } from "@/lib/ai/cache";
 import { lookupPlan, runRefine, runVision, streamPlan, type PlanInput } from "@/lib/ai/run";
-import { TODAY, weddingFacts } from "../fixtures";
+import { TODAY, weddingFacts } from "../helpers/fixtures";
 import {
   JPEG,
   brokenGenerateModel,

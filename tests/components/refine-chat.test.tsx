@@ -6,7 +6,7 @@ import { describeChange } from "@/components/planner/refine-chat";
 import { getDictionary } from "@/lib/i18n";
 import { withEnrichment } from "@/lib/plan/record";
 import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { NOW, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
+import { NOW, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";
 import { openTab, panel, renderWorkspace } from "../helpers/workspace";

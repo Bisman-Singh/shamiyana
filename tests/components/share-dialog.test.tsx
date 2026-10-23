@@ -3,7 +3,7 @@ import { screen } from "@testing-library/react";
 import { ShareDialog } from "@/components/planner/share-dialog";
 import { MAX_ENCODED } from "@/lib/export/share";
 import type * as Share from "@/lib/export/share";
-import { recordFor, weddingBrief } from "../fixtures";
+import { recordFor, weddingBrief } from "../helpers/fixtures";
 import { renderIn } from "../helpers/render";
 
 const encoded = vi.hoisted(() => ({

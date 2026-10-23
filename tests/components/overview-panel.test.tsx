@@ -11,7 +11,7 @@ import {
   recordFor,
   sampleEnrichment,
   weddingBrief,
-} from "../fixtures";
+} from "../helpers/fixtures";
 import { stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";

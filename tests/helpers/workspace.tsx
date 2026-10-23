@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Workspace } from "@/components/planner/workspace";
 import type { Locale } from "@/lib/plan/constants";
 import type { PlanRecord } from "@/lib/plan/schema";
-import { TODAY } from "../fixtures";
+import { TODAY } from "./fixtures";
 import { renderIn } from "./render";
 
 /** Holds a plan in state the way the planner does, and exposes the latest saved version. */

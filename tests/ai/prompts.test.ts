@@ -12,7 +12,7 @@ import {
 } from "@/lib/ai/prompts";
 import { planBudget } from "@/lib/plan/budget";
 import { shiftableCategories } from "@/lib/plan/catalog";
-import { TODAY, birthdayBrief, communityBrief, weddingBrief } from "../fixtures";
+import { TODAY, birthdayBrief, communityBrief, weddingBrief } from "../helpers/fixtures";
 
 describe("prompts", () => {
   const lines = planBudget(weddingBrief, {});

@@ -7,7 +7,7 @@ import {
   variantFactors,
 } from "@/lib/plan/catalog";
 import { COMMUNITY_KINDS, EVENT_TYPES, HONOREES } from "@/lib/plan/constants";
-import { birthdayBrief, communityBrief, weddingBrief } from "../fixtures";
+import { birthdayBrief, communityBrief, weddingBrief } from "../helpers/fixtures";
 
 describe("catalog", () => {
   it.each(EVENT_TYPES)("splits a %s budget into shares that sum to 1", (type) => {

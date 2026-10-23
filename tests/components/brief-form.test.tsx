@@ -3,7 +3,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BriefForm } from "@/components/planner/brief-form";
 import { draftFromBrief } from "@/lib/plan/draft";
-import { TODAY, birthdayBrief, weddingBrief } from "../fixtures";
+import { TODAY, birthdayBrief, weddingBrief } from "../helpers/fixtures";
 import { expectAccessible, renderIn } from "../helpers/render";
 
 describe("BriefForm", () => {

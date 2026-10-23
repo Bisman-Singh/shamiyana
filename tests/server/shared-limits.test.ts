@@ -11,7 +11,7 @@ import {
   type ScriptClient,
   type WindowClient,
 } from "@/lib/server/shared-limits";
-import { weddingFacts } from "../fixtures";
+import { weddingFacts } from "../helpers/fixtures";
 import { jsonPost } from "../helpers/ai";
 
 const NOW = Date.parse("2026-10-23T10:00:00Z");

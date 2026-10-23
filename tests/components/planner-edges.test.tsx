@@ -3,7 +3,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Planner } from "@/components/planner/planner";
 import { PlanStore } from "@/lib/client/plan-store";
-import { recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
+import { recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
 import { mockFetch } from "../helpers/fetch";
 import { renderIn } from "../helpers/render";
 import { MemoryStorage } from "../helpers/storage";

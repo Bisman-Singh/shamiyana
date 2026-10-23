@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { nudge } from "@/components/planner/budget-panel";
 import { withEnrichment } from "@/lib/plan/record";
 import type { Brief, PlanRecord } from "@/lib/plan/schema";
-import { NOW, birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
+import { NOW, birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
 import { stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch } from "../helpers/fetch";
 import { expectAccessible } from "../helpers/render";

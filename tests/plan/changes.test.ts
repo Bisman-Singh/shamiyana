@@ -1,6 +1,6 @@
 import { MAX_CHANGES, parseChanges } from "@/lib/plan/changes";
 import type { CategoryId } from "@/lib/plan/constants";
-import { TODAY } from "../fixtures";
+import { TODAY } from "../helpers/fixtures";
 
 const CATS: CategoryId[] = ["venue", "catering", "decor", "contingency"];
 const parse = (raw: unknown) => parseChanges(raw, CATS, TODAY);

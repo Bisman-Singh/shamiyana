@@ -11,7 +11,7 @@ import { EVENT_TYPES } from "@/lib/plan/constants";
 import { saturdayOnOrBefore } from "@/lib/plan/dates";
 import { createRecord } from "@/lib/plan/record";
 import { buildTimeline } from "@/lib/plan/timeline";
-import { TODAY } from "../fixtures";
+import { TODAY } from "../helpers/fixtures";
 
 const example = { title: "Example", city: "Jaipur", notes: "" };
 

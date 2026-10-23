@@ -7,7 +7,7 @@ import {
 } from "@/lib/plan/budget";
 import type { CategoryId } from "@/lib/plan/constants";
 import { BASE_SHARES } from "@/lib/plan/catalog";
-import { birthdayBrief, communityBrief, seeded, weddingBrief } from "../fixtures";
+import { birthdayBrief, communityBrief, seeded, weddingBrief } from "../helpers/fixtures";
 
 const sum = (xs: readonly { amount: number }[]) => xs.reduce((a, x) => a + x.amount, 0);
 

@@ -1,6 +1,6 @@
 import { planHandler } from "@/lib/server/handlers";
 import { DailyCap, RateLimiter } from "@/lib/server/rate-limit";
-import { TODAY, sampleEnrichment, weddingFacts } from "../fixtures";
+import { TODAY, sampleEnrichment, weddingFacts } from "../helpers/fixtures";
 import {
   brokenStreamModel,
   cutOffModel,

@@ -7,7 +7,7 @@ import { CheckGroup, RadioGroup, SelectField, TextArea, TextField } from "@/comp
 import { nextTabIndex } from "@/components/ui/tabs";
 import { getDictionary } from "@/lib/i18n";
 import { draftFromBrief } from "@/lib/plan/draft";
-import { communityBrief } from "../fixtures";
+import { communityBrief } from "../helpers/fixtures";
 import { expectAccessible } from "../helpers/render";
 
 afterEach(() => {

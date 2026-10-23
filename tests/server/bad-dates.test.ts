@@ -1,5 +1,5 @@
 import { planHandler, refineHandler, visionHandler } from "@/lib/server/handlers";
-import { TODAY, weddingFacts } from "../fixtures";
+import { TODAY, weddingFacts } from "../helpers/fixtures";
 import {
   JPEG,
   formPost,

@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import nextConfig, { securityHeaders } from "@/next.config";
 import { buildCsp, config, proxy } from "@/proxy";
 import { SAME_ORIGIN } from "../helpers/ai";
-import { TODAY, weddingFacts } from "../fixtures";
+import { TODAY, weddingFacts } from "../helpers/fixtures";
 
 beforeEach(() => {
   vi.resetModules();

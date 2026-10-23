@@ -1,6 +1,6 @@
 import { healthHandler, planHandler, refineHandler, visionHandler } from "@/lib/server/handlers";
 import { DailyCap } from "@/lib/server/rate-limit";
-import { TODAY, weddingFacts } from "../fixtures";
+import { TODAY, weddingFacts } from "../helpers/fixtures";
 import { formPost, generatingModel, jsonPost, spec, testDeps } from "../helpers/ai";
 
 beforeEach(() => {

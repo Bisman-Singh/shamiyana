@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { formatMoney } from "@/lib/i18n/format";
 import { planBudget } from "@/lib/plan/budget";
 import { saveIdea, withEnrichment } from "@/lib/plan/record";
-import { NOW, TODAY, recordFor, sampleEnrichment, weddingBrief } from "../fixtures";
+import { NOW, TODAY, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
 import { stubCanvas, stubObjectUrls } from "../helpers/browser";
 import { jsonError, mockFetch, streamed } from "../helpers/fetch";
 import { renderIn } from "../helpers/render";
