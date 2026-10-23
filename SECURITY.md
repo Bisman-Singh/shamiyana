@@ -6,6 +6,17 @@ Please use GitHub's private vulnerability reporting on this repository
 (Security tab, "Report a vulnerability"). Don't open a public issue for a
 security problem. The same contact is published at `/.well-known/security.txt`.
 
+## Supported versions
+
+Only the live site and the `main` branch get fixes. There are no releases to
+patch separately.
+
+## Scope
+
+In scope: this repository and the deployed site. Out of scope: the hosting,
+AI and Redis providers themselves, findings that need a compromised device or
+browser, and load tests that would spend the daily AI allowance.
+
 ## What there is to protect
 
 Shamiyana has no accounts and no database. Plans, guest lists and vendor notes
