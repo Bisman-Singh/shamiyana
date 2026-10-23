@@ -1,5 +1,5 @@
-import type { Diet, GuestGroup, RsvpStatus } from "./constants";
-import type { Guest } from "./schema";
+import { LIMITS, type Diet, type GuestGroup, type RsvpStatus } from "./constants";
+import { guestSchema, type Guest } from "./schema";
 
 export interface GuestTally {
   parties: number;
@@ -30,10 +30,26 @@ export function tallyGuests(guests: readonly Guest[]): GuestTally {
   }
   return {
     parties: guests.length,
-    invited: guests.reduce((acc, g) => acc + g.party, 0),
+    invited: guests.reduce((total, guest) => total + guest.party, 0),
     byRsvp,
     expected: byRsvp.yes + byRsvp.maybe,
     diets,
     byGroup,
   };
+}
+
+/** A household as typed into the add form, before it gets an id, a group and a reply. */
+export type NewGuest =
+  { ok: true; guest: Pick<Guest, "name" | "party"> } | { ok: false; invalid: ("name" | "party")[] };
+
+/** A new household needs a name and a party size from 1 to the limit; nothing is clamped quietly. */
+export function parseNewGuest(name: string, party: string): NewGuest {
+  const named = guestSchema.shape.name.safeParse(name);
+  const size = /^\d{1,3}$/.test(party.trim()) ? Number(party) : 0;
+  const sized = size >= 1 && size <= LIMITS.partyMax;
+  if (named.success && sized) return { ok: true, guest: { name: named.data, party: size } };
+  const invalid: ("name" | "party")[] = [];
+  if (!named.success) invalid.push("name");
+  if (!sized) invalid.push("party");
+  return { ok: false, invalid };
 }

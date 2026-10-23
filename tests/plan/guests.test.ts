@@ -1,4 +1,4 @@
-import { tallyGuests } from "@/lib/plan/guests";
+import { parseNewGuest, tallyGuests } from "@/lib/plan/guests";
 import type { Guest } from "@/lib/plan/schema";
 
 describe("tallyGuests", () => {
@@ -31,5 +31,21 @@ describe("tallyGuests", () => {
 
   it("is all zeros for an empty list", () => {
     expect(tallyGuests([])).toMatchObject({ parties: 0, invited: 0, expected: 0 });
+  });
+});
+
+describe("parseNewGuest", () => {
+  it("takes a trimmed name and a party size within the limit", () => {
+    expect(parseNewGuest("  Sharma family ", "4")).toEqual({
+      ok: true,
+      guest: { name: "Sharma family", party: 4 },
+    });
+  });
+
+  it("names every field to fix, and never clamps a size quietly", () => {
+    expect(parseNewGuest("", "0")).toEqual({ ok: false, invalid: ["name", "party"] });
+    expect(parseNewGuest("Nani", "1000")).toEqual({ ok: false, invalid: ["party"] });
+    expect(parseNewGuest("Nani", "2.5")).toEqual({ ok: false, invalid: ["party"] });
+    expect(parseNewGuest("x".repeat(81), "2")).toEqual({ ok: false, invalid: ["name"] });
   });
 });
