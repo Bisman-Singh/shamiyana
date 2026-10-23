@@ -27,7 +27,7 @@ function AiIdeas({
       {ideas.theme.name === "" ? null : (
         <section aria-labelledby={`${id}-theme`}>
           <h3 id={`${id}-theme`}>{i.theme}</h3>
-          <p className="theme-name">{ideas.theme.name}</p>
+          <h4 className="theme-name">{ideas.theme.name}</h4>
           <p>{ideas.theme.summary}</p>
         </section>
       )}

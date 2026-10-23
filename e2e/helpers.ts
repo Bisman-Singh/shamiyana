@@ -41,10 +41,18 @@ export async function startSamplePlan(page: Page, sample = /Wedding in Jaipur/):
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 }
 
-/** WCAG 2.2 AA checks, colour contrast included, on what is on screen now. */
+/** WCAG 2.2 AA checks, colour contrast included, plus axe's best-practice and experimental rules, on what is on screen now. */
 export async function expectNoAxeViolations(page: Page): Promise<void> {
   const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+    .withTags([
+      "wcag2a",
+      "wcag2aa",
+      "wcag21a",
+      "wcag21aa",
+      "wcag22aa",
+      "best-practice",
+      "experimental",
+    ])
     .analyze();
   const found = results.violations.map(
     (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,

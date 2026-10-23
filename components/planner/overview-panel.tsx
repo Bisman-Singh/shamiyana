@@ -79,7 +79,7 @@ export function OverviewPanel({
       {ideas && ideas.theme.name !== "" ? (
         <section aria-labelledby={`${id}-theme`}>
           <h2 id={`${id}-theme`}>{o.theme}</h2>
-          <p className="theme-name">{ideas.theme.name}</p>
+          <h3 className="theme-name">{ideas.theme.name}</h3>
           <p>{ideas.theme.summary}</p>
         </section>
       ) : null}

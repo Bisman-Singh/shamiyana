@@ -86,7 +86,7 @@ export function Tabs<T extends string>({
           id={`${baseId}-panel-${tab.id}`}
           aria-labelledby={`${baseId}-tab-${tab.id}`}
           hidden={tab.id !== selected}
-          tabIndex={-1}
+          tabIndex={0}
           className="panel"
         >
           {tab.panel}

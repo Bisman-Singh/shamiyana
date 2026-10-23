@@ -56,6 +56,8 @@ describe("overview", () => {
     expect(p.getByText("Left to commit")).toBeInTheDocument();
     expect(p.getByText("Next up")).toBeInTheDocument();
     expect(p.getByText("Marigold courtyard")).toBeInTheDocument();
+    expect(p.getByRole("heading", { level: 3, name: "Marigold courtyard" })).toBeInTheDocument();
+    expect(screen.getByRole("tabpanel")).toHaveAttribute("tabindex", "0");
     expect(p.getByText("February evenings get cold.")).toBeInTheDocument();
     expect(screen.getByText("116 days to go")).toBeInTheDocument();
     await expectAccessible(container);
@@ -303,6 +305,7 @@ describe("ideas", () => {
     await openTab("Ideas");
     await expectAccessible(container);
     const p = panel();
+    expect(p.getByRole("heading", { level: 4, name: "Marigold courtyard" })).toBeInTheDocument();
     await userEvent.click(p.getAllByRole("button", { name: /^Save idea/ })[0] ?? document.body);
     expect(saved.current.ideas[0]).toMatchObject({ title: "Marigold canopy", area: "decor" });
     expect(p.getAllByRole("button", { name: /^Saved/ }).length).toBeGreaterThan(0);

@@ -35,6 +35,8 @@ export default defineConfig([
     ],
     rules: {
       "jsx-a11y-x/label-has-associated-control": ["error", { assert: "either", depth: 4 }],
+      // a tab panel is a Tab stop in the WAI-ARIA tabs pattern, as in the plugin's recommended set
+      "jsx-a11y-x/no-noninteractive-tabindex": ["error", { tags: [], roles: ["tabpanel"] }],
     },
   },
   {
