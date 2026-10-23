@@ -10,7 +10,11 @@ personalises it for your city, season, size and food rules, in English or
 Hindi.
 
 A shamiana is the tent that goes up over every Indian celebration. This one
-holds the plan.
+holds the plan. It runs at https://shamiyana-nu.vercel.app.
+
+It is built for families in India on purpose, with money in rupees and lakh,
+veg and Jain menus, Hindi, and the weather and festivals of Indian cities in
+mind.
 
 ## How it fits together
 
