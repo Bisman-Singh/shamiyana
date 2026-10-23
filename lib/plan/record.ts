@@ -1,6 +1,6 @@
-import type { Change } from "./changes";
 import { LIMITS, type CategoryId, type TaskArea } from "./constants";
 import { sanitizeEnrichment, type Enrichment } from "./enrichment";
+import { stableId } from "@/lib/shared/ids";
 import { shiftableCategories } from "./shares";
 import {
   factsOf,
@@ -17,20 +17,6 @@ import {
  * keeps undo a matter of holding the previous value and makes each rule easy
  * to test.
  */
-
-export function newId(): string {
-  return crypto.randomUUID();
-}
-
-/** A short id that stays the same for the same text, from a 32 bit FNV-1a hash. */
-export function stableId(prefix: string, text: string): string {
-  let hash = 0x811c9dc5;
-  for (const unit of new TextEncoder().encode(text)) {
-    hash ^= unit;
-    hash = Math.imul(hash, 0x01000193) >>> 0;
-  }
-  return `${prefix}-${hash.toString(36)}`;
-}
 
 /** A new plan from a brief, with nothing done yet. */
 export function createRecord(brief: Brief, id: string, now: string): PlanRecord {
@@ -193,40 +179,4 @@ export function saveIdea(record: PlanRecord, idea: SavedIdea, now: string): Plan
 /** The plan without a saved idea. */
 export function removeIdea(record: PlanRecord, ideaId: string, now: string): PlanRecord {
   return touch(record, now, { ideas: record.ideas.filter((i) => i.id !== ideaId) });
-}
-
-function applyOne(record: PlanRecord, change: Change, id: string, now: string): PlanRecord {
-  switch (change.op) {
-    case "set_budget":
-      return updateBrief(record, { ...record.brief, budget: change.amount }, now);
-    case "set_guests":
-      return updateBrief(record, { ...record.brief, guests: change.count }, now);
-    case "set_date":
-      return updateBrief(record, { ...record.brief, date: change.date }, now);
-    case "shift_category":
-      return setFactor(record, change.category, change.factor, now);
-    case "add_task":
-      return addTask(
-        record,
-        { title: change.title, area: change.area, leadDays: change.weeksBefore * 7 },
-        id,
-        now,
-      );
-    case "add_idea":
-      return saveIdea(
-        record,
-        { id, area: change.area, title: change.title, detail: change.detail },
-        now,
-      );
-  }
-}
-
-/** Applies approved changes in order; `ids` supplies an id for each added item. */
-export function applyChanges(
-  record: PlanRecord,
-  changes: readonly Change[],
-  ids: () => string,
-  now: string,
-): PlanRecord {
-  return changes.reduce((acc, change) => applyOne(acc, change, ids(), now), record);
 }

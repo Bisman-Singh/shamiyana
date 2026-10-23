@@ -5,7 +5,9 @@ import {
   fromDayNumber,
   isIsoDate,
   localToday,
+  saturdayOnOrBefore,
   toDayNumber,
+  wholeWeeks,
 } from "@/lib/plan/dates";
 
 describe("ISO dates", () => {
@@ -54,5 +56,21 @@ describe("ISO dates", () => {
 
   it("formats compact dates for calendars", () => {
     expect(compactDate("2027-02-14")).toBe("20270214");
+  });
+});
+
+describe("wholeWeeks", () => {
+  it("counts whole weeks and never below zero", () => {
+    expect(wholeWeeks("2026-10-21", "2027-02-14")).toBe(16);
+    expect(wholeWeeks("2026-10-21", "2026-10-27")).toBe(0);
+    expect(wholeWeeks("2026-10-21", "2026-10-01")).toBe(0);
+  });
+});
+
+describe("saturdayOnOrBefore", () => {
+  it("finds the Saturday on or before a date", () => {
+    expect(saturdayOnOrBefore("2026-10-31")).toBe("2026-10-31");
+    expect(saturdayOnOrBefore("2026-11-02")).toBe("2026-10-31");
+    expect(saturdayOnOrBefore("2026-11-06")).toBe("2026-10-31");
   });
 });

@@ -1,13 +1,8 @@
 "use client";
 
 import { useId, useRef, useState, type SubmitEvent } from "react";
-import {
-  emptyDraft,
-  parseDraft,
-  sampleDraft,
-  type Draft,
-  type DraftErrors,
-} from "@/lib/plan/draft";
+import { emptyDraft, parseDraft, type Draft, type DraftErrors } from "@/lib/plan/draft";
+import { sampleDraft } from "@/lib/plan/samples";
 import type { Brief } from "@/lib/plan/schema";
 import { useLocale } from "@/components/locale-provider";
 import { useFocusOnMount } from "@/components/ui/focus";

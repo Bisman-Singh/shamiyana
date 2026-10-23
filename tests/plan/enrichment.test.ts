@@ -1,5 +1,10 @@
 import type { CategoryId } from "@/lib/plan/constants";
-import { enrichmentSchema, isEmptyEnrichment, sanitizeEnrichment } from "@/lib/plan/enrichment";
+import {
+  enrichmentSchema,
+  fitTasks,
+  isEmptyEnrichment,
+  sanitizeEnrichment,
+} from "@/lib/plan/enrichment";
 import { sampleEnrichment } from "../helpers/fixtures";
 
 const CATS: CategoryId[] = ["venue", "catering", "decor", "contingency"];
@@ -148,5 +153,19 @@ describe("sanitizeEnrichment", () => {
 
   it("tolerates a menu course without a dish list", () => {
     expect(sanitizeEnrichment({ menu: [{ course: "Sweets" }] }, CATS).menu).toEqual([]);
+  });
+});
+
+describe("fitTasks", () => {
+  it("caps AI tasks at the weeks left and leaves the rest alone", () => {
+    const enrichment = {
+      ...sampleEnrichment,
+      tasks: [
+        { title: "Far", area: "planning" as const, weeksBefore: 30 },
+        { title: "Near", area: "planning" as const, weeksBefore: 2 },
+      ],
+    };
+    expect(fitTasks(enrichment, 16).tasks.map((task) => task.weeksBefore)).toEqual([16, 2]);
+    expect(fitTasks(enrichment, 16).ideas).toBe(enrichment.ideas);
   });
 });

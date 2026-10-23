@@ -1,12 +1,7 @@
 import { factsOf } from "@/lib/plan/schema";
-import { fitChanges } from "@/lib/plan/changes";
 import { LIMITS } from "@/lib/plan/constants";
-import { wholeWeeks } from "@/lib/plan/dates";
-import { fitTasks } from "@/lib/plan/enrichment";
 import {
   addTask,
-  applyChanges,
-  newId,
   removeGuest,
   removeIdea,
   removeTask,
@@ -15,12 +10,12 @@ import {
   saveIdea,
   setFactor,
   setVendor,
-  stableId,
   toggleTask,
   upsertGuest,
   withEnrichment,
 } from "@/lib/plan/record";
 import { planRecordSchema, type Guest } from "@/lib/plan/schema";
+import { stableId } from "@/lib/shared/ids";
 import { NOW, birthdayBrief, recordFor, sampleEnrichment, weddingBrief } from "../helpers/fixtures";
 
 const LATER = "2026-10-22T08:00:00.000Z";
@@ -34,49 +29,11 @@ const guest: Guest = {
   diet: "veg",
 };
 
-describe("fitting AI tasks to the date", () => {
-  it("counts whole weeks and never below zero", () => {
-    expect(wholeWeeks("2026-10-21", "2027-02-14")).toBe(16);
-    expect(wholeWeeks("2026-10-21", "2026-10-27")).toBe(0);
-    expect(wholeWeeks("2026-10-21", "2026-10-01")).toBe(0);
-  });
-
-  it("caps AI and proposed tasks at the weeks left and leaves the rest alone", () => {
-    const e = {
-      ...sampleEnrichment,
-      tasks: [
-        { title: "Far", area: "planning" as const, weeksBefore: 30 },
-        { title: "Near", area: "planning" as const, weeksBefore: 2 },
-      ],
-    };
-    expect(fitTasks(e, 16).tasks.map((t) => t.weeksBefore)).toEqual([16, 2]);
-    expect(fitTasks(e, 16).ideas).toBe(e.ideas);
-    const changes = fitChanges(
-      [
-        { op: "add_task", title: "Far", area: "planning", weeksBefore: 30 },
-        { op: "set_guests", count: 120 },
-      ],
-      4,
-    );
-    expect(changes).toEqual([
-      { op: "add_task", title: "Far", area: "planning", weeksBefore: 4 },
-      { op: "set_guests", count: 120 },
-    ]);
-  });
-});
-
 describe("record helpers", () => {
   it("creates a valid empty record", () => {
     const record = recordFor(weddingBrief);
     expect(planRecordSchema.parse(record)).toEqual(record);
     expect(record.createdAt).toBe(NOW);
-  });
-
-  it("makes random ids and stable content ids", () => {
-    expect(newId()).toMatch(/^[0-9a-f-]{36}$/);
-    expect(stableId("ai", "Book tent")).toBe(stableId("ai", "Book tent"));
-    expect(stableId("ai", "Book tent")).not.toBe(stableId("ai", "Book tents"));
-    expect(stableId("ai", "मेहंदी")).toMatch(/^ai-[0-9a-z]+$/);
   });
 
   it("toggles a task and touches the timestamp", () => {
@@ -199,35 +156,5 @@ describe("record helpers", () => {
       record = saveIdea(record, { ...idea, id: `n${i}`, title: `Idea ${i}` }, LATER);
     }
     expect(record.ideas).toHaveLength(LIMITS.savedIdeasMax);
-  });
-
-  it("applies approved changes in order", () => {
-    let n = 0;
-    const ids = () => {
-      n += 1;
-      return `id${n}`;
-    };
-    const record = applyChanges(
-      recordFor(weddingBrief),
-      [
-        { op: "set_budget", amount: 20_00_000 },
-        { op: "set_guests", count: 300 },
-        { op: "set_date", date: "2027-03-01" },
-        { op: "shift_category", category: "decor", factor: 0.8 },
-        { op: "add_task", title: "Book shuttle", area: "transport", weeksBefore: 3 },
-        { op: "add_idea", area: "music", title: "Shehnai at entry", detail: "Live" },
-      ],
-      ids,
-      LATER,
-    );
-    expect(record.brief).toMatchObject({ budget: 20_00_000, guests: 300, date: "2027-03-01" });
-    expect(record.factors).toEqual({ decor: 0.8 });
-    expect(record.tasks).toEqual([
-      { id: "id5", title: "Book shuttle", area: "transport", leadDays: 21, source: "custom" },
-    ]);
-    expect(record.ideas).toEqual([
-      { id: "id6", area: "music", title: "Shehnai at entry", detail: "Live" },
-    ]);
-    expect(planRecordSchema.safeParse(record).success).toBe(true);
   });
 });

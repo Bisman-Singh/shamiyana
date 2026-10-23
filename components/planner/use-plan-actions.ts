@@ -13,7 +13,8 @@ import {
 import { recordFromShare, type SharedPlan } from "@/lib/export/share";
 import { format } from "@/lib/i18n/format";
 import { LIMITS } from "@/lib/plan/constants";
-import { createRecord, newId } from "@/lib/plan/record";
+import { createRecord } from "@/lib/plan/record";
+import { newId } from "@/lib/shared/ids";
 import type { Brief, PlanRecord } from "@/lib/plan/schema";
 import { useLocale } from "@/components/locale-provider";
 import type { Message } from "./planner-notices";

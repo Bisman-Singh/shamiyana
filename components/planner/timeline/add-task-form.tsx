@@ -3,7 +3,8 @@
 import { useId, useState, type SubmitEvent } from "react";
 import { format } from "@/lib/i18n/format";
 import { LIMITS, TASK_AREAS, type TaskArea } from "@/lib/plan/constants";
-import { addTask, newId } from "@/lib/plan/record";
+import { addTask } from "@/lib/plan/record";
+import { newId } from "@/lib/shared/ids";
 import { parseNewTask } from "@/lib/plan/timeline";
 import { useLocale } from "@/components/locale-provider";
 import { useAnnounce } from "@/components/ui/announcer";

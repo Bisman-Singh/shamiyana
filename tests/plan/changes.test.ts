@@ -1,6 +1,7 @@
-import { MAX_CHANGES, parseChanges } from "@/lib/plan/changes";
+import { MAX_CHANGES, applyChanges, fitChanges, parseChanges } from "@/lib/plan/changes";
 import type { CategoryId } from "@/lib/plan/constants";
-import { TODAY } from "../helpers/fixtures";
+import { planRecordSchema } from "@/lib/plan/schema";
+import { TODAY, recordFor, weddingBrief } from "../helpers/fixtures";
 
 const CATS: CategoryId[] = ["venue", "catering", "decor", "contingency"];
 const parse = (raw: unknown) => parseChanges(raw, CATS, TODAY);
@@ -93,5 +94,53 @@ describe("parseChanges", () => {
   it(`stops at ${MAX_CHANGES} changes`, () => {
     const many = Array.from({ length: 20 }, (_, i) => ({ op: "add_idea", title: `Idea ${i}` }));
     expect(parse(many)).toHaveLength(MAX_CHANGES);
+  });
+});
+
+describe("fitChanges", () => {
+  it("caps a proposed task at the weeks left and leaves other changes alone", () => {
+    const changes = fitChanges(
+      [
+        { op: "add_task", title: "Far", area: "planning", weeksBefore: 30 },
+        { op: "set_guests", count: 120 },
+      ],
+      4,
+    );
+    expect(changes).toEqual([
+      { op: "add_task", title: "Far", area: "planning", weeksBefore: 4 },
+      { op: "set_guests", count: 120 },
+    ]);
+  });
+});
+
+describe("applyChanges", () => {
+  it("applies approved changes in order", () => {
+    let made = 0;
+    const ids = () => {
+      made += 1;
+      return `id${made}`;
+    };
+    const record = applyChanges(
+      recordFor(weddingBrief),
+      [
+        { op: "set_budget", amount: 20_00_000 },
+        { op: "set_guests", count: 300 },
+        { op: "set_date", date: "2027-03-01" },
+        { op: "shift_category", category: "decor", factor: 0.8 },
+        { op: "add_task", title: "Book shuttle", area: "transport", weeksBefore: 3 },
+        { op: "add_idea", area: "music", title: "Shehnai at entry", detail: "Live" },
+      ],
+      ids,
+      "2026-10-22T08:00:00.000Z",
+    );
+    expect(record.brief).toMatchObject({ budget: 20_00_000, guests: 300, date: "2027-03-01" });
+    expect(record.factors).toEqual({ decor: 0.8 });
+    expect(record.tasks).toEqual([
+      { id: "id5", title: "Book shuttle", area: "transport", leadDays: 21, source: "custom" },
+    ]);
+    expect(record.ideas).toEqual([
+      { id: "id6", area: "music", title: "Shehnai at entry", detail: "Live" },
+    ]);
+    expect(planRecordSchema.safeParse(record).success).toBe(true);
   });
 });

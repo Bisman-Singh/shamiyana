@@ -1,4 +1,5 @@
 import { clampFactor } from "./factors";
+import { addTask, saveIdea, setFactor, updateBrief } from "./record";
 import {
   CATEGORY_IDS,
   IDEA_AREAS,
@@ -9,6 +10,7 @@ import {
   type TaskArea,
 } from "./constants";
 import { daysBetween, isIsoDate } from "./dates";
+import type { PlanRecord } from "./schema";
 import { finite, int, oneOf, records, type Loose } from "@/lib/shared/untrusted";
 import { clip } from "@/lib/shared/plain-text";
 
@@ -125,4 +127,41 @@ export function parseChanges(
     if (out.length === MAX_CHANGES) break;
   }
   return out;
+}
+
+/** One approved change applied to the plan, through the same edits the panels use. */
+function applyOne(record: PlanRecord, change: Change, id: string, now: string): PlanRecord {
+  switch (change.op) {
+    case "set_budget":
+      return updateBrief(record, { ...record.brief, budget: change.amount }, now);
+    case "set_guests":
+      return updateBrief(record, { ...record.brief, guests: change.count }, now);
+    case "set_date":
+      return updateBrief(record, { ...record.brief, date: change.date }, now);
+    case "shift_category":
+      return setFactor(record, change.category, change.factor, now);
+    case "add_task":
+      return addTask(
+        record,
+        { title: change.title, area: change.area, leadDays: change.weeksBefore * 7 },
+        id,
+        now,
+      );
+    case "add_idea":
+      return saveIdea(
+        record,
+        { id, area: change.area, title: change.title, detail: change.detail },
+        now,
+      );
+  }
+}
+
+/** Applies approved changes in order; `ids` supplies an id for each added item. */
+export function applyChanges(
+  record: PlanRecord,
+  changes: readonly Change[],
+  ids: () => string,
+  now: string,
+): PlanRecord {
+  return changes.reduce((current, change) => applyOne(current, change, ids(), now), record);
 }
