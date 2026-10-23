@@ -35,8 +35,9 @@ and spends money on every AI call. So the threats that matter are:
   unlimited.
 - The answer cache lives in each instance's memory, so the same brief can cost
   one model call per instance.
-- The client address comes from forwarding headers. Vercel overwrites them
-  and does not forward client-sent values, per its request headers
-  documentation; on any other host, run behind a proxy that does the same.
+- On Vercel the client address comes only from `x-vercel-forwarded-for`, which
+  Vercel sets on every request and a client cannot override. On another host,
+  `x-real-ip` and `x-forwarded-for` count only when `TRUST_PROXY=1` says a proxy
+  in front overwrites them; without it every client shares one limit.
 - A plan in a share link can be read by anyone who has the link. The share
   dialog says so.

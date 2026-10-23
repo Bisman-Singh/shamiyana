@@ -47,12 +47,24 @@ export function statusOf(code: ErrorCode): number {
   return STATUS[code];
 }
 
-/** The client address as the hosting proxy reports it; spoofable only where no proxy sets it. */
-export function clientKey(request: Request): string {
-  const h = request.headers;
-  const forwarded = h.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const fallback = forwarded === undefined || forwarded === "" ? "unknown" : forwarded;
-  return addressBucket(h.get("x-vercel-forwarded-for") ?? h.get("x-real-ip") ?? fallback);
+/**
+ * The client address from a header the host itself sets, never one a client
+ * chose. Vercel sets `VERCEL=1` and overwrites `x-vercel-forwarded-for` on
+ * every request. Elsewhere `x-real-ip` and `x-forwarded-for` count only when
+ * `TRUST_PROXY=1` says a proxy in front overwrites them. With neither, every
+ * client shares one key, so a forged header can't buy a fresh allowance.
+ */
+export function clientKey(
+  request: Request,
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): string {
+  const { headers } = request;
+  if (env.VERCEL === "1") return addressBucket(headers.get("x-vercel-forwarded-for") ?? "unknown");
+  if (env.TRUST_PROXY !== "1") return "unknown";
+  const firstHop = headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return addressBucket(
+    headers.get("x-real-ip") ?? (firstHop === "" ? undefined : firstHop) ?? "unknown",
+  );
 }
 
 /**
@@ -73,18 +85,16 @@ export function addressBucket(address: string): string {
     .join(":")}::/64`;
 }
 
-/** Browsers send Sec-Fetch-Site and Origin on POST; anything cross-site is refused. */
+/**
+ * Browsers send Sec-Fetch-Site and Origin on POST; anything cross-site is
+ * refused. The Origin must match this request's own scheme, host and port.
+ */
 export function isSameOrigin(request: Request): boolean {
   const site = request.headers.get("sec-fetch-site");
   if (site !== null && site !== "same-origin") return false;
   const origin = request.headers.get("origin");
   if (origin === null) return site === "same-origin";
-  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  try {
-    return new URL(origin).host === (host ?? new URL(request.url).host);
-  } catch {
-    return false;
-  }
+  return URL.parse(origin)?.origin === new URL(request.url).origin;
 }
 
 /** Reads at most `max` bytes of the body; null when it is larger. */

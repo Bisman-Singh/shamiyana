@@ -9,6 +9,10 @@ beforeEach(() => {
   vi.spyOn(console, "error").mockImplementation(() => undefined);
 });
 
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
 describe("every route", () => {
   it("answers a bare 500 when something unexpected throws", async () => {
     const broken = () => {
@@ -33,7 +37,8 @@ describe("every route", () => {
       history: [],
       message: "hi",
     };
-    const as = (ip: string) => jsonPost(body, { "x-real-ip": ip });
+    vi.stubEnv("VERCEL", "1");
+    const as = (ip: string) => jsonPost(body, { "x-vercel-forwarded-for": ip });
     expect((await refineHandler(() => deps)(as("198.51.100.1"))).status).toBe(200);
     expect(await (await refineHandler(() => deps)(as("198.51.100.1"))).json()).toEqual({
       error: "daily_cap",

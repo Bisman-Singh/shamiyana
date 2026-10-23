@@ -24,15 +24,20 @@ describe("isSameOrigin", () => {
     expect(isSameOrigin(req({ ...SAME_ORIGIN, "sec-fetch-site": "same-site" }))).toBe(false);
   });
 
-  it("checks Origin against the host the proxy reports", () => {
+  it("checks Origin against the request's own scheme, host and port", () => {
+    expect(isSameOrigin(req({ origin: "https://plan.test" }))).toBe(true);
     expect(isSameOrigin(req({ origin: "https://evil.test", host: "plan.test" }))).toBe(false);
+    expect(isSameOrigin(req({ origin: "http://plan.test" }))).toBe(false);
+    expect(isSameOrigin(req({ origin: "https://plan.test:8443" }))).toBe(false);
+    expect(isSameOrigin(req({ origin: "not a url" }))).toBe(false);
+  });
+
+  it("ignores forwarded host headers a client could set", () => {
     expect(
       isSameOrigin(
-        req({ origin: "https://plan.test", "x-forwarded-host": "plan.test", host: "internal" }),
+        req({ origin: "https://evil.test", "x-forwarded-host": "evil.test", host: "evil.test" }),
       ),
-    ).toBe(true);
-    expect(isSameOrigin(req({ origin: "https://plan.test" }))).toBe(true);
-    expect(isSameOrigin(req({ origin: "not a url", host: "plan.test" }))).toBe(false);
+    ).toBe(false);
   });
 
   it("refuses a request with neither header", () => {
@@ -42,16 +47,30 @@ describe("isSameOrigin", () => {
 });
 
 describe("clientKey", () => {
-  it("prefers the platform header, then x-real-ip, then the first forwarded hop", () => {
-    expect(clientKey(req({ "x-vercel-forwarded-for": "1.1.1.1", "x-real-ip": "2.2.2.2" }))).toBe(
-      "1.1.1.1",
+  const all = {
+    "x-vercel-forwarded-for": "1.1.1.1",
+    "x-real-ip": "2.2.2.2",
+    "x-forwarded-for": "3.3.3.3",
+  };
+
+  it("reads only Vercel's own header on Vercel", () => {
+    const vercel = { VERCEL: "1" };
+    expect(clientKey(req(all), vercel)).toBe("1.1.1.1");
+    expect(clientKey(req({ "x-real-ip": "2.2.2.2", "x-forwarded-for": "3.3.3.3" }), vercel)).toBe(
+      "unknown",
     );
-    expect(clientKey(req({ "x-real-ip": "2.2.2.2", "x-forwarded-for": "3.3.3.3" }))).toBe(
-      "2.2.2.2",
-    );
-    expect(clientKey(req({ "x-forwarded-for": " 3.3.3.3 , 4.4.4.4" }))).toBe("3.3.3.3");
-    expect(clientKey(req({ "x-forwarded-for": "" }))).toBe("unknown");
-    expect(clientKey(req({}))).toBe("unknown");
+  });
+
+  it("reads x-real-ip, then the first forwarded hop, only behind a trusted proxy", () => {
+    const proxy = { TRUST_PROXY: "1" };
+    expect(clientKey(req(all), proxy)).toBe("2.2.2.2");
+    expect(clientKey(req({ "x-forwarded-for": " 3.3.3.3 , 4.4.4.4" }), proxy)).toBe("3.3.3.3");
+    expect(clientKey(req({ "x-forwarded-for": "" }), proxy)).toBe("unknown");
+    expect(clientKey(req({}), proxy)).toBe("unknown");
+  });
+
+  it("puts every client in one key when no proxy is trusted, so a forged header gains nothing", () => {
+    expect(clientKey(req(all), {})).toBe("unknown");
   });
 });
 
@@ -165,7 +184,11 @@ describe("addressBucket", () => {
   });
 
   it("gives every address in one /64 the same rate-limit key", () => {
-    const req = (ip: string) => new Request("https://plan.test", { headers: { "x-real-ip": ip } });
-    expect(clientKey(req("2001:db8:1:2::a"))).toBe(clientKey(req("2001:db8:1:2:ffff::b")));
+    const key = (ip: string) =>
+      clientKey(new Request("https://plan.test", { headers: { "x-vercel-forwarded-for": ip } }), {
+        VERCEL: "1",
+      });
+    expect(key("2001:db8:1:2::a")).toBe("2001:db8:1:2::/64");
+    expect(key("2001:db8:1:2:ffff::b")).toBe("2001:db8:1:2::/64");
   });
 });
