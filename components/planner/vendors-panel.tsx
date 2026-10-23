@@ -17,11 +17,19 @@ function rupees(text: string): number {
   return Math.min(LIMITS.budgetMax, readAmount(text) ?? 0);
 }
 
-function Questions({ title, items }: Readonly<{ title: string; items: readonly string[] }>) {
+/** A list of questions; its heading names the vendor too, since every card repeats it. */
+function Questions({
+  title,
+  vendor,
+  items,
+}: Readonly<{ title: string; vendor: string; items: readonly string[] }>) {
   if (items.length === 0) return null;
   return (
     <>
-      <h3 className="subhead">{title}</h3>
+      <h3 className="subhead">
+        {title}
+        <span className="visually-hidden">, {vendor}</span>
+      </h3>
       <ul className="plain-list">
         {items.map((q) => (
           <li key={q}>{q}</li>
@@ -96,8 +104,8 @@ function Card({
               save({ note: e.target.value.slice(0, LIMITS.vendorNoteMax) });
             }}
           />
-          <Questions title={v.ask} items={questions} />
-          <Questions title={v.aiAsk} items={card.aiQuestions} />
+          <Questions title={v.ask} vendor={name} items={questions} />
+          <Questions title={v.aiAsk} vendor={name} items={card.aiQuestions} />
           <a
             className="btn btn-small btn-quiet"
             href={mapsSearchUrl(card.search, city)}

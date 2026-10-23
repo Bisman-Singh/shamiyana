@@ -220,6 +220,9 @@ describe("vendors", () => {
     const p = panel();
     await userEvent.click(p.getByText("Food and catering"));
     await expectAccessible(container);
+    expect(
+      p.getByRole("heading", { level: 3, name: "Ask them, Food and catering" }),
+    ).toBeInTheDocument();
     await userEvent.selectOptions(p.getByLabelText("Status for Food and catering"), "booked");
     await userEvent.click(
       p.getByLabelText("Agreed price (₹)", { selector: "#vendor-catering-quote" }),
