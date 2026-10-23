@@ -34,6 +34,28 @@ export async function mockAi(page: Page): Promise<void> {
   );
 }
 
+export const VISION_ANSWER = {
+  kind: "venue",
+  mood: "Open lawn at dusk",
+  palette: [{ name: "Saffron", hex: "#f39b2d" }],
+  ideas: [{ area: "decor", title: "Lantern path", detail: "Along the lawn edge." }],
+  notes: ["Uneven ground near the stage"],
+};
+
+/** Answers the photo route and keeps what each request sent, so a test can check the upload. */
+export async function mockVision(page: Page): Promise<{ type: string; bytes: number }[]> {
+  const sent: { type: string; bytes: number }[] = [];
+  await page.route("**/api/vision", (route) => {
+    const request = route.request();
+    sent.push({
+      type: request.headers()["content-type"] ?? "",
+      bytes: request.postDataBuffer()?.length ?? 0,
+    });
+    return route.fulfill({ status: 200, json: VISION_ANSWER });
+  });
+  return sent;
+}
+
 export async function startSamplePlan(page: Page, sample = /Wedding in Jaipur/): Promise<void> {
   await page.goto("/");
   await page.getByRole("button", { name: sample }).click();

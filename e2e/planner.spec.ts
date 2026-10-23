@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
-import { mockAi, startSamplePlan } from "./helpers";
+import { mockAi, mockVision, startSamplePlan } from "./helpers";
 
 test("a plan is built at once, filled in by AI and kept after a reload", async ({ page }) => {
   await mockAi(page);
@@ -124,4 +124,25 @@ test("nothing scrolls sideways on a phone", { tag: "@phone" }, async ({ page }) 
       360,
     );
   }
+});
+
+test("a photo is shrunk in the browser, sent once and turned into ideas to save", async ({
+  page,
+}) => {
+  await mockAi(page);
+  const sent = await mockVision(page);
+  await startSamplePlan(page);
+  await page.getByRole("tab", { name: "Ideas" }).click();
+  const panel = page.getByRole("tabpanel");
+  await panel.getByLabel("Choose a photo").setInputFiles("e2e/fixtures/venue.jpg");
+  await expect(panel.getByRole("img", { name: "The photo you chose" })).toBeVisible();
+  await panel.getByRole("button", { name: "Get ideas from this photo" }).click();
+  await expect(panel.locator(".idea-title").filter({ hasText: "Lantern path" })).toBeVisible();
+  await expect(panel.getByRole("img", { name: "Venue: Open lawn at dusk" })).toBeVisible();
+  await panel.getByRole("button", { name: /^Save idea Lantern path/ }).click();
+  await expect(panel.getByRole("button", { name: /^Saved Lantern path/ })).toBeVisible();
+  expect(sent).toHaveLength(1);
+  expect(sent[0]?.type).toContain("multipart/form-data");
+  expect(sent[0]?.bytes).toBeGreaterThan(0);
+  expect(sent[0]?.bytes).toBeLessThan(4 * 1024 * 1024);
 });

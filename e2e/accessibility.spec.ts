@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { expectNoAxeViolations, mockAi, startSamplePlan } from "./helpers";
+import { expectNoAxeViolations, mockAi, mockVision, startSamplePlan } from "./helpers";
 
 const TABS = ["Overview", "Budget", "Timeline", "Vendors", "Guests", "Ideas"];
 
@@ -28,6 +28,48 @@ for (const scheme of ["light", "dark"] as const) {
         await expectNoAxeViolations(page);
       });
     }
+
+    // Dialogs, proposals, photo results and error notices only exist after an action, so each gets its own scan.
+    test("the share dialog passes WCAG 2.2 AA", async ({ page }) => {
+      test.setTimeout(60_000);
+      await mockAi(page);
+      await startSamplePlan(page);
+      await page.getByRole("button", { name: "Share" }).click();
+      await expect(page.getByRole("button", { name: "Copy link" })).toBeFocused();
+      await expectNoAxeViolations(page);
+    });
+
+    test("a refine proposal and a refine error pass WCAG 2.2 AA", async ({ page }) => {
+      test.setTimeout(60_000);
+      await mockAi(page);
+      await startSamplePlan(page);
+      await page.getByRole("tab", { name: "Ideas" }).click();
+      const panel = page.getByRole("tabpanel");
+      await panel.getByLabel("Your message").fill("Bring it down to 15 lakh");
+      await panel.getByRole("button", { name: "Send" }).click();
+      await expect(panel.getByRole("group", { name: "Proposed changes" })).toBeVisible();
+      await expectNoAxeViolations(page);
+      await page.route("**/api/refine", (route) =>
+        route.fulfill({ status: 429, json: { error: "rate_limited" } }),
+      );
+      await panel.getByLabel("Your message").fill("And add a dhol");
+      await panel.getByRole("button", { name: "Send" }).click();
+      await expect(panel.getByRole("alert")).toContainText("Too many requests");
+      await expectNoAxeViolations(page);
+    });
+
+    test("photo results pass WCAG 2.2 AA", async ({ page }) => {
+      test.setTimeout(60_000);
+      await mockAi(page);
+      await mockVision(page);
+      await startSamplePlan(page);
+      await page.getByRole("tab", { name: "Ideas" }).click();
+      const panel = page.getByRole("tabpanel");
+      await panel.getByLabel("Choose a photo").setInputFiles("e2e/fixtures/venue.jpg");
+      await panel.getByRole("button", { name: "Get ideas from this photo" }).click();
+      await expect(panel.locator(".idea-title").filter({ hasText: "Lantern path" })).toBeVisible();
+      await expectNoAxeViolations(page);
+    });
 
     test("policy and error pages pass WCAG 2.2 AA", async ({ page }) => {
       for (const path of ["/privacy", "/terms", "/no-such-page"]) {
