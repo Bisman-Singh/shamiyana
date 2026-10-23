@@ -1,4 +1,4 @@
-import { buildTimeline, phaseOf } from "@/lib/plan/timeline";
+import { buildTimeline, parseNewTask, phaseOf } from "@/lib/plan/timeline";
 import { TODAY, birthdayBrief, communityBrief, recordFor, weddingBrief } from "../helpers/fixtures";
 
 describe("phaseOf", () => {
@@ -84,5 +84,33 @@ describe("buildTimeline", () => {
   it("has nothing late when there is plenty of time", () => {
     const timeline = buildTimeline(recordFor({ ...weddingBrief, date: "2028-01-01" }), TODAY);
     expect(timeline.lateCount).toBe(0);
+  });
+});
+
+describe("parseNewTask", () => {
+  const today = "2026-11-01";
+  const event = "2026-12-01";
+
+  it("takes a trimmed title and counts the days it runs before the event", () => {
+    expect(parseNewTask("  Hire chairs ", "2026-11-21", today, event)).toEqual({
+      ok: true,
+      task: { title: "Hire chairs", leadDays: 10 },
+    });
+  });
+
+  it("names every field to fix: an empty title, and a date missing, past or after the event", () => {
+    expect(parseNewTask("", "", today, event)).toEqual({ ok: false, invalid: ["title", "date"] });
+    expect(parseNewTask(" ", "2026-11-21", today, event)).toEqual({
+      ok: false,
+      invalid: ["title"],
+    });
+    expect(parseNewTask("Chairs", "2026-10-31", today, event)).toEqual({
+      ok: false,
+      invalid: ["date"],
+    });
+    expect(parseNewTask("Chairs", "2026-12-02", today, event)).toEqual({
+      ok: false,
+      invalid: ["date"],
+    });
   });
 });

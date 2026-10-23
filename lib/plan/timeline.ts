@@ -1,7 +1,7 @@
 import { tasksFor } from "./catalog";
 import type { TaskArea } from "./constants";
-import { addDays, daysBetween } from "./dates";
-import type { PlanRecord } from "./schema";
+import { addDays, daysBetween, isIsoDate } from "./dates";
+import { customTaskSchema, type PlanRecord } from "./schema";
 
 export const PHASES = [
   "six_months",
@@ -88,4 +88,26 @@ export function buildTimeline(record: PlanRecord, today: string): Timeline {
     doneCount: items.filter((i) => i.done).length,
     lateCount: items.filter((i) => i.late).length,
   };
+}
+
+/** A task as typed into the add form, before it gets an id and an area. */
+export type NewTask =
+  | { ok: true; task: { title: string; leadDays: number } }
+  | { ok: false; invalid: ("title" | "date")[] };
+
+/** A new task needs a title within the limit and a date from today up to the event. */
+export function parseNewTask(
+  title: string,
+  date: string,
+  today: string,
+  eventDate: string,
+): NewTask {
+  const named = customTaskSchema.shape.title.safeParse(title);
+  const leadDays = isIsoDate(date) ? daysBetween(date, eventDate) : -1;
+  const dated = leadDays >= 0 && daysBetween(today, date) >= 0;
+  if (named.success && dated) return { ok: true, task: { title: named.data, leadDays } };
+  const invalid: ("title" | "date")[] = [];
+  if (!named.success) invalid.push("title");
+  if (!dated) invalid.push("date");
+  return { ok: false, invalid };
 }
