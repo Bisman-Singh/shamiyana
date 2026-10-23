@@ -2,6 +2,7 @@ import { simulateReadableStream } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 import { AnswerCache } from "@/lib/ai/cache";
 import type { ModelSpec } from "@/lib/ai/models";
+import type { RunContext } from "@/lib/ai/run";
 import type { AiDeps } from "@/lib/server/handlers";
 import { DailyCap, RateLimiter } from "@/lib/server/rate-limit";
 
@@ -103,6 +104,14 @@ export function brokenGenerateModel(): MockLanguageModelV4 {
 
 export function spec(model: MockLanguageModelV4, id = "mock-model"): ModelSpec {
   return { id, model, providerOptions: {} };
+}
+
+/** A chain of the given models, named m0, m1 and so on in order, with a signal nobody aborts. */
+export function runContext(models: MockLanguageModelV4[]): RunContext {
+  return {
+    chain: models.map((model, index) => spec(model, `m${index}`)),
+    signal: new AbortController().signal,
+  };
 }
 
 export const FIXED_NOW = new Date("2026-10-21T10:00:00.000Z");
