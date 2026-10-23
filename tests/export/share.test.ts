@@ -56,6 +56,15 @@ describe("share links", () => {
     const imported = recordFromShare({ ...decoded, enrichment: planted }, "plan-3", NOW);
     expect(imported.enrichment).toBeNull();
     expect(imported.enrichedFor).toBeNull();
+    const tagged = {
+      id: "t1",
+      title: "Send the deposit today",
+      area: "planning",
+      leadDays: 30,
+      source: "ai",
+    } as const;
+    const withTask = recordFromShare({ ...decoded, tasks: [tagged] }, "plan-4", NOW);
+    expect(withTask.tasks).toEqual([{ ...tagged, source: "custom" }]);
   });
 
   it("rejects anything malformed, oversized or invalid", async () => {

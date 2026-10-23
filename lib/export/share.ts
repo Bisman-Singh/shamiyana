@@ -111,11 +111,16 @@ export async function decodeShare(encoded: string): Promise<SharedPlan | null> {
   }
 }
 
-/** A new plan of your own from a shared one; any AI ideas a link carries are dropped and made again. */
+/**
+ * A new plan of your own from a shared one. Any AI ideas a link carries are
+ * dropped and made again, and its tasks arrive as your own, so text in a link
+ * is never shown as the model's.
+ */
 export function recordFromShare(shared: SharedPlan, id: string, now: string): PlanRecord {
   return {
     ...createRecord(shared.brief, id, now),
     ...shared,
+    tasks: shared.tasks.map((task) => ({ ...task, source: "custom" })),
     guests: [],
     enrichment: null,
     enrichedFor: null,
