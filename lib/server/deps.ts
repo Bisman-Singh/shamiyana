@@ -24,6 +24,7 @@ import {
  * the real ones.
  */
 
+/** A null chain means no API key, and the AI routes then answer ai_unavailable. */
 export interface AiDeps {
   chain: readonly ModelSpec[] | null;
   cache: AnswerCache;

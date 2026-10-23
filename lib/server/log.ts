@@ -16,6 +16,7 @@ export type AiRoute = "plan" | "refine" | "vision";
  */
 export type LogOutcome = "ok" | "model_failed" | "cut_off" | "screened" | ErrorCode;
 
+/** A log line's fields. User text has no field here, so it has nowhere to go. */
 export interface LogFields {
   route: AiRoute;
   outcome: LogOutcome;
@@ -40,6 +41,7 @@ export function logEvent(fields: LogFields): void {
   }
 }
 
+/** Fixed notices only, so a warning never carries a value from the environment. */
 export type ConfigNotice =
   | { event: "ai_off"; reason: "no_api_key" }
   | { event: "limits_local"; reason: "redis_unavailable" };

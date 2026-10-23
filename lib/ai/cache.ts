@@ -1,6 +1,7 @@
 import "server-only";
 import { BoundedMap } from "@/lib/server/bounded-map";
 
+/** Every bound has a default; `now` lets tests expire answers. */
 export interface AnswerCacheOptions {
   maxEntries?: number;
   /** Total characters across every cached answer. */

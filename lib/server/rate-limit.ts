@@ -14,6 +14,7 @@ import { BoundedMap } from "./bounded-map";
 /** The window every per-minute limit counts over. */
 export const RATE_WINDOW_MS = 60_000;
 
+/** A limiter's answer, with the wait a Retry-After header needs. */
 export interface RateResult {
   ok: boolean;
   /** Seconds until the next request would be allowed; 0 when allowed. */
@@ -35,6 +36,7 @@ export interface DailyAllowance {
   take(client?: string): boolean | Promise<boolean>;
 }
 
+/** `maxKeys` bounds memory; `now` lets tests move the clock. */
 export interface RateLimiterOptions {
   limit: number;
   windowMs: number;
@@ -77,6 +79,7 @@ export class RateLimiter implements RequestLimiter {
   }
 }
 
+/** Only the instance's cap is required; `now` lets tests move to the next day. */
 export interface DailyCapOptions {
   /** Calls this instance allows per UTC day. */
   cap: number;

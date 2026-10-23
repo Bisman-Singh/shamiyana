@@ -8,6 +8,7 @@ import { AI_LIMITS, generateSanitized, type RunContext } from "./run";
 import { visionOutputSchema } from "./schemas";
 import { sanitizeVision, type VisionResult } from "./vision-result";
 
+/** `mediaType` is sniffed from the bytes, never the type the browser declared. */
 export interface VisionInput {
   facts: EventFacts;
   locale: Locale;

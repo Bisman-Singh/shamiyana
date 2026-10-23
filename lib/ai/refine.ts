@@ -13,6 +13,7 @@ export interface RefineInput extends RefineContext {
   locale: Locale;
 }
 
+/** `model` names who wrote the reply, for the log line; it is not sent to the page. */
 export interface RefineAnswer {
   reply: string;
   changes: Change[];

@@ -58,6 +58,7 @@ export interface WindowClient {
   limit(identifier: string): Promise<{ success: boolean; reset: number; reason?: string }>;
 }
 
+/** `now` lets tests fix the clock that Retry-After is counted from. */
 export interface SharedRateLimiterOptions {
   window: WindowClient;
   /** This instance's own limit, which decides while Redis is down or slow. */
@@ -133,6 +134,7 @@ export interface ScriptClient {
   eval(script: string, keys: string[], args: number[]): Promise<unknown>;
 }
 
+/** `now` lets tests fix the day the counters belong to. */
 export interface SharedDailyCapOptions {
   redis: ScriptClient;
   caps: { total: number; client: number };

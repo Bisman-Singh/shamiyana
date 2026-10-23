@@ -50,6 +50,7 @@ const schema = fields.transform(
   },
 );
 
+/** The checked environment, with the Redis pair folded into one optional object. */
 export type ServerEnv = z.output<typeof schema>;
 
 /** A configuration error; its message names the variables, never their values. */

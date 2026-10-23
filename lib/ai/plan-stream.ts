@@ -64,6 +64,7 @@ function cacheWhenComplete(
   });
 }
 
+/** `fresh` skips the cache, for when the user asks for new ideas. */
 export interface PlanInput {
   facts: EventFacts;
   locale: Locale;
@@ -71,6 +72,7 @@ export interface PlanInput {
   fresh: boolean;
 }
 
+/** The answer as it arrives, and the model writing it, for the log line. */
 export interface PlanStream {
   stream: ReadableStream<string>;
   model: string;

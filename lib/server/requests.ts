@@ -75,6 +75,7 @@ export function visionFieldsSchema(serverNow: Date) {
     .superRefine(withEventInRange);
 }
 
+/** The page sends a JPEG redrawn to at most 1600 px, well under this. */
 export const IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 
 /** The real image type from its first bytes; the declared type is never trusted. */

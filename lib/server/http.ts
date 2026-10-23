@@ -9,6 +9,7 @@ import type { RequestLimiter } from "./rate-limit";
  * help. Failures are short JSON error codes with no internals.
  */
 
+/** The only detail of a failure a client ever sees; each code has one status. */
 export type ErrorCode =
   | "forbidden"
   | "not_found"
@@ -107,6 +108,7 @@ export async function readCapped(request: Request, max: number): Promise<Uint8Ar
   return readAtMost(request.body, max);
 }
 
+/** What one route allows: its rate limit, its body cap and its media type. */
 export interface GuardOptions {
   limiter: RequestLimiter;
   maxBytes: number;
@@ -114,6 +116,7 @@ export interface GuardOptions {
   type: "application/json" | "multipart/form-data";
 }
 
+/** The raw body once every check has passed, or the code to answer with. */
 export type Guarded =
   | { ok: true; bytes: Uint8Array; contentType: string }
   | { ok: false; code: ErrorCode; headers?: Record<string, string> };
