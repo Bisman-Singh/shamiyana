@@ -2,7 +2,8 @@ import "server-only";
 import { runVision } from "@/lib/ai/vision";
 import type { AiDeps } from "./deps";
 import { guard, parseJson } from "./http";
-import { IMAGE_MAX_BYTES, sniffImage, visionFieldsSchema } from "./requests";
+import { visionFieldsSchema } from "@/lib/api/contracts";
+import { IMAGE_MAX_BYTES, sniffImage } from "./requests";
 import {
   admit,
   aiRoute,

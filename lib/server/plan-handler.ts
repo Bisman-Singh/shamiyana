@@ -2,7 +2,7 @@ import "server-only";
 import { createTextStreamResponse } from "ai";
 import { lookupPlan, streamPlan, textStream } from "@/lib/ai/plan-stream";
 import type { AiDeps } from "./deps";
-import { planRequestSchema } from "./requests";
+import { planRequestSchema } from "@/lib/api/contracts";
 import {
   admit,
   aiRoute,

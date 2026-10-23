@@ -94,6 +94,7 @@ as they stream.
 | `lib/shared`         | readers for untrusted values, plain-text hygiene, capped byte streams |
 | `lib/ai`             | prompts, output schemas, the guard, model chain, fallback and cache   |
 | `lib/server`         | env, request guard, rate limits, shared limits, logging, handlers     |
+| `lib/api`            | request contracts shared by the routes and the browser's calls        |
 | `lib/client`         | API calls, local storage and file handling in the browser             |
 | `lib/export`         | iCalendar, CSV, share links and outbound links                        |
 | `lib/i18n`           | English and Hindi messages, formatting, `lang` detection and policies |

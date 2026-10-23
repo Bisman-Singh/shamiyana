@@ -146,8 +146,8 @@ only. The key is never sent to the browser.
 - Every AI route checks same origin, content type, a body cap enforced while
   reading, a sliding-window rate limit per client and a daily request cap,
   shared by every instance through Upstash Redis, then
-  validates the body with a strict Zod schema (`lib/server/http.ts`,
-  `lib/server/requests.ts`).
+  validates the body with a strict Zod schema that the browser's calls are
+  typed from too (`lib/server/http.ts`, `lib/api/contracts.ts`).
 - Uploads are typed by their magic bytes, never by the declared type, and
   capped at 4 MB.
 - A chat message that tries to re-instruct the assistant, in English or Hindi,

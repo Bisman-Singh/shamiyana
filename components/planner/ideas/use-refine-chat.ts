@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type SubmitEvent } from "react";
-import type { Turn as ChatTurn } from "@/lib/ai/prompts";
+import type { Turn as ChatTurn } from "@/lib/api/contracts";
 import { requestRefine, type ApiError } from "@/lib/client/api";
 import { plural } from "@/lib/i18n/format";
 import { applyChanges, fitChanges, type Change } from "@/lib/plan/changes";

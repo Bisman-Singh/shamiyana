@@ -1,8 +1,9 @@
 import "server-only";
+import type { Turn } from "@/lib/api/contracts";
 import { en } from "@/lib/i18n/en";
 import { messageOr } from "@/lib/i18n/messages";
 import type { BudgetLine } from "@/lib/plan/budget";
-import { LIMITS, type CategoryId, type Locale, type TurnRole } from "@/lib/plan/constants";
+import { LIMITS, type CategoryId, type Locale } from "@/lib/plan/constants";
 import { daysBetween, wholeWeeks } from "@/lib/plan/dates";
 import type { EventFacts, Factors } from "@/lib/plan/schema";
 import { FUNCTION_HEADCOUNT, shiftableCategories, variantFactors } from "@/lib/plan/shares";
@@ -169,12 +170,6 @@ ${SHARED_RULES}
 - Propose only changes the user asked for or clearly implied, at most six. The user approves each one before it applies.
 - If the message has nothing to do with planning this event, say briefly that you can only help with this plan and propose no changes.
 - Write the reply and every title and detail in ${LANGUAGE[locale]}.`;
-}
-
-/** One turn of the refine chat as the model sees it. */
-export interface Turn {
-  role: TurnRole;
-  text: string;
 }
 
 export interface RefineContext {

@@ -2,7 +2,7 @@ import "server-only";
 import { isInjectionAttempt, SCREENED_REPLY } from "@/lib/ai/guard";
 import { runRefine } from "@/lib/ai/refine";
 import type { AiDeps } from "./deps";
-import { refineRequestSchema } from "./requests";
+import { refineRequestSchema } from "@/lib/api/contracts";
 import {
   admit,
   aiRoute,
